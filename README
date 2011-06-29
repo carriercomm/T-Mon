@@ -1,0 +1,23 @@
+==============================
+ RjDj Radar Service
+==============================
+
+$ py26 bootstrap.py
+
+$ bin/buildout -v
+
+$ bin/initdb
+
+$ bin/pgdb start
+
+# only once
+$ bin/instance syncdb
+
+# only once
+$ bin/instance migrate
+
+$ bin/instance runserver 9000
+
+$ bin/test -vv1
+
+

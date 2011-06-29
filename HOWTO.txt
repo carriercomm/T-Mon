@@ -1,0 +1,21 @@
+DEV    http://radar-dev.rjdj.me
+PROD   http://radar.rjdj.me
+
+Request
+-------------------------------------------------
+POST
+/ping
+POSTDATA
+data=base64encoded({
+	'timestamp': 1296212341,
+	'lat': 0.0000,
+	'lon': 0.0000,
+	'acc': 0,
+	'sig': sha1(message=lat*lon*acc,secret=sA@3ox!B)})
+
+
+Response:
+-------------------------------------------------
+Mimetype: application/json
+{'timestamp': 1296212341,'count':0,'min':0,'max':0}
+
