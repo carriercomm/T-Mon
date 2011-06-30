@@ -25,6 +25,8 @@ __docformat__ = "reStructuredText"
 from rjdj.tmon.exceptions import *
 
 from rjdj.tmon.utils import *
+from rjdj.tmon.utils import db
+import json
 
 class TrackingRequest(object):
 
@@ -45,10 +47,11 @@ class TrackingRequest(object):
         req = TrackingRequest()
         data = None
         try:
-            self.wsid = post_data[WSID_KEY]
-            secret = db.get_ws_secret(self.wsid)
-            decrypted_data = decrypt_message(post_data[DATA_KEY], secret)
-            data = simplejson.loads(decrypted_data)
+            wsid = post_data[TrackingRequest.WSID_KEY]
+            req.webservice = db.get_webservice(wsid)
+            secret = req.webservice.secret
+            decrypted_data = decrypt_message(post_data[TrackingRequest.DATA_KEY], secret)
+            data = json.loads(decrypted_data)
         except KeyError as ke:
             raise InvalidPostData(ke)
         except ValueError as ve:
@@ -57,7 +60,7 @@ class TrackingRequest(object):
             raise
             
         try:
-            for key in TrackingRequest.required_post_data:
+            for key in TrackingRequest.required_fields:
                 val = data[key]
                 setattr(req, key, val)
                 

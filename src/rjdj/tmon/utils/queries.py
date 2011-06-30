@@ -22,17 +22,16 @@
 
 __docformat__ = "reStructuredText"
 
-from settings import *
-from os import path
+from rjdj.tmon.utils import db
+from couchdb.design import ViewDefinition
 
-DEBUG = True
+all_queries = {
+    "users_per_country": ViewDefinition(
+                            design = "geographic", 
+                            name = "users_per_country",
+                            map_fun = """function(doc) { emit(doc["country"], 1); }""",
+                            reduce_fun = """function(keys, values) { return sum(values); }""", 
+                            group = True),
+}
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': 'db/tmon_staging.db',
-        },
-    }
 
-LOGFILE = path.join(BASE_DIR,"..","testing.log")
-LOGLEVEL = "debug"

@@ -37,6 +37,8 @@ class FieldMissing(ParsingFailed):
 class InvalidPostData(ParsingFailed):
     http_status_code = 400
 
+class InvalidIPAdress(ParsingFailed):
+    http_status_code = 400
 
 # Decryption Errors
 class DecryptionFailed(TMonError):
@@ -49,3 +51,4 @@ class InvalidRequest(TMonError):
     
 class InvalidWebService(TMonError):
     http_status_code = 403
+    

@@ -25,10 +25,46 @@ __docformat__ = "reStructuredText"
 from rjdj.tmon.models import WebService
 from rjdj.tmon.exceptions import *
 
+from couchdb import Server
+from django.conf import settings
+
+server = None
+database = None
+
+def connect():
+    global server
+    global database
+    
+    protocol = settings.TRACKING_DATABASE['protocol']
+    host = settings.TRACKING_DATABASE['url']
+    port = settings.TRACKING_DATABASE['port']
+    user = settings.TRACKING_DATABASE.get('user')
+    pswd = settings.TRACKING_DATABASE.get('password')
+    if user and pswd:
+        url =  "%s://%s:%s@%s:%d" % (protocol, user, pswd, host, port)
+    else:
+        url =  "%s://%s:%d" % (protocol, host, port)
+    server = Server(url)
+    database = server[settings.TRACKING_DATABASE['name']]
+
 def get_ws_secret(wsid):
     try:
-        user = WebService.objects.get(wsid = wsid)
+        ws = WebService.objects.get(id = wsid)
     except WebService.DoesNotExist:
         raise InvalidWebService(wsid)
         
-    return user.secret
+    return ws.secret
+    
+def get_webservice(wsid):
+    try:
+        return WebService.objects.get(id = wsid)
+    except WebService.DoesNotExist:
+        raise InvalidWebService(wsid)
+        
+def store(data):
+    if not server: connect()
+    data.store(database)
+
+def get_db():
+    if not server: connect()
+    return database

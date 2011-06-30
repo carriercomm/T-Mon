@@ -24,8 +24,6 @@ from django.db import connection, transaction
 
 from zope.testing.doctestunit import DocFileSuite
 
-
-
 ## https://bitbucket.org/andrewgodwin/south/changeset/21a635231327
 class SkipFlushCommand(FlushCommand):
     def handle_noargs(self, **options):
@@ -53,6 +51,7 @@ class DjangoLayer(object):
         utils.setup_test_environment()
         connection.creation.create_test_db = patch(connection.creation.create_test_db)
         connection.creation.create_test_db(verbosity = 0, autoclobber = True)
+        
 
     @classmethod
     def tearDown(self):
@@ -68,12 +67,12 @@ class DjangoLayer(object):
 
 
 def test_suite():
-    views = DocFileSuite('collect.txt',
+    collect = DocFileSuite('collect.txt',
         optionflags = doctest.NORMALIZE_WHITESPACE | doctest.ELLIPSIS,
         )
 
     suite = unittest.TestSuite((
-                                libman_performance,
+                                collect,
                                 ))
     suite.layer = DjangoLayer
     return suite

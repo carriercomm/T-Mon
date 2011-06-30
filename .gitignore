@@ -14,5 +14,5 @@ nano.save
 *.log
 deploy.sh
 src/static/log/*
-
+db/*
 /nbproject/

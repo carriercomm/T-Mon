@@ -1,0 +1,80 @@
+==============================
+Tests for /data/collect
+==============================
+
+    >>> from rjdj.tmon.models import WebService
+    >>> from django.contrib.auth.models import User 
+    >>> import json
+    >>> from Crypto.Cipher import AES
+    >>> import base64
+    >>> from django.test import Client
+
+Preparations:
+    >>> c = Client()
+    >>> TEST_URL = "/data/collect"
+    >>> TEST_SECRET = "ABCDEFABCDEFABCDEFABCDEF"
+
+    >>> user = User()
+    >>> user.username = "testuser"
+    >>> user.set_password("test")
+    >>> user.email = "test@test.com"
+    >>> user.save()
+
+    >>> ws = WebService()    
+    >>> ws.owner = user
+    >>> ws.secret = TEST_SECRET
+    >>> ws.save()
+    
+Helper functions:
+
+    >>> def make_request(url, wsid, req_dict):
+    ...     payload = json.dumps(req_dict)
+    ...     cipher = AES.new(TEST_SECRET, AES.MODE_CFB)
+    ...     encryped_payload = cipher.encrypt(payload)
+    ...     encoded_payload = base64.b64encode(encryped_payload)
+    ...     res = c.post(url, { "data" : encoded_payload, "wsid" : wsid })
+    ...     return json.loads(res.content)
+    
+A valid request looks like this:
+    
+    >>> request = { 
+    ...             "ip": "72.32.231.8",
+    ...             "useragent": "Mozilla/5.0 (iPad; U; CPU OS 3_2_1 like Mac OS X; en-us) AppleWebKit/531.21.10 (KHTML, like Gecko) Mobile/7B405"}
+    >>> make_request(TEST_URL, ws.id, request)
+    {u'status': 200}
+    
+    >>> request = { 
+    ...             "ip": "194.232.104.140",
+    ...             "useragent": "Mozilla/5.0 (iPad; U; CPU OS 3_2_1 like Mac OS X; en-us) AppleWebKit/531.21.10 (KHTML, like Gecko) Mobile/7B405"}
+    >>> make_request(TEST_URL, ws.id, request)
+    {u'status': 200}
+    
+    >>> request = { 
+    ...             "ip": "213.131.233.151",
+    ...             "useragent": "Mozilla/5.0 (iPad; U; CPU OS 3_2_1 like Mac OS X; en-us) AppleWebKit/531.21.10 (KHTML, like Gecko) Mobile/7B405"}
+    >>> make_request(TEST_URL, ws.id, request)
+    {u'status': 200}
+    
+An invalid request will be answered with a corresponding HTTP status code and a message in debug mode:
+    
+No data:
+    >>> request = {}
+    >>> make_request(TEST_URL, ws.id, request)
+    {u'status': 400, u'message': u"'ip'"}
+
+    
+Invalid keys:
+    >>> request = {"no-ip": "www.url.com", "useragent": "some_user_agent"}
+    >>> make_request(TEST_URL, ws.id, request)
+    {u'status': 400, u'message': u"'ip'"}
+
+GET is also prohibited:
+    >>> res = c.get(TEST_URL)
+    >>> res.content
+    '{\n    "status": 405, \n    "message": "GET is not allowed"\n}'
+
+Invalid IP:
+    >>> request = {"ip": "192.168.1.1", "useragent": "some_user_agent"}
+    >>> make_request(TEST_URL, ws.id, request)
+    {u'status': 400, u'message': u'192.168.1.1'}
+

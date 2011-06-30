@@ -68,6 +68,9 @@ INSTALLED_APPS = (
     'django.contrib.admin',
     'django.contrib.auth',
     'rjdj.djangotornado',
+    'rjdj.tmon',
 )
 
 TEMPLATE_EXTENSION = ".html"
+
+GEOIP_DB_LOCATION = '../db/GeoLiteCity.dat'

@@ -1,6 +1,9 @@
 ==============================
- RjDj Radar Service
+ RjDj TMon Server
 ==============================
+
+# http://www.maxmind.com/app/geolitecity
+$ download the GeoLite City DB and extract it into db/
 
 $ py26 bootstrap.py
 
@@ -8,15 +11,11 @@ $ bin/buildout -v
 
 $ bin/initdb
 
-$ bin/pgdb start
-
 # only once
 $ bin/instance syncdb
 
 # only once
-$ bin/instance migrate
-
-$ bin/instance runserver 9000
+$ bin/instance prepare_couch
 
 $ bin/test -vv1
 

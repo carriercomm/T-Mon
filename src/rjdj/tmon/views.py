@@ -23,8 +23,15 @@
 __docformat__ = "reStructuredText"
 
 from rjdj.tmon.exceptions import *
+
 from rjdj.tmon.messaging.requests import TrackingRequest
+
 from rjdj.tmon.utils.decorators import return_status
+from rjdj.tmon.utils import location, db
+
+from rjdj.tmon.models import TrackingData
+
+from datetime import datetime
 
 from django.http import  (
                          HttpResponseNotFound,
@@ -43,12 +50,25 @@ def data_collect(request):
     if request.method != "POST":
         raise InvalidRequest("GET is not allowed")
         
-    trackingreq = None
     trackingreq = TrackingRequest.create_from_post_data(request.POST)
     
-            
+    user_location = location.resolve(trackingreq.ip)
+    
+    data = TrackingData(user_agent = trackingreq.useragent, 
+                        timestamp = datetime.now(),
+                        country = user_location["country"],
+                        latitude = user_location["latitude"],
+                        longitude = user_location["longitude"],
+                        wsid = trackingreq.webservice.id)
+    
+    db.store(data)
+ 
+@return_status          
 def data_view(request):
-    pass
+    from rjdj.tmon.utils.queries import all_queries
+    upc = all_queries["users_per_country"]
+    import pdb; pdb.set_trace()
+
     
 def login(request):
     pass

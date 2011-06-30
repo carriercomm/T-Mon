@@ -26,6 +26,7 @@ __all__ = ["decrypt_message"]
 
 from Crypto.Cipher import AES
 import base64
+import httpagentparser
 
 def decrypt_message(msg, secret):
     """ Decrypts a Base64 encoded message with the given secret (AES) """

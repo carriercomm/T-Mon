@@ -14,6 +14,7 @@ setup(name = "rjdj.tmon",
                           'nsdjango',
                           'rjdj.djangotornado',
                           'couchdb',
+                          'pygeoip',
                           ],
       entry_points = {
           'console_scripts':['instance=nsdjango.management:execute_manager']

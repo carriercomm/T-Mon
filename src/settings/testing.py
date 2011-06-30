@@ -22,15 +22,25 @@
 
 __docformat__ = "reStructuredText"
 
-from rjdj import settings
+from settings import *
+from os import path
 
 DEBUG = True
 
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': 'db/tmon_testing.db',
+        'NAME': '/home/claus/sandbox/rjdj.tmon/db/tmon_testing.db',
         },
+    }
+    
+TRACKING_DATABASE = {
+    'protocol': 'http',
+    'url': 'localhost',
+    'port': 5984,
+    'name': 'tracking_data',
+    'user': 'admin',
+    'password': 'admin',
     }
 
 LOGFILE = path.join(BASE_DIR, "..", "testing.log")

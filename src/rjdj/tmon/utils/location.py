@@ -22,17 +22,21 @@
 
 __docformat__ = "reStructuredText"
 
-from settings import *
-from os import path
+import pygeoip
+from django.conf import settings
+from rjdj.tmon.exceptions import *
 
-DEBUG = True
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': 'db/tmon_staging.db',
-        },
-    }
-
-LOGFILE = path.join(BASE_DIR,"..","testing.log")
-LOGLEVEL = "debug"
+def resolve(ip):
+    """ Resolves an IP (v4) address to a dict containing 3-letter country code and lat/lng.  """
+    geoip = pygeoip.GeoIP(settings.GEOIP_DB_LOCATION)
+    
+    addr_rec = geoip.record_by_addr(ip)
+    res = {}
+    if addr_rec:
+        res["country"] = addr_rec["country_code3"]
+        res["latitude"] = addr_rec["latitude"]
+        res["longitude"] = addr_rec["longitude"]
+    else:
+        raise InvalidIPAdress(ip)
+    
+    return res
