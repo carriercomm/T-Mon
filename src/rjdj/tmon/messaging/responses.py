@@ -48,6 +48,6 @@ class GenericJSONResponse(object):
                          indent = 4)        
         
         return HttpResponse(res,
-                             status = self.status_code,
-                             mimetype = self.MIME,
-                             content_type = '%s; charset=utf-8' % self.MIME)
+                            status = self.status_code,
+                            mimetype = self.MIME,
+                            content_type = '%s; charset=utf-8' % self.MIME)

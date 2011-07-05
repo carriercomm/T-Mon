@@ -25,7 +25,7 @@ __docformat__ = "reStructuredText"
 from rjdj.tmon.utils import *
 from rjdj.tmon.utils import location
 from rjdj.tmon.models import TrackingData
-from rjdj.tmon.exceptions import * 
+from rjdj.tmon.exceptions import *
 from rjdj.tmon.models import WebService
 from datetime import datetime
 import json
@@ -36,15 +36,10 @@ class TrackingRequestParser(object):
     WSID_KEY = 'wsid'
     DATA_KEY = 'data'
 
-    required_fields = {
-        'ip': 'ip',
-        'useragent': 'useragent',
-    }
-    
-    optional_fields =  {
-        'username': 'username',
-    }
-    
+    IP_KEY = 'ip'
+    UA_KEY = 'useragent'
+    USER_KEY = 'username'
+
     @staticmethod
     def create_document(post_data):
         data = None
@@ -61,22 +56,20 @@ class TrackingRequestParser(object):
             raise DecryptionFailed(ve)
         except WebService.DoesNotExist as ws:
             raise InvalidWebService(ws)
-            
+
         try:
-            req = TrackingRequestParser.required_fields
-            ip = data[req['ip']]
-            useragent = data[req['useragent']]
+            ip = data[TrackingRequestParser.IP_KEY]
+            useragent = data[TrackingRequestParser.UA_KEY]
         except KeyError as ke:
             raise FieldMissing(ke)
-            
-        opt = TrackingRequestParser.optional_fields
-        username = data.get(opt['username'])
+
+        username = data.get(TrackingRequestParser.USER_KEY)
         user_location = location.resolve(ip)
-        
-        return webservice, TrackingData(user_agent = useragent, 
-                                         timestamp = datetime.now(),
-                                         country = user_location["country"],
-                                         latitude = user_location["latitude"],
-                                         longitude = user_location["longitude"],
-                                         username = username)
-    
+
+        return webservice, TrackingData(user_agent = useragent,
+                                        timestamp = datetime.now(),
+                                        country = user_location["country"],
+                                        latitude = user_location["latitude"],
+                                        longitude = user_location["longitude"],
+                                        username = username)
+

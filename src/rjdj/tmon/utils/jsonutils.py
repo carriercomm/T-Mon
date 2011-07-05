@@ -22,7 +22,8 @@
 
 __docformat__ = "reStructuredText"
 
-from simplejson import dumps, loads, JSONEncoder
+from json import dumps, loads
+from json.encoder import JSONEncoder
 from time import mktime
 
 class ExtendedJSONEncoder(JSONEncoder):

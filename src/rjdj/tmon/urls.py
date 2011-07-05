@@ -22,17 +22,11 @@
 
 __docformat__ = "reStructuredText"
 
-import settings
+from django.conf import settings
 from django.contrib import admin
 from django.conf.urls.defaults import *
 
 from rjdj.tmon import views
-
-from rjdj.djangotornado.handlers import (DjangoHandler,
-                                         SynchronousDjangoHandler,
-                                         )
-
-from os import path
 
 admin.autodiscover()
 
@@ -45,26 +39,21 @@ ROOT_FILES = (
 handler404 = views.not_found
 handler500 = views.server_error
 
-urlpatterns = patterns( '',
-#                        (r'^$', views.default),
-                        (r'^admin/', include(admin.site.urls)),
-                        
-                        # JavaScript GET interfaces
-                        (r'^(\d+)/data/users/country', views.users_per_country),
-                        (r'^(\d+)/data/users/device', views.users_per_device),
-                        (r'^(\d+)/data/users/os', views.users_per_os),
-                        
-                        # POST interfaces
-                        (r'^data/collect', views.data_collect),
+urlpatterns = patterns('',
+#    (r'^$', views.default),
+    (r'^admin/', include(admin.site.urls)),
 
-                        # static files
-                        (r'^(%s)$' % '|'.join(ROOT_FILES),
-                         'django.views.static.serve', {'document_root': settings.MEDIA_ROOT}),
-                        (r'^static/(.*)$',
-                         'django.views.static.serve', {'document_root': settings.MEDIA_ROOT}),
-                        )
+    # JavaScript GET interfaces
+    (r'^(?P<wsid>[\d]+)/data/users/country', views.users_per_country),
+    (r'^(?P<wsid>[\d]+)/data/users/device', views.users_per_device),
+    (r'^(?P<wsid>[\d]+)/data/users/os', views.users_per_os),
 
-# test view with the tornado web framework
-tornado_urls = (
-#    (r'/context/info', DjangoHandler, dict(django_view = views.get_geoinfo)),
-    )
+    # POST interfaces
+    (r'^data/collect', views.data_collect),
+
+   # static files
+    (r'^(%s)$' % '|'.join(ROOT_FILES),
+     'django.views.static.serve', {'document_root': settings.MEDIA_ROOT}),
+    (r'^static/(.*)$',
+     'django.views.static.serve', {'document_root': settings.MEDIA_ROOT}),
+)

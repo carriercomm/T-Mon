@@ -50,25 +50,26 @@ def data_collect(request):
 
     if request.method != "POST":
         raise InvalidRequest("GET is not allowed")
-        
+
     webservice, data = TrackingRequestParser.create_document(request.POST)
     db.store(data, webservice.id)
- 
-@return_json          
+
+
+@return_json
 def users_per_country(request, wsid):
     query = queries.users_per_country
     return db.execute(query, wsid)
-    
-@return_json          
+
+@return_json
 def users_per_device(request, wsid):
     query = queries.users_per_device
     return db.execute(query, wsid)
-    
-@return_json          
+
+@return_json
 def users_per_os(request, wsid):
     query = queries.users_per_os
     return db.execute(query, wsid)
-    
+
 def login(request):
     pass
-    
+

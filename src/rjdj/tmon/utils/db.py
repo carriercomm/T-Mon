@@ -35,7 +35,7 @@ database = None
 
 def connect(protocol, host, port, user = None, password = None):
     global server
-    
+
     if user and password:
         url =  "%s://%s:%s@%s:%d" % (protocol, user, password, host, port)
     else:
@@ -45,24 +45,25 @@ def connect(protocol, host, port, user = None, password = None):
 def setup(wsid, protocol, host, port, user = None, password = None):
     global database
     global server
-    
+
     if not server: connect(protocol, host, port, user, password)
-    
+
     db_name = "_".join((settings.WEB_SERVICE_DB_PREFIX, str(wsid)))
-    
-    if not database and db_name not in server:         
+
+    if not database and db_name not in server:
         database = server.create(db_name)
         for q in all_queries:
             q.sync(database)
     else:
         database = server[db_name]
-        
+
 def store(data, wsid):
     setup(wsid, **settings.TRACKING_DATABASE)
     data.store(database)
 
 def execute(query, wsid, cls = None, **options):
-    if not isinstance(query, ViewDefinition): return
+    if not isinstance(query, ViewDefinition):
+        return
     setup(wsid, **settings.TRACKING_DATABASE)
     return [{ r["key"] : r["value"] } for r in query(database, **options)]
-    
+

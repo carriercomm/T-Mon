@@ -1,3 +1,8 @@
- trunk
--------
+CHANGES for rjdj.tmon
+=====================
+
+trunk
+-----
+
+  - chaudum: cleaned up bits of code
 
