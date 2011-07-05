@@ -26,26 +26,20 @@ from django.http import HttpResponse
 from rjdj.tmon.utils.json import ExtendedJSONEncoder
 import json
 
-class BasicJSONResponse(object):
+class GenericJSONResponse(object):
     """ A very basic JSON response containing nothing but a status code. """
 
     MIME = 'application/json'
     STATUS_CODE_KEY = "status"
-    MESSAGE_KEY = "message"
 
-    def __init__(self, status_code, message = None):
+    def __init__(self, status_code, data):
         self.status_code = status_code
         self.contents = {}
-        self.message = message
-    
+        self.data = data
+            
     def update_contents(self):
-        if self.message:
-            self.contents.update({ 
-                                   self.STATUS_CODE_KEY : self.status_code,
-                                   self.MESSAGE_KEY : self.message
-                                 })
-        else:
-            self.contents.update({ self.STATUS_CODE_KEY : self.status_code })
+        self.contents.update({ self.STATUS_CODE_KEY : self.status_code })
+        self.contents.update(self.data)
 
     def create(self):
         self.update_contents()

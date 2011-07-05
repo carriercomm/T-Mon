@@ -1,0 +1,82 @@
+##############################################################################
+#
+# Copyright (c) 2011 Reality Jockey Ltd. and Contributors.
+# This file is part of TMon.
+#
+# TMon is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# TMon is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with django-tornado. If not, see <http://www.gnu.org/licenses/>.
+#
+##############################################################################
+
+# -*- coding: utf-8 -*-
+
+__docformat__ = "reStructuredText"
+
+from rjdj.tmon.utils import *
+from rjdj.tmon.utils import location
+from rjdj.tmon.models import TrackingData
+from rjdj.tmon.exceptions import * 
+from rjdj.tmon.models import WebService
+from datetime import datetime
+import json
+
+
+class TrackingRequestParser(object):
+
+    WSID_KEY = 'wsid'
+    DATA_KEY = 'data'
+
+    required_fields = {
+        'ip': 'ip',
+        'useragent': 'useragent',
+    }
+    
+    optional_fields =  {
+        'username': 'username',
+    }
+    
+    @staticmethod
+    def create_document(post_data):
+        data = None
+        webservice = None
+        try:
+            wsid = post_data[TrackingRequestParser.WSID_KEY]
+            webservice = WebService.objects.get(id = wsid)
+            secret = webservice.secret
+            decrypted_data = decrypt_message(post_data[TrackingRequestParser.DATA_KEY], secret)
+            data = json.loads(decrypted_data)
+        except KeyError as ke:
+            raise InvalidPostData(ke)
+        except ValueError as ve:
+            raise DecryptionFailed(ve)
+        except WebService.DoesNotExist as ws:
+            raise InvalidWebService(ws)
+            
+        try:
+            req = TrackingRequestParser.required_fields
+            ip = data[req['ip']]
+            useragent = data[req['useragent']]
+        except KeyError as ke:
+            raise FieldMissing(ke)
+            
+        opt = TrackingRequestParser.optional_fields
+        username = data.get(opt['username'])
+        user_location = location.resolve(ip)
+        
+        return webservice, TrackingData(user_agent = useragent, 
+                                         timestamp = datetime.now(),
+                                         country = user_location["country"],
+                                         latitude = user_location["latitude"],
+                                         longitude = user_location["longitude"],
+                                         username = username)
+    

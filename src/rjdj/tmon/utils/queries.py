@@ -22,16 +22,48 @@
 
 __docformat__ = "reStructuredText"
 
-from rjdj.tmon.utils import db
 from couchdb.design import ViewDefinition
 
-all_queries = {
-    "users_per_country": ViewDefinition(
-                            design = "geographic", 
-                            name = "users_per_country",
-                            map_fun = """function(doc) { emit(doc["country"], 1); }""",
-                            reduce_fun = """function(keys, values) { return sum(values); }""", 
-                            group = True),
-}
+users_per_country = ViewDefinition(
+                        design = "geographic", 
+                        name = "users_per_country",
+                        map_fun = """function(doc) { emit(doc["country"], 1); }""",
+                        reduce_fun = """function(keys, values) { return sum(values); }""", 
+                        group = True)
 
-
+users_per_device = ViewDefinition(
+                        design = "geographic", 
+                        name = "users_per_device",
+                        map_fun = """   function(doc)  { 
+                                            var regexp = /([\w\s\/]+); (U; )?([\w\d\.\_\s]+)/;
+                                            res = doc["user_agent"].match(regexp);
+                                            if (res != null) {
+                                                emit(res[1], 1);
+                                            }
+                                            else {
+                                                emit("other", 1);
+                                            }
+                                        } """,
+                        reduce_fun = """function(keys, values) { return sum(values); }""", 
+                        group = True)
+                        
+users_per_os = ViewDefinition(
+                        design = "geographic", 
+                        name = "users_per_os",
+                        map_fun = """   function(doc)  { 
+                                            var regexp = /([\w\s\/]+); (U; )?([\w\d\.\_\s]+)/;
+                                            res = doc["user_agent"].match(regexp);
+                                            if (res != null) {
+                                                emit(res[3], 1);
+                                            } else {
+                                                emit("other", 1);
+                                            }
+                                        } """,
+                        reduce_fun = """function(keys, values) { return sum(values); }""", 
+                        group = True)
+                        
+all_queries = (
+        users_per_country,
+        users_per_os,
+        users_per_device,
+    )

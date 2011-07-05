@@ -22,49 +22,47 @@
 
 __docformat__ = "reStructuredText"
 
-from rjdj.tmon.models import WebService
 from rjdj.tmon.exceptions import *
+from rjdj.tmon.utils.queries import all_queries
 
 from couchdb import Server
+from couchdb.design import ViewDefinition
 from django.conf import settings
+
 
 server = None
 database = None
 
-def connect():
+def connect(protocol, host, port, user = None, password = None):
     global server
-    global database
     
-    protocol = settings.TRACKING_DATABASE['protocol']
-    host = settings.TRACKING_DATABASE['url']
-    port = settings.TRACKING_DATABASE['port']
-    user = settings.TRACKING_DATABASE.get('user')
-    pswd = settings.TRACKING_DATABASE.get('password')
-    if user and pswd:
-        url =  "%s://%s:%s@%s:%d" % (protocol, user, pswd, host, port)
+    if user and password:
+        url =  "%s://%s:%s@%s:%d" % (protocol, user, password, host, port)
     else:
         url =  "%s://%s:%d" % (protocol, host, port)
     server = Server(url)
-    database = server[settings.TRACKING_DATABASE['name']]
 
-def get_ws_secret(wsid):
-    try:
-        ws = WebService.objects.get(id = wsid)
-    except WebService.DoesNotExist:
-        raise InvalidWebService(wsid)
-        
-    return ws.secret
+def setup(wsid, protocol, host, port, user = None, password = None):
+    global database
+    global server
     
-def get_webservice(wsid):
-    try:
-        return WebService.objects.get(id = wsid)
-    except WebService.DoesNotExist:
-        raise InvalidWebService(wsid)
+    if not server: connect(protocol, host, port, user, password)
+    
+    db_name = "_".join((settings.WEB_SERVICE_DB_PREFIX, str(wsid)))
+    
+    if not database and db_name not in server:         
+        database = server.create(db_name)
+        for q in all_queries:
+            q.sync(database)
+    else:
+        database = server[db_name]
         
-def store(data):
-    if not server: connect()
+def store(data, wsid):
+    setup(wsid, **settings.TRACKING_DATABASE)
     data.store(database)
 
-def get_db():
-    if not server: connect()
-    return database
+def execute(query, wsid, cls = None, **options):
+    if not isinstance(query, ViewDefinition): return
+    setup(wsid, **settings.TRACKING_DATABASE)
+    return [{ r["key"] : r["value"] } for r in query(database, **options)]
+    

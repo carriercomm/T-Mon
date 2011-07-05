@@ -9,7 +9,7 @@
 
 __docformat__ = "reStructuredText"
 
-import settings
+from django.conf import settings
 
 import unittest, doctest
 
@@ -23,6 +23,10 @@ from django.test import utils
 from django.db import connection, transaction
 
 from zope.testing.doctestunit import DocFileSuite
+
+from rjdj.tmon.utils import db
+
+KEEP_DATA = True
 
 ## https://bitbucket.org/andrewgodwin/south/changeset/21a635231327
 class SkipFlushCommand(FlushCommand):
@@ -45,6 +49,8 @@ def patch(f):
     return wrapper
 
 class DjangoLayer(object):
+    
+    saved_state = []
 
     @classmethod
     def setUp(self):
@@ -52,10 +58,17 @@ class DjangoLayer(object):
         connection.creation.create_test_db = patch(connection.creation.create_test_db)
         connection.creation.create_test_db(verbosity = 0, autoclobber = True)
         
-
+        db.connect(**settings.TRACKING_DATABASE)
+        saved_state = [d for d in db.server]
+        
     @classmethod
     def tearDown(self):
-        call_command('flush', verbosity=0, interactive=False)
+        call_command('flush', verbosity = 0, interactive = False)
+        
+        if not KEEP_DATA and db.database:
+            for datab in db.server:
+                if datab not in self.saved_state and not datab.startswith("_"):
+                    del db.server[datab]
 
     @classmethod
     def testSetUp(self):
@@ -63,16 +76,20 @@ class DjangoLayer(object):
 
     @classmethod
     def testTearDown(self):
-        call_command('flush',verbosity=0,interactive=False)
+        call_command('flush', verbosity = 0, interactive = False)
 
 
 def test_suite():
     collect = DocFileSuite('collect.txt',
         optionflags = doctest.NORMALIZE_WHITESPACE | doctest.ELLIPSIS,
         )
+    analyze = DocFileSuite('analyze.txt',
+        optionflags = doctest.NORMALIZE_WHITESPACE | doctest.ELLIPSIS,
+        )
 
     suite = unittest.TestSuite((
                                 collect,
+                                analyze,
                                 ))
     suite.layer = DjangoLayer
     return suite

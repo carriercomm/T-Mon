@@ -36,9 +36,8 @@ DATABASES = {
     
 TRACKING_DATABASE = {
     'protocol': 'http',
-    'url': 'localhost',
+    'host': 'localhost',
     'port': 5984,
-    'name': 'tracking_data',
     'user': 'admin',
     'password': 'admin',
     }

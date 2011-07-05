@@ -32,35 +32,11 @@ class Command(BaseCommand):
 
     help = """ Prepares the CouchDB for inserts! """
     
-    def get_or_create_db(self):
-        db_name = settings.TRACKING_DATABASE['name']
-        protocol = settings.TRACKING_DATABASE['protocol']
-        host = settings.TRACKING_DATABASE['url']
-        port = settings.TRACKING_DATABASE['port']
-        user = settings.TRACKING_DATABASE.get('user')
-        pswd = settings.TRACKING_DATABASE.get('password')
-        
-        if user:
-            if not pswd:
-                pswd = raw_input("Please enter a password for %s : " % (user))
-            url =  "%s://%s:%s@%s:%d" % (protocol, user, pswd, host, port)
-        else:
-            url =  "%s://%s:%d" % (protocol, host, port)
-            
-        self.server = Server(url = url)
-        if not (db_name in self.server):
-            self.server.create(db_name)
-        
-        self.database = self.server[db_name]
-        
-    def create_views(self):
-        if not self.database: self.get_or_create_db()
-        for key, query in all_queries.items():
-            query.sync(self.database)
+
             
     
     def handle(self, *args, **kwargs):
         self.server = None
         self.database = None
         self.get_or_create_db()
-        self.create_views()
+        self.sync_views()

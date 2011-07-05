@@ -24,12 +24,12 @@ __docformat__ = "reStructuredText"
 
 from rjdj.tmon.exceptions import *
 
-from rjdj.tmon.messaging.requests import TrackingRequest
+from rjdj.tmon.utils.parser import TrackingRequestParser
 
-from rjdj.tmon.utils.decorators import return_status
+from rjdj.tmon.utils.decorators import return_json
 from rjdj.tmon.utils import location, db
 
-from rjdj.tmon.models import TrackingData
+from rjdj.tmon.utils import queries
 
 from datetime import datetime
 
@@ -45,30 +45,29 @@ def not_found(request):
 def server_error(request):
     return HttpResponseServerError()
 
-@return_status
+@return_json
 def data_collect(request):
+
     if request.method != "POST":
         raise InvalidRequest("GET is not allowed")
         
-    trackingreq = TrackingRequest.create_from_post_data(request.POST)
-    
-    user_location = location.resolve(trackingreq.ip)
-    
-    data = TrackingData(user_agent = trackingreq.useragent, 
-                        timestamp = datetime.now(),
-                        country = user_location["country"],
-                        latitude = user_location["latitude"],
-                        longitude = user_location["longitude"],
-                        wsid = trackingreq.webservice.id)
-    
-    db.store(data)
+    webservice, data = TrackingRequestParser.create_document(request.POST)
+    db.store(data, webservice.id)
  
-@return_status          
-def data_view(request):
-    from rjdj.tmon.utils.queries import all_queries
-    upc = all_queries["users_per_country"]
-    import pdb; pdb.set_trace()
-
+@return_json          
+def users_per_country(request, wsid):
+    query = queries.users_per_country
+    return db.execute(query, wsid)
+    
+@return_json          
+def users_per_device(request, wsid):
+    query = queries.users_per_device
+    return db.execute(query, wsid)
+    
+@return_json          
+def users_per_os(request, wsid):
+    query = queries.users_per_os
+    return db.execute(query, wsid)
     
 def login(request):
     pass

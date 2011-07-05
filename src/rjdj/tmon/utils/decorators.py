@@ -22,28 +22,30 @@
 
 __docformat__ = "reStructuredText"
 
-from rjdj.tmon.messaging.responses import BasicJSONResponse
+from rjdj.tmon.messaging.responses import GenericJSONResponse
 from rjdj.tmon.exceptions import *
 from django.conf import settings
 
-def return_status(view):
+RESPONSE_CONTENT_KEY = "results"
+
+def return_json(view):
     """ A decorator, so the view returns proper messages. """
-    def restful_view(request):
+    def restful_view(request, *args, **kwargs):
         status = 200
         msg = ""
-        
+        data = {}
         try:
-            view(request)
+            data = view(request, *args, **kwargs) or {}
+            if data: data = { RESPONSE_CONTENT_KEY : data }
         except TMonError as ex: # could as well be more diverse
             status = ex.http_status_code 
             if settings.DEBUG: msg = str(ex)
         except Exception as ex:
             status = 500
             if settings.DEBUG: msg = str(ex)
-        response = BasicJSONResponse(status)
-        if settings.DEBUG: response.message = msg
-        
-        return response.create()
+
+        if msg and settings.DEBUG: data.update({ "message": msg })
+        return GenericJSONResponse(status, data).create()
         
     return restful_view
 

@@ -27,8 +27,13 @@ __all__ = ["decrypt_message"]
 from Crypto.Cipher import AES
 import base64
 import httpagentparser
+from rjdj.tmon.utils import db
+import json
+
 
 def decrypt_message(msg, secret):
     """ Decrypts a Base64 encoded message with the given secret (AES) """
     cipher = AES.new(secret, AES.MODE_CFB)
     return cipher.decrypt(base64.b64decode(msg))
+
+
