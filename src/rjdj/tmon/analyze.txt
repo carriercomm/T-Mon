@@ -12,11 +12,11 @@ Tests for /data/collect
 Preparations:
     >>> c = Client()
     >>> TEST_URL = "/data/collect"
-    >>> TEST_SECRET = "ABCDEFABCDEFABCDEFABCDEF"
+    >>> TEST_SECRET = "AAAAAAABCDEFABCDEFABCDEF"
 
     >>> user = User()
-    >>> user.username = "testuser"
-    >>> user.set_password("test")
+    >>> user.username = "another_testuser"
+    >>> user.set_password("!test")
     >>> user.email = "test@test.com"
     >>> user.save()
 
@@ -61,12 +61,19 @@ A valid request looks like this:
 
 Now for some requests:
 
-    >>> make_request("/data/users/country", ws.id)
-    {u'status': 200, u'results': [{u'AUT': ...}, {u'DEU': ...}, {u'USA': ...}]}
-    
-    >>> make_request("/data/users/os", ws.id)
-    {u'status': 200, u'results': [{u'Android 2.2.1': ...}, {u'CPU like Mac OS X': ...}, {u'CPU OS 3_2_1 like Mac OS X': ...},  {u'other': ...}]}
+make_request("/data/requests/second/5", ws.id)
+{u'status': 200, u'results': [...]}
 
-    >>> make_request("/data/users/device", ws.id)
-    {u'status': 200, u'results': [{u'iPad': ...}, {u'iPhone': ...}, {u'iPod': ...}, {u'Linux': ...},  {u'other': ...}]}
+make_request("/data/requests/hour/3", ws.id)
+{u'status': 200, u'results': [...]}
+
+make_request("/data/users/country", ws.id)
+{u'status': 200, u'results': [{u'USA': ...}]}
+    
+make_request("/data/users/os", ws.id)
+{u'status': 200, u'results': [{...}]}
+
+make_request("/data/users/device", ws.id)
+{u'status': 200, u'results': [{...}]}
+
 

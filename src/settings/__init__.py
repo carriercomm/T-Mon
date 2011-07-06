@@ -26,7 +26,7 @@ from os import path
 
 # FOLDERS
 BASE_DIR = path.dirname(path.abspath(path.join(__file__, "..", "..")))
-MEDIA_ROOT = path.join(BASE_DIR, "static")
+MEDIA_ROOT = path.join(BASE_DIR, "src", "static")
 MEDIA_URL = "/static"
 ROOT_URLCONF = "rjdj.tmon.urls"
 
@@ -45,7 +45,7 @@ TEMPLATE_LOADERS = (
 )
 
 TEMPLATE_DIRS = (
-    path.join(BASE_DIR, "..", "src/templates")
+    path.join(BASE_DIR, "src/templates")
 )
 
 MIDDLEWARE_CLASSES = (

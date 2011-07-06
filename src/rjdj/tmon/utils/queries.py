@@ -1,20 +1,20 @@
 ##############################################################################
 #
 # Copyright (c) 2011 Reality Jockey Ltd. and Contributors.
-# This file is part of TMon.
+# This file is part of T-Mon.
 #
-# TMon is free software: you can redistribute it and/or modify
+# T-Mon is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Lesser General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# TMon is distributed in the hope that it will be useful,
+# T-Mon is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU Lesser General Public License for more details.
 #
 # You should have received a copy of the GNU Lesser General Public License
-# along with django-tornado. If not, see <http://www.gnu.org/licenses/>.
+# along with T-Mon. If not, see <http://www.gnu.org/licenses/>.
 #
 ##############################################################################
 
@@ -62,8 +62,29 @@ users_per_os = ViewDefinition(
                         reduce_fun = """function(keys, values) { return sum(values); }""",
                         group = True)
 
+request_count = ViewDefinition(
+                        design = "requests",
+                        name = "count",
+                        map_fun = """   function(doc) {
+                                            var datetime = doc.timestamp;
+                                            var year = parseInt(datetime.substr(0, 4), 10);
+                                            var month = parseInt(datetime.substr(5, 2), 10);
+                                            var day = parseInt(datetime.substr(8, 2), 10);
+                                            var hours = parseInt(datetime.substr(11, 2), 10);
+                                            var minutes = parseInt(datetime.substr(14, 2), 10);
+                                            var seconds = parseInt(datetime.substr(17, 2), 10);
+                                            emit([year, month, day, hours, minutes, seconds], 1)
+                                        } """,
+                        reduce_fun = """function(keys, values) { return sum(values); }""",
+                        group = True)
+
+
+
+
+
 all_queries = (
         users_per_country,
         users_per_os,
         users_per_device,
+        request_count,
     )

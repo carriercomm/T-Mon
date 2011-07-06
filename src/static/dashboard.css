@@ -1,0 +1,100 @@
+html {
+    background-color: #F2F2F2;
+}
+
+body {
+    font-family: Helvetica, Arial, sans-serif;
+    margin: 1px;
+}
+
+h1, h2, h3, h4, h5, h5 {
+    color: #414042;
+    font-family: Droid Serif, Georgia, Times, serif;
+    line-height: 125%;
+    font-weight: normal;
+}
+
+a {
+    text-decoration:none;
+    color:#03b8af; 
+}
+
+a:hover {
+    text-decoration:underline;
+}
+
+#left_column {
+    height: 100%;
+    width: 49%;
+    padding: 5px;
+    float: left;
+    background-color: gray;
+}
+
+#right_column {
+    height: 100%;
+    width: 49%;
+    padding: 5px;
+    float: right;
+    background-color: white;
+}
+
+#navbar {
+    height: 20px;
+    border-bottom: 1px solid blue;
+}
+
+#container {
+    width: 100%;
+    height: 95%;
+    margin-top: 3px;
+}
+
+
+
+#content {
+    padding: 10px;
+    height: 100px;
+    background: rgba(245,245,245,0.25);
+}
+
+#content h2 {
+    font-weight: bold;                
+}
+
+img.loader {
+    background-color: white;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 15%;
+    display: block;
+    border: 1px solid black;
+}
+
+div.piechart {
+	width: 700px;
+	height: 300px;
+	border: 1px dashed gainsboro;
+	margin: 10px;
+	padding: 10px;
+}
+
+div.linechart {
+	width: 700px;
+	height: 300px;
+	border: 1px dashed gainsboro;
+	margin: 10px;
+	padding: 10px;
+}
+
+div.map {
+    height: 300px;
+    width: 500px;
+    border-top: 1px solid darkgrey;
+    border-left: 1px solid darkgrey;
+    border-right: 1px solid darkgrey;
+}
+
+p.error {
+    color: rgb(112,32,32);
+}

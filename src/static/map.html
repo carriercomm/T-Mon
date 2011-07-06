@@ -1,0 +1,86 @@
+<html>
+    <head>
+    
+        <style type="text/css">
+          html { height: 100% }
+          body { height: 100%; margin: 0px; padding: 0px }
+          map_canvas { height: 100% }
+        </style>
+
+        <script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false&region=GB">
+        </script>
+        <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.0/jquery.js">
+        </script>
+        <script type="text/javascript" src="http://jquery-json.googlecode.com/files/jquery.json-2.2.js">
+        </script>
+        <script type="text/javascript">
+            markersArray = [];
+            $(document).ready(function() {
+                        
+                // Deletes all markers in the array by removing references to them
+                function deleteOverlays() {
+                  if (markersArray) {
+                    for (i in markersArray) {
+                      markersArray[i].setMap(null);
+                    }
+                    markersArray.length = 0;
+                    console.log(markersArray);
+                  }
+                }
+                
+                var latlng = new google.maps.LatLng(0.0, 0.0);
+                var options = {
+                    zoom: 4,
+                    center: latlng,
+                    mapTypeId: google.maps.MapTypeId.ROADMAP
+                };
+                
+                map = new google.maps.Map(document.getElementById("map_canvas"), options);       
+                
+                function insert_markers(event) {
+                    return;
+                    var bounds = map.getBounds();
+                    var southWest = bounds.getSouthWest();
+                    var northEast = bounds.getNorthEast(); 
+
+                    var data_comp = { 
+                            "uid" : -992,
+                            "timestamp" : Math.floor(new Date().getTime() / 1000),
+                            "data" : {
+                                "upper" : { "longitude": northEast.lng(), "latitude" : northEast.lat() },
+                                "lower" : { "longitude": southWest.lng(), "latitude" : southWest.lat() },
+                                "detail_level" : Math.floor(map.getZoom() / 5)
+                                }
+                            };
+                    var msg = { 
+                        };
+                    $.post("/", msg,                             
+                        function(data) {
+                            deleteOverlays();
+                            var result = data["response"]["content"];
+                            var positions = result["positions"]
+                            
+                            var pos = null;
+                            for(var i = 0; i < positions.length; i++) {                                    
+                                var marker = new google.maps.Marker({
+                                  position: new google.maps.LatLng(positions[i]["latitude"], positions[i]["longitude"]),
+                                  title: positions[i]["count"] + " people are in context " + positions[i]["contextid"]
+                                });
+                             
+                                marker.setMap(map);      
+                                markersArray[i] = marker;                                
+                            }
+                        });
+                    };
+                       
+                google.maps.event.addListener(map, 'dragend', insert_markers);
+                google.maps.event.addListener(map, 'zoom_changed', insert_markers);
+                                            
+            });
+        </script>
+    </head>
+    <body>
+        <div id="map_canvas" style="width:500px; height:300px; margin: 10px"></div>
+    </body>
+    
+</html>

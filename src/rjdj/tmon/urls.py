@@ -1,20 +1,20 @@
 ##############################################################################
 #
 # Copyright (c) 2011 Reality Jockey Ltd. and Contributors.
-# This file is part of TMon.
+# This file is part of T-Mon.
 #
-# TMon is free software: you can redistribute it and/or modify
+# T-Mon is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Lesser General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# TMon is distributed in the hope that it will be useful,
+# T-Mon is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU Lesser General Public License for more details.
 #
 # You should have received a copy of the GNU Lesser General Public License
-# along with django-tornado. If not, see <http://www.gnu.org/licenses/>.
+# along with T-Mon. If not, see <http://www.gnu.org/licenses/>.
 #
 ##############################################################################
 
@@ -47,6 +47,8 @@ urlpatterns = patterns('',
     (r'^(?P<wsid>[\d]+)/data/users/country', views.users_per_country),
     (r'^(?P<wsid>[\d]+)/data/users/device', views.users_per_device),
     (r'^(?P<wsid>[\d]+)/data/users/os', views.users_per_os),
+    (r'^(?P<wsid>[\d]+)/data/requests/(?P<grouping>(second|minute|hour|day))/(?P<limit>[\d]+)', views.request_count),
+    (r'^view/dashboard/(?P<wsid>[\d]+)', views.dashboard),
 
     # POST interfaces
     (r'^data/collect', views.data_collect),

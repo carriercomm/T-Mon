@@ -1,20 +1,20 @@
 ##############################################################################
 #
 # Copyright (c) 2011 Reality Jockey Ltd. and Contributors.
-# This file is part of TMon.
+# This file is part of T-Mon.
 #
-# TMon is free software: you can redistribute it and/or modify
+# T-Mon is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Lesser General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# TMon is distributed in the hope that it will be useful,
+# T-Mon is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU Lesser General Public License for more details.
 #
 # You should have received a copy of the GNU Lesser General Public License
-# along with django-tornado. If not, see <http://www.gnu.org/licenses/>.
+# along with T-Mon. If not, see <http://www.gnu.org/licenses/>.
 #
 ##############################################################################
 
@@ -25,6 +25,11 @@ __docformat__ = "reStructuredText"
 from rjdj.tmon.exceptions import *
 
 from rjdj.tmon.utils.parser import TrackingRequestParser
+
+from rjdj.tmon.utils.result_adapter import (DefaultDictAdapter,
+                                            RequestResultAdapter, 
+                                            PieChartAdapter,
+                                            )
 
 from rjdj.tmon.utils.decorators import return_json
 from rjdj.tmon.utils import location, db
@@ -37,7 +42,8 @@ from django.http import  (
                          HttpResponseNotFound,
                          HttpResponseServerError,
                          )
-
+                         
+from django.template.response import SimpleTemplateResponse
 
 def not_found(request):
     return HttpResponseNotFound()
@@ -58,18 +64,43 @@ def data_collect(request):
 @return_json
 def users_per_country(request, wsid):
     query = queries.users_per_country
-    return db.execute(query, wsid)
+    return DefaultDictAdapter(db.execute(query, wsid)).process()
 
 @return_json
 def users_per_device(request, wsid):
     query = queries.users_per_device
-    return db.execute(query, wsid)
+    return PieChartAdapter(db.execute(query, wsid)).process()
+
+matching_dict = {
+    "second": 6,
+    "minute": 5,
+    "hour": 4,
+    "day": 3,
+}
+
+@return_json
+def request_count(request, wsid, grouping, limit):
+    query = queries.request_count
+    group_level = matching_dict[grouping]
+    
+    resp = RequestResultAdapter(db.execute(query, wsid, group_level = group_level, descending = True, limit = limit), int(limit))
+    return resp.process()
 
 @return_json
 def users_per_os(request, wsid):
     query = queries.users_per_os
-    return db.execute(query, wsid)
+    return PieChartAdapter(db.execute(query, wsid)).process()
 
 def login(request):
     pass
+    
+def dashboard(request, wsid):
+    from rjdj.tmon.models import WebService
+    try:
+        ctx = { "webservice" : WebService.objects.get(id = wsid) }
+    except WebService.DoesNotExist:
+        raise InvalidWebService()
+        
+    return SimpleTemplateResponse("dashboard.html", 
+                                       context = ctx)
 

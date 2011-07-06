@@ -24,7 +24,7 @@ from django.db import connection, transaction
 
 from zope.testing.doctestunit import DocFileSuite
 
-from rjdj.tmon.utils import db
+from rjdj.tmon.utils.connection import connection as conn
 
 KEEP_DATA = True
 
@@ -58,17 +58,16 @@ class DjangoLayer(object):
         connection.creation.create_test_db = patch(connection.creation.create_test_db)
         connection.creation.create_test_db(verbosity = 0, autoclobber = True)
         
-        db.connect(**settings.TRACKING_DATABASE)
-        saved_state = [d for d in db.server]
+        saved_state = [d for d in conn.server]
         
     @classmethod
     def tearDown(self):
         call_command('flush', verbosity = 0, interactive = False)
         
-        if not KEEP_DATA and db.database:
-            for datab in db.server:
-                if datab not in self.saved_state and not datab.startswith("_"):
-                    del db.server[datab]
+        if not KEEP_DATA and conn.database:
+            for db in db.server:
+                if db not in self.saved_state and not db.startswith("_"):
+                    del conn.server[db]
 
     @classmethod
     def testSetUp(self):
