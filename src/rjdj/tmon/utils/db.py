@@ -30,7 +30,9 @@ def store(data, wsid):
         data.store(connection.switch_db(wsid))
 
 def execute(query, wsid, cls = None, **options):
-    if not isinstance(query, ViewDefinition):
-        return
-    return query(connection.switch_db(wsid), **options)
+    if isinstance(query, ViewDefinition):
+        return query(connection.switch_db(wsid), **options)
 
+def sync(query, wsid):
+    if isinstance(query, ViewDefinition):
+        query.sync(connection.switch_db(wsid))

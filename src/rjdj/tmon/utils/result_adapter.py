@@ -26,15 +26,16 @@ from datetime import datetime
 
 class BasicAdapter(object):
 
-    def __init__(self, query_results, max_results = 0):
+    def __init__(self, query_results, max_results = 0, converter = None):
         self.raw_results = query_results
         self.max_results = max_results
+        self.converter = converter
         
     def process(self):
         return [{ self.key(res) : self.value(res) } for res in self.raw_results]
         
-    def key(self, row): raise NotImplemented
-    def value(self, row): raise NotImplemented
+    def key(self, row): raise NotImplementedError()
+    def value(self, row): raise NotImplementedError()
         
 class DefaultDictAdapter(BasicAdapter):
 
@@ -54,26 +55,37 @@ class PieChartAdapter(BasicAdapter):
     
     def value(self, row):
         return row["value"]
-        
-class RequestResultAdapter(BasicAdapter):
-    
+
+
+class MapAdapter(BasicAdapter):
+
     def process(self):
+        return [ self.key(res) for res in self.raw_results]
+        
+    def key(self, row): 
+        return {"lat": row["key"][0], "lng" : row["key"][1]}
+        
+    def value(self, row): raise NotImplementedError()
+    
+class RequestResultAdapter(BasicAdapter):
+
+    def process(self):
+        if not self.converter: raise ValueError("a converter is required for this adapter")
         tmp = [0] * self.max_results
         results = []
         now = datetime.now()
         
-        
         for row in self.raw_results:
             then = self.key(row)
-            diff = int((now - then).total_seconds())
+            diff = self.converter.diff(now, then)
             
-            if diff > self.max_results: continue
-            tmp[diff] = self.value(row)
+            if diff < self.max_results: 
+                tmp[diff] = self.value(row)
         
         for i in xrange(self.max_results):
             results.insert(0, (-i, tmp[i]))
         
-        return [ results ] 
+        return results
         
     def key(self, row):
         return datetime(*row["key"])

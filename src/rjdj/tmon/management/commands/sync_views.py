@@ -22,21 +22,23 @@
 
 __docformat__ = "reStructuredText"
 
-
-from django.conf import settings
 from django.core.management.base import BaseCommand
-from couchdb import Server
 from rjdj.tmon.utils.queries import all_queries
+from rjdj.tmon.models import WebService
+from rjdj.tmon.utils import db
 
 class Command(BaseCommand):
 
     help = """ Prepares the CouchDB for inserts! """
     
-
-            
-    
     def handle(self, *args, **kwargs):
-        self.server = None
-        self.database = None
-        self.get_or_create_db()
-        self.sync_views()
+        errors = 0
+        for ws in WebService.objects.all():
+            for q in all_queries:
+                try:
+                    db.sync(q, ws.id)
+                except Exception as ex:
+                    errors += 1
+                    print "Error during sync: ", ex, "... ignoring"
+                    
+        print "done.", errors if errors else "no", "errors occured!"

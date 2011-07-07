@@ -76,15 +76,31 @@ request_count = ViewDefinition(
                                             emit([year, month, day, hours, minutes, seconds], 1)
                                         } """,
                         reduce_fun = """function(keys, values) { return sum(values); }""",
+                        group = True,
+                        descending = True)
+                        
+users_locations = ViewDefinition(
+                        design = "geographic",
+                        name = "users_locations",
+                        map_fun = """   function(doc) {
+                                            var datetime = doc.timestamp;
+                                            var year = parseInt(datetime.substr(0, 4), 10);
+                                            var month = parseInt(datetime.substr(5, 2), 10);
+                                            var day = parseInt(datetime.substr(8, 2), 10);
+                                            var hours = parseInt(datetime.substr(11, 2), 10);
+                                            var minutes = parseInt(datetime.substr(14, 2), 10);
+                                            var seconds = parseInt(datetime.substr(17, 2), 10);
+                                            //var ts = new Date(year, month - 1, day - 1, hours, minutes, seconds, 0)
+                                            
+                                            emit([doc["latitude"], doc["longitude"]], 1)
+                                        } """,
+                        reduce_fun = """function(keys, values) { return sum(values); }""",
                         group = True)
-
-
-
-
 
 all_queries = (
         users_per_country,
         users_per_os,
         users_per_device,
         request_count,
+        users_locations,
     )

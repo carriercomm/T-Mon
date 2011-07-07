@@ -23,6 +23,7 @@
 __docformat__ = "reStructuredText"
 
 from rjdj.tmon.utils import *
+from rjdj.tmon.utils.resolution import class_dict
 from rjdj.tmon.utils import location
 from rjdj.tmon.models import TrackingData
 from rjdj.tmon.exceptions import *
@@ -73,3 +74,9 @@ class TrackingRequestParser(object):
                                         longitude = user_location["longitude"],
                                         username = username)
 
+
+class ChartResolutionParser(object):
+
+    @staticmethod
+    def get(name):
+        return class_dict[name]()

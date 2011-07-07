@@ -47,8 +47,12 @@ urlpatterns = patterns('',
     (r'^(?P<wsid>[\d]+)/data/users/country', views.users_per_country),
     (r'^(?P<wsid>[\d]+)/data/users/device', views.users_per_device),
     (r'^(?P<wsid>[\d]+)/data/users/os', views.users_per_os),
+    (r'^(?P<wsid>[\d]+)/data/users/locations/(?P<ne_lat>[\d.-]+)/(?P<ne_lng>[\d.-]+)/(?P<sw_lat>[\d.-]+)/(?P<sw_lng>[\d.-]+)', views.users_locations),
     (r'^(?P<wsid>[\d]+)/data/requests/(?P<grouping>(second|minute|hour|day))/(?P<limit>[\d]+)', views.request_count),
+    
+    # HTML Pages
     (r'^view/dashboard/(?P<wsid>[\d]+)', views.dashboard),
+    (r'^view/login', views.loginpage),
 
     # POST interfaces
     (r'^data/collect', views.data_collect),

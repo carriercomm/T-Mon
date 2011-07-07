@@ -24,11 +24,12 @@ __docformat__ = "reStructuredText"
 
 from rjdj.tmon.exceptions import *
 
-from rjdj.tmon.utils.parser import TrackingRequestParser
+from rjdj.tmon.utils.parser import TrackingRequestParser, ChartResolutionParser
 
 from rjdj.tmon.utils.result_adapter import (DefaultDictAdapter,
                                             RequestResultAdapter, 
                                             PieChartAdapter,
+                                            MapAdapter,
                                             )
 
 from rjdj.tmon.utils.decorators import return_json
@@ -36,7 +37,7 @@ from rjdj.tmon.utils import location, db
 
 from rjdj.tmon.utils import queries
 
-from datetime import datetime
+from datetime import timedelta
 
 from django.http import  (
                          HttpResponseNotFound,
@@ -44,6 +45,9 @@ from django.http import  (
                          )
                          
 from django.template.response import SimpleTemplateResponse
+
+import time
+
 
 def not_found(request):
     return HttpResponseNotFound()
@@ -71,28 +75,41 @@ def users_per_device(request, wsid):
     query = queries.users_per_device
     return PieChartAdapter(db.execute(query, wsid)).process()
 
-matching_dict = {
-    "second": 6,
-    "minute": 5,
-    "hour": 4,
-    "day": 3,
-}
-
 @return_json
 def request_count(request, wsid, grouping, limit):
+    res = ChartResolutionParser.get(grouping)
     query = queries.request_count
-    group_level = matching_dict[grouping]
+    resp = RequestResultAdapter(
+                                db.execute(query, 
+                                           wsid, 
+                                           group_level = res.group_level, 
+                                           limit = limit), 
+                                int(limit),
+                                res)
+    return resp.process()
+
+@return_json
+def users_locations(request, wsid, ne_lat, ne_lng, sw_lat, sw_lng):
+    query = queries.users_locations
+    result = db.execute(query, wsid, limit = 100)
     
-    resp = RequestResultAdapter(db.execute(query, wsid, group_level = group_level, descending = True, limit = limit), int(limit))
+    resp = MapAdapter(result)
     return resp.process()
 
 @return_json
 def users_per_os(request, wsid):
+    """ """
     query = queries.users_per_os
     return PieChartAdapter(db.execute(query, wsid)).process()
 
-def login(request):
-    pass
+def loginpage(request):
+    if request.method == 'GET':
+        return SimpleTemplateResponse("dashboard.html", 
+                                       context = ctx)
+    elif request.method == 'POST':
+        # authenticate
+        return SimpleTemplateResponse("dashboard.html", 
+                                       context = ctx)
     
 def dashboard(request, wsid):
     from rjdj.tmon.models import WebService
@@ -102,5 +119,5 @@ def dashboard(request, wsid):
         raise InvalidWebService()
         
     return SimpleTemplateResponse("dashboard.html", 
-                                       context = ctx)
+                                   context = ctx)
 
