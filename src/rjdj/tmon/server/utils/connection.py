@@ -22,8 +22,8 @@
 
 __docformat__ = "reStructuredText"
 
-from rjdj.tmon.exceptions import *
-from rjdj.tmon.utils.queries import all_queries
+from rjdj.tmon.server.exceptions import *
+from rjdj.tmon.server.utils.queries import all_queries
 
 from couchdb import Server
 from django.conf import settings

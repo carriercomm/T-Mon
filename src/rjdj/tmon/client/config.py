@@ -22,23 +22,11 @@
 
 __docformat__ = "reStructuredText"
 
-from django.core.management.base import BaseCommand
-from rjdj.tmon.utils.queries import all_queries
-from rjdj.tmon.models import WebService
-from rjdj.tmon.utils import db
+# The Monitoring Service's URL
+SERVER_URL = ""
 
-class Command(BaseCommand):
+# The ID of the web service to be monitored (should be received upon registration with the server)
+WEBSERVICE_ID = 0
 
-    help = """ Prepares the CouchDB for inserts! """
-    
-    def handle(self, *args, **kwargs):
-        errors = 0
-        for ws in WebService.objects.all():
-            for q in all_queries:
-                try:
-                    db.sync(q, ws.id)
-                except Exception as ex:
-                    errors += 1
-                    print "Error during sync: ", ex, "... ignoring"
-                    
-        print "done.", errors if errors else "no", "errors occured!"
+# The secret to encrypt the packages, should be received with the web service's id
+WEBSERVICE_SECRET = ""

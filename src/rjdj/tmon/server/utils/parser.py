@@ -22,12 +22,12 @@
 
 __docformat__ = "reStructuredText"
 
-from rjdj.tmon.utils import *
-from rjdj.tmon.utils.resolution import class_dict
-from rjdj.tmon.utils import location
-from rjdj.tmon.models import TrackingData
-from rjdj.tmon.exceptions import *
-from rjdj.tmon.models import WebService
+from rjdj.tmon.server.utils import *
+from rjdj.tmon.server.utils.resolution import class_dict
+from rjdj.tmon.server.utils import location
+from rjdj.tmon.server.models import TrackingData
+from rjdj.tmon.server.exceptions import *
+from rjdj.tmon.server.models import WebService
 from datetime import datetime
 import json
 
@@ -40,12 +40,16 @@ class TrackingRequestParser(object):
     IP_KEY = 'ip'
     UA_KEY = 'useragent'
     USER_KEY = 'username'
+    URL_KEY = "url"
 
     @staticmethod
     def create_document(post_data):
         data = None
         webservice = None
         try:
+            
+            import pdb; pdb.set_trace()
+            
             wsid = post_data[TrackingRequestParser.WSID_KEY]
             webservice = WebService.objects.get(id = wsid)
             secret = webservice.secret
@@ -61,6 +65,7 @@ class TrackingRequestParser(object):
         try:
             ip = data[TrackingRequestParser.IP_KEY]
             useragent = data[TrackingRequestParser.UA_KEY]
+            url = data[TrackingRequestParser.URL_KEY]
         except KeyError as ke:
             raise FieldMissing(ke)
 
@@ -72,7 +77,8 @@ class TrackingRequestParser(object):
                                         country = user_location["country"],
                                         latitude = user_location["latitude"],
                                         longitude = user_location["longitude"],
-                                        username = username)
+                                        username = username,
+                                        url = url)
 
 
 class ChartResolutionParser(object):

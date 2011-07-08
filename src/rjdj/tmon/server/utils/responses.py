@@ -23,7 +23,7 @@
 __docformat__ = "reStructuredText"
 
 from django.http import HttpResponse
-from rjdj.tmon.utils.jsonutils import ExtendedJSONEncoder
+from rjdj.tmon.server.utils.jsonutils import ExtendedJSONEncoder
 import json
 
 class GenericJSONResponse(object):

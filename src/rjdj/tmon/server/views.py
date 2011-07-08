@@ -22,20 +22,20 @@
 
 __docformat__ = "reStructuredText"
 
-from rjdj.tmon.exceptions import *
+from rjdj.tmon.server.exceptions import *
 
-from rjdj.tmon.utils.parser import TrackingRequestParser, ChartResolutionParser
+from rjdj.tmon.server.utils.parser import TrackingRequestParser, ChartResolutionParser
 
-from rjdj.tmon.utils.result_adapter import (DefaultDictAdapter,
+from rjdj.tmon.server.utils.result_adapter import (DefaultDictAdapter,
                                             RequestResultAdapter, 
                                             PieChartAdapter,
                                             MapAdapter,
                                             )
 
-from rjdj.tmon.utils.decorators import return_json
-from rjdj.tmon.utils import db
+from rjdj.tmon.server.utils.decorators import return_json
+from rjdj.tmon.server.utils import location, db
 
-from rjdj.tmon.utils import queries
+from rjdj.tmon.server.utils import queries
 
 from datetime import timedelta
 
@@ -46,6 +46,9 @@ from django.http import  (
                          
 from django.template.response import SimpleTemplateResponse
 
+import time
+
+
 def not_found(request):
     return HttpResponseNotFound()
 
@@ -54,6 +57,7 @@ def server_error(request):
 
 @return_json
 def data_collect(request):
+
     if request.method != "POST":
         raise InvalidRequest("GET is not allowed")
 
@@ -108,7 +112,7 @@ def loginpage(request):
                                        context = ctx)
     
 def dashboard(request, wsid):
-    from rjdj.tmon.models import WebService
+    from rjdj.tmon.server.models import WebService
     try:
         ctx = { "webservice" : WebService.objects.get(id = wsid) }
     except WebService.DoesNotExist:

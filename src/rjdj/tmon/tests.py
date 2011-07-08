@@ -24,7 +24,7 @@ from django.db import connection, transaction
 
 from zope.testing.doctestunit import DocFileSuite
 
-from rjdj.tmon.utils.connection import connection as conn
+from rjdj.tmon.server.utils.connection import connection as conn
 
 KEEP_DATA = True
 
@@ -79,16 +79,21 @@ class DjangoLayer(object):
 
 
 def test_suite():
-    collect = DocFileSuite('collect.txt',
+    collect = DocFileSuite('server/collect.txt',
         optionflags = doctest.NORMALIZE_WHITESPACE | doctest.ELLIPSIS,
         )
-    analyze = DocFileSuite('analyze.txt',
+    analyze = DocFileSuite('server/analyze.txt',
         optionflags = doctest.NORMALIZE_WHITESPACE | doctest.ELLIPSIS,
         )
+    client = DocFileSuite('client/tests.txt',
+        optionflags = doctest.NORMALIZE_WHITESPACE | doctest.ELLIPSIS,
+        )
+
 
     suite = unittest.TestSuite((
                                 collect,
                                 analyze,
+                                client,
                                 ))
     suite.layer = DjangoLayer
     return suite

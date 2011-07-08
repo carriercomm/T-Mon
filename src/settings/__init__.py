@@ -28,7 +28,7 @@ from os import path
 BASE_DIR = path.dirname(path.abspath(path.join(__file__, "..", "..")))
 MEDIA_ROOT = path.join(BASE_DIR, "src", "static")
 MEDIA_URL = "/static"
-ROOT_URLCONF = "rjdj.tmon.urls"
+ROOT_URLCONF = "rjdj.tmon.server.urls"
 
 # ADMIN
 DEFAULT_FROM_EMAIL = "info@rjdj.me"
@@ -68,7 +68,7 @@ INSTALLED_APPS = (
     'django.contrib.admin',
     'django.contrib.auth',
     'rjdj.djangotornado',
-    'rjdj.tmon',
+    'rjdj.tmon.server',
 )
 
 TEMPLATE_EXTENSION = ".html"

@@ -22,8 +22,8 @@
 
 __docformat__ = "reStructuredText"
 
-from rjdj.tmon.messaging.responses import GenericJSONResponse
-from rjdj.tmon.exceptions import *
+from rjdj.tmon.server.utils.responses import GenericJSONResponse
+from rjdj.tmon.server.exceptions import *
 from django.conf import settings
 
 def return_json(view):
@@ -35,7 +35,7 @@ def return_json(view):
         try:
             data = view(request, *args, **kwargs) or {}
             if data: data = { "results" : data }
-        except TMonError as ex: # could as well be more diverse
+        except TMonServerError as ex: # could as well be more diverse
             status = ex.http_status_code 
             if settings.DEBUG: msg = str(ex)
         except Exception as ex:

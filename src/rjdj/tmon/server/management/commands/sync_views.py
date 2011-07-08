@@ -22,33 +22,23 @@
 
 __docformat__ = "reStructuredText"
 
-# Base Class
-class TMonError(Exception):
-    http_status_code = 400
+from django.core.management.base import BaseCommand
+from rjdj.tmon.server.utils.queries import all_queries
+from rjdj.tmon.server.models import WebService
+from rjdj.tmon.server.utils import db
 
+class Command(BaseCommand):
 
-# Parser Errors
-class ParsingFailed(TMonError):
-    http_status_code = 400
-        
-class FieldMissing(ParsingFailed):
-    http_status_code = 400
+    help = """ Prepares the CouchDB for inserts! """
     
-class InvalidPostData(ParsingFailed):
-    http_status_code = 400
-
-class InvalidIPAdress(ParsingFailed):
-    http_status_code = 400
-
-# Decryption Errors
-class DecryptionFailed(TMonError):
-    http_status_code = 403
-    
-
-# Bad Requests
-class InvalidRequest(TMonError):
-    http_status_code = 405
-    
-class InvalidWebService(TMonError):
-    http_status_code = 403
-    
+    def handle(self, *args, **kwargs):
+        errors = 0
+        for ws in WebService.objects.all():
+            for q in all_queries:
+                try:
+                    db.sync(q, ws.id)
+                except Exception as ex:
+                    errors += 1
+                    print "Error during sync: ", ex, "... ignoring"
+                    
+        print "done.", errors if errors else "no", "errors occured!"

@@ -23,7 +23,7 @@
 __docformat__ = "reStructuredText"
 
 from couchdb.design import ViewDefinition
-from rjdj.tmon.utils.connection import connection
+from rjdj.tmon.server.utils.connection import connection
 
 def store(data, wsid):
     if data:

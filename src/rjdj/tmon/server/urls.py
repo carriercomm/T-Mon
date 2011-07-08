@@ -26,7 +26,7 @@ from django.conf import settings
 from django.contrib import admin
 from django.conf.urls.defaults import *
 
-from rjdj.tmon import views
+from rjdj.tmon.server import views
 
 admin.autodiscover()
 

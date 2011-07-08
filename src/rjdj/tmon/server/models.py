@@ -24,7 +24,7 @@ __docformat__ = "reStructuredText"
 
 from django.db import models
 from django.contrib.auth.models import User
-from rjdj.tmon.utils.connection import connection
+from rjdj.tmon.server.utils.connection import connection
 
 from couchdb.mapping import ( Document, 
                               TextField, 
@@ -47,6 +47,7 @@ class TrackingData(Document):
     """ A class for saving trackable data """
     
     user_agent = TextField()
+    url = TextField()
     timestamp = DateTimeField()
     country = TextField()
     latitude = FloatField()

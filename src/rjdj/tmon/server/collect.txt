@@ -2,7 +2,7 @@
 Tests for /data/collect
 ==============================
 
-    >>> from rjdj.tmon.models import WebService
+    >>> from rjdj.tmon.server.models import WebService
     >>> from django.contrib.auth.models import User 
     >>> import json
     >>> from Crypto.Cipher import AES
@@ -61,7 +61,6 @@ No data:
     >>> request = {}
     >>> make_request(TEST_URL, ws.id, request)
     {u'status': 400, u'message': u"'ip'"}
-
     
 Invalid keys:
     >>> request = {"no-ip": "www.url.com", "useragent": "some_user_agent"}

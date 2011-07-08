@@ -22,7 +22,10 @@
 
 __docformat__ = "reStructuredText"
 
-from django.contrib import admin
-from rjdj.tmon.models import *
-
-admin.site.register(WebService)
+# Error superclass
+class TMonClientError(Exception):
+    pass
+    
+# Configuration Errors
+class NotConfigured(TMonClientError):
+    pass

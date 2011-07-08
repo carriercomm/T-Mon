@@ -24,7 +24,7 @@ __docformat__ = "reStructuredText"
 
 import pygeoip
 from django.conf import settings
-from rjdj.tmon.exceptions import *
+from rjdj.tmon.server.exceptions import *
 
 def resolve(ip):
     """ Resolves an IP (v4) address to a dict containing 3-letter country code and lat/lng.  """
