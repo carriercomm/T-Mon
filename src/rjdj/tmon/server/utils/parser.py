@@ -47,9 +47,6 @@ class TrackingRequestParser(object):
         data = None
         webservice = None
         try:
-            
-            import pdb; pdb.set_trace()
-            
             wsid = post_data[TrackingRequestParser.WSID_KEY]
             webservice = WebService.objects.get(id = wsid)
             secret = webservice.secret

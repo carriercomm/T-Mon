@@ -5,9 +5,10 @@ Tests for the client API
     >>> from rjdj.tmon.server.models import WebService
     >>> from django.contrib.auth.models import User 
     >>> from rjdj.tmon import client
+    >>> from rjdj.tmon.client.django import track
     >>> from rjdj.tmon.client import config
     >>> import urllib2
-    >>> from pprint import pprint    
+    >>> from pprint import pprint
 
 Preparations:
     >>> SECRET = "ABCDEFABCDEFABCDEFABCDEF"
@@ -50,12 +51,8 @@ A valid request looks like this:
     
     >>> webservices = [ "/register", "/login", "/get/data/from/something" ]
     
-    
-    
-# for i in xrange(len(useragents)):
-#    client.track(webservices[i], useragents[i], ips[i]) 
-    
-    >>> client.track(webservices[0], useragents[0], ips[0]) 
+    >>> for i in xrange(len(useragents)):
+    ...    client.track(webservices[i], useragents[i], ips[i]) 
     
 now any data that has been inserted can be queried:
     
@@ -67,4 +64,9 @@ now any data that has been inserted can be queried:
             ...
         ]
     }
+
+    >>> def viewfunc(req):
+    ...     return "done"
+    >>> track(viewfunc, "/some/request")
+    >>>
 

@@ -26,14 +26,13 @@ from rjdj.tmon import client
 
 USER_AGENT_KEY = "HTTP_USER_AGENT"
 
-def monitor(view_func, url = ""):
+def track(view_func, url = ""):
+
     def view(request, *args, **kwargs):
-        if not url:
-            url = request.path
-            
+    
+        if not url: url = request.path
         user_agent = request.META[USER_AGENT_KEY] if request.META.has_key(USER_AGENT_KEY) else ""
         remote_ip = request.META[REMOTE_ADDR] if request.META.has_key(REMOTE_ADDR) else ""
-        
         client.track(url = url, 
                      user_agent = user_agent,
                      remote_ip = remote_ip,
