@@ -73,6 +73,6 @@ INSTALLED_APPS = (
 
 TEMPLATE_EXTENSION = ".html"
 
-GEOIP_DB_LOCATION = '../db/GeoLiteCity.dat'
+GEOIP_DB_LOCATION = path.join(BASE_DIR, 'db', 'GeoLiteCity.dat')
 
 WEB_SERVICE_DB_PREFIX = "webservice"
