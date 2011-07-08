@@ -28,11 +28,22 @@ from os import path
 DEBUG = False
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': 'db/tmon.db',
+    "default": {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'tmon',
+        'USER': 'rjdj',
+        'PASSWORD': '',
+        'HOST': '50.17.235.44',
+        'PORT': '5432',
         },
     }
+
+TRACKING_DATABASE = {
+    'protocol': 'http',
+    'host': 'localhost',
+    'port': 5984,
+    }
+
 
 LOGFILE = path.join(BASE_DIR,"..","tmon.log")
 LOGLEVEL = "info"

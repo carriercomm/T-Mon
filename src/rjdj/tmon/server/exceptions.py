@@ -42,7 +42,6 @@ class InvalidIPAdress(ParsingFailed):
 # Decryption Errors
 class DecryptionFailed(TMonServerError):
     http_status_code = 403
-    
 
 # Bad Requests
 class InvalidRequest(TMonServerError):
