@@ -32,3 +32,14 @@ def decrypt_message(msg, secret):
     """ Decrypts a Base64 encoded message with the given secret (AES) """
     cipher = AES.new(secret, AES.MODE_CFB)
     return cipher.decrypt(base64.b64decode(msg))
+    
+def print_request_time(func):
+
+    def funct(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        finally:
+            logging.info("request took %s" % (datetime.now() - start))
+            print "request took %s" % (datetime.now() - start)
+
+    return funct

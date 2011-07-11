@@ -27,7 +27,6 @@ from rjdj.tmon.server.utils.resolution import class_dict
 from rjdj.tmon.server.utils import location
 from rjdj.tmon.server.models import TrackingData
 from rjdj.tmon.server.exceptions import *
-from rjdj.tmon.server.models import WebService
 from datetime import datetime
 import json
 from db import get_webservice

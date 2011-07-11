@@ -26,7 +26,6 @@ from rjdj.tmon.server.utils.responses import GenericJSONResponse
 from rjdj.tmon.server.exceptions import *
 from django.conf import settings
 import logging
-from datetime import datetime
 
 def return_json(view):
     """ A decorator, so the view returns proper messages. """
@@ -34,7 +33,6 @@ def return_json(view):
         status = 200
         msg = ""
         data = {}
-        start = datetime.now()
         try:
             data = view(request, *args, **kwargs) or {}
             if data: data = { "results" : data }
@@ -46,9 +44,6 @@ def return_json(view):
             status = 500
             if settings.DEBUG: msg = str(ex)
             logging.error("status code %d: %s" % (status, ex))
-        finally:
-            logging.info("request took %s" % (datetime.now() - start))
-            print "request took %s" % (datetime.now() - start)
             
         if msg and settings.DEBUG: data.update({ "message": msg })
         return GenericJSONResponse(status, data).create()

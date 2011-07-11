@@ -54,7 +54,6 @@ def server_error(request):
 
 @return_json
 def data_collect(request):
-
     if request.method != "POST":
         raise InvalidRequest("GET is not allowed")
     webservice, data = TrackingRequestParser.create_document(request.POST)
@@ -114,6 +113,6 @@ def dashboard(request, wsid):
     except WebService.DoesNotExist:
         raise InvalidWebService()
         
-    return SimpleTemplateResponse("dashboard.html", 
+    return SimpleTemplateResponse("dashboard.html",     
                                    context = ctx)
 
