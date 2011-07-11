@@ -47,7 +47,7 @@ def return_json(view):
             if settings.DEBUG: msg = str(ex)
             logging.error("status code %d: %s" % (status, ex))
         finally:
-            logging.info("request took %s" % (datetime.now() - start)
+            logging.info("request took %s" % (datetime.now() - start))
             
         if msg and settings.DEBUG: data.update({ "message": msg })
         return GenericJSONResponse(status, data).create()
