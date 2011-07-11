@@ -24,6 +24,9 @@ __docformat__ = "reStructuredText"
 
 from couchdb.design import ViewDefinition
 from rjdj.tmon.server.utils.connection import connection
+from django.core.cache import cache
+
+CACHE_TIME = 2629744 # seconds = 1 month
 
 def store(data, wsid):
     if data:
@@ -36,3 +39,8 @@ def execute(query, wsid, cls = None, **options):
 def sync(query, wsid):
     if isinstance(query, ViewDefinition):
         query.sync(connection.switch_db(wsid))
+        
+def get_webservice(wsid):
+    webservice = cache.get(wsid) or WebService.objects.get(id = wsid)
+    cache.set(wsid, webservice, CACHE_TIME)
+    return webservice

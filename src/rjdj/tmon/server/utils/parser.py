@@ -31,10 +31,6 @@ from rjdj.tmon.server.models import WebService
 from datetime import datetime
 import json
 
-from django.core.cache import cache
-
-CACHE_TIME = 2629744 # seconds = 1 month
-
 class TrackingRequestParser(object):
 
     WSID_KEY = 'wsid'
@@ -51,10 +47,7 @@ class TrackingRequestParser(object):
         webservice = None
         try:
             wsid = post_data[TrackingRequestParser.WSID_KEY]
-            
-            webservice = cache.get(wsid) or WebService.objects.get(id = wsid)
-            cache.set(wsid, webservice, CACHE_TIME)
-            
+            webservice = db.get_webservice(wsid)
             secret = webservice.secret
             decrypted_data = decrypt_message(post_data[TrackingRequestParser.DATA_KEY], secret)
             data = json.loads(decrypted_data)

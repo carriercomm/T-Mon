@@ -110,7 +110,7 @@ def loginpage(request):
 def dashboard(request, wsid):
     from rjdj.tmon.server.models import WebService
     try:
-        ctx = { "webservice" : WebService.objects.get(id = wsid) }
+        ctx = { "webservice" : db.get_webservice(wsid) }
     except WebService.DoesNotExist:
         raise InvalidWebService()
         
