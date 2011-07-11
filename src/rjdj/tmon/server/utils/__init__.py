@@ -39,7 +39,6 @@ def print_request_time(func):
         try:
             return func(*args, **kwargs)
         finally:
-            logging.info("request took %s" % (datetime.now() - start))
             print "request took %s" % (datetime.now() - start)
 
     return funct
