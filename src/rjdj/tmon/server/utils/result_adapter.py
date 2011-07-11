@@ -83,7 +83,7 @@ class RequestResultAdapter(BasicAdapter):
                 tmp[diff] = self.value(row)
         
         for i in xrange(self.max_results):
-            results.insert(0, (-i, tmp[i]))
+            results.append((-i, tmp[i]))
         
         return results
         
