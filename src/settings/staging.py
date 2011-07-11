@@ -45,5 +45,5 @@ TRACKING_DATABASE = {
     }
 
 
-LOGFILE = path.join(BASE_DIR,"..","testing.log")
+LOGFILE = path.join(BASE_DIR,"logs","testing.log")
 LOGLEVEL = "debug"
