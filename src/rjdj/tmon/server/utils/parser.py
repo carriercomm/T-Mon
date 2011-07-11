@@ -30,6 +30,7 @@ from rjdj.tmon.server.exceptions import *
 from rjdj.tmon.server.models import WebService
 from datetime import datetime
 import json
+from db import get_webservice
 
 class TrackingRequestParser(object):
 
@@ -47,7 +48,7 @@ class TrackingRequestParser(object):
         webservice = None
         try:
             wsid = post_data[TrackingRequestParser.WSID_KEY]
-            webservice = db.get_webservice(wsid)
+            webservice = get_webservice(wsid)
             secret = webservice.secret
             decrypted_data = decrypt_message(post_data[TrackingRequestParser.DATA_KEY], secret)
             data = json.loads(decrypted_data)
