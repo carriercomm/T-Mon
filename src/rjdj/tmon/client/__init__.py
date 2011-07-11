@@ -63,4 +63,15 @@ def track(url, user_agent, remote_ip, username = ""):
     try:
         urllib2.urlopen(server, urllib.urlencode({"data": encrypted_data, "wsid": wsid })).read()
     except Exception as ex: 
-        stderr.write("Error while tracking the webservice: %s" % (ex)) 
+        stderr.write("""
+        
+Error while tracking the webservice: %s
+Parameters: 
+    url: %s
+    user agent: %s
+    ip: %s
+    username: %s
+    
+    """ % (ex, url, user_agent, remote_ip, username)) 
+
+

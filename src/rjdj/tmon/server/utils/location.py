@@ -36,7 +36,6 @@ def resolve(ip):
         res["country"] = addr_rec["country_code3"]
         res["latitude"] = addr_rec["latitude"]
         res["longitude"] = addr_rec["longitude"]
-    else:
-        raise InvalidIPAdress(ip)
-    
+#    else:
+#        raise InvalidIPAdress(ip)
     return res

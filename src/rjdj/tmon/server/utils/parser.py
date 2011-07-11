@@ -40,7 +40,7 @@ class TrackingRequestParser(object):
     IP_KEY = 'ip'
     UA_KEY = 'useragent'
     USER_KEY = 'username'
-    URL_KEY = "url"
+    URL_KEY = 'url'
 
     @staticmethod
     def create_document(post_data):
@@ -68,14 +68,25 @@ class TrackingRequestParser(object):
 
         username = data.get(TrackingRequestParser.USER_KEY)
         user_location = location.resolve(ip)
-
-        return webservice, TrackingData(user_agent = useragent,
-                                        timestamp = datetime.now(),
-                                        country = user_location["country"],
-                                        latitude = user_location["latitude"],
-                                        longitude = user_location["longitude"],
-                                        username = username,
-                                        url = url)
+        
+        country = None
+        latitude = None
+        longitude = None
+        
+        if user_location:
+            country = user_location["country"]
+            latitude = user_location["latitude"]
+            longitude = user_location["longitude"]
+           
+        tracking_data = TrackingData(user_agent = useragent,
+                                     timestamp = datetime.now(),
+                                     country = country,
+                                     latitude = latitude,
+                                     longitude = longitude,
+                                     username = username,
+                                     url = url)
+        
+        return webservice, tracking_data
 
 
 class ChartResolutionParser(object):

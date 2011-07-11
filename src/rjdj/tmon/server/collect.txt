@@ -75,7 +75,7 @@ GET is also prohibited:
     >>> res.content
     '{\n    "status": 405, \n    "message": "GET is not allowed"\n}'
 
-Invalid IP:
+Invalid IPs fail silently:
     >>> request = {"ip": "192.168.1.1", "useragent": "some_user_agent", "url": "/"}
     >>> make_request(TEST_URL, ws.id, request)
-    {u'status': 400, u'message': u'192.168.1.1'}
+    {u'status': 200}

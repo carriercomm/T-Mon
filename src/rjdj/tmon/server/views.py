@@ -46,9 +46,6 @@ from django.http import  (
                          
 from django.template.response import SimpleTemplateResponse
 
-import time
-
-
 def not_found(request):
     return HttpResponseNotFound()
 
@@ -60,7 +57,6 @@ def data_collect(request):
 
     if request.method != "POST":
         raise InvalidRequest("GET is not allowed")
-
     webservice, data = TrackingRequestParser.create_document(request.POST)
     db.store(data, webservice.id)
 
