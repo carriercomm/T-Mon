@@ -62,16 +62,13 @@ users_per_os = ViewDefinition(
                         reduce_fun = """function(keys, values) { return sum(values); }""",
                         group = True)
 
-function(doc) {
-
-
 request_count = ViewDefinition(
                         design = "requests",
                         name = "count",
                         map_fun = """   function(doc) {
                                             var regexp = /(\d+)-(\d+)-(\d+)T(\d+):(\d+):(\d+)Z/;
                                             var result = doc.timestamp.match(regexp);
-                                            emit(result.splice(1, result.length - 2), 1)
+                                            emit(result.splice(1, result.length - 2), 1);
                                         } """,
                         reduce_fun = """function(keys, values) { return sum(values); }""",
                         group = True,
