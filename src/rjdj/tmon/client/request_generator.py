@@ -71,7 +71,7 @@ def send_request():
     client.track(url, ua, ip, user)
 
 def run(duration, num_of_req):
-    
+
     delay = num_of_req / 60 # minutes
     
     threads = []
