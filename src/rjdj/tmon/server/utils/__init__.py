@@ -25,6 +25,7 @@ __docformat__ = "reStructuredText"
 __all__ = ["decrypt_message"]
 
 from Crypto.Cipher import AES
+from datetime import datetime
 import base64
 
 
@@ -36,6 +37,7 @@ def decrypt_message(msg, secret):
 def print_request_time(func):
 
     def funct(*args, **kwargs):
+        start = datetime.now()
         try:
             return func(*args, **kwargs)
         finally:
