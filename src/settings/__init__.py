@@ -61,14 +61,14 @@ AUTHENTICATION_BACKENDS = (
 )
 
 INSTALLED_APPS = (
+    'rjdj.djangotornado',
+    'rjdj.tmon.server',
     'django.contrib.contenttypes',
     'django.contrib.messages',
     'django.contrib.syndication',
     'django.contrib.sessions',
     'django.contrib.admin',
     'django.contrib.auth',
-    'rjdj.djangotornado',
-    'rjdj.tmon.server',
 )
 
 TEMPLATE_EXTENSION = ".html"
