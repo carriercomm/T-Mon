@@ -43,11 +43,6 @@ MapController.prototype.initMapWithLocation = function() {
 
 MapController.prototype.onMapLoad = function(){
     var self = this;
-//    var dragZoomHandler = function(e){
-//        self.updateMarkers();
-//    };
-    //google.maps.event.addListener(this.map, 'dragend', dragZoomHandler);
-    //google.maps.event.addListener(this.map, 'zoom_changed', dragZoomHandler);
     this.updateMarkers();
 };
 
@@ -174,7 +169,8 @@ Application = function(e){
                                             "/" + webservice_id + "/data/requests/second/60", 
                                             { series: { lines: { show: true, fill: true } }, 
                                               xaxes: [ { label: "time from now"} ],
-                                              yaxes: [ { min: 0 } ] 
+                                              yaxes: [ { min: 0 } ], 
+                                              legend: { position: 'nw' } 
                                             },
                                             "requests per second" );
 
@@ -192,9 +188,14 @@ Application.prototype.clearRealtime = function() {
 Application.prototype.changeResolution = function(resolution, count) {
     this.req_per_sec.switchSource("/" + webservice_id + "/data/requests/" + resolution + "/" + count, "requests per " + resolution);
 };
-
+var app;
 document.addEventListener("DOMContentLoaded", function(e){
-        var app = new Application(e);
+        app = new Application(e);
         app.setRealtime();
+        $('#cbo_request_count_per').change(function() {
+            var count = Number($('#txt_timespan').val());
+            var res = $(this).val();
+            app.changeResolution(res, count);
+        });
     }, false);
 

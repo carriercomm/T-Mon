@@ -38,6 +38,7 @@ class WebService(models.Model):
     
     owner = models.ForeignKey(User)
     secret = models.CharField("Secret for web service authentication", max_length = 128, unique = True)
+    name = models.CharField("Name of the Service", max_length = 40, unique = True)
     
     def save(self, *args, **kwargs):
         super(WebService, self).save(*args, **kwargs)

@@ -67,8 +67,13 @@ request_count = ViewDefinition(
                         name = "count",
                         map_fun = """   function(doc) {
                                             var regexp = /(\d+)-(\d+)-(\d+)T(\d+):(\d+):(\d+)Z/;
-                                            var result = doc.timestamp.match(regexp);
-                                            emit(result.splice(1, result.length - 2), 1);
+                                            var matched = doc.timestamp.match(regexp);
+                                            var tmp = matched.splice(1, matched.length - 1);
+                                            var result = Array(6);
+                                            for(var i = 0; i < 6; i++) {
+                                                result[i] = Number(tmp[i]);
+                                            }
+                                            emit(result, 1);
                                         } """,
                         reduce_fun = """function(keys, values) { return sum(values); }""",
                         group = True,

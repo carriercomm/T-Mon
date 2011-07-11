@@ -29,14 +29,10 @@ from rjdj.tmon.server.models import WebService
 
 CACHE_TIME = 2629744 # seconds = 1 month
 
-
-from rjdj.tmon.server.utils import print_request_time
-
 def store(data, wsid):
     if data:
         data.store(connection.switch_db(wsid))
 
-@print_request_time
 def execute(query, wsid, cls = None, **options):
     if isinstance(query, ViewDefinition):
         return query(connection.switch_db(wsid), **options)

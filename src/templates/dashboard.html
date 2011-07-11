@@ -4,8 +4,9 @@
     <link rel="stylesheet" type="text/css" href="/static/dashboard.css" />
     
     <script type="application/javascript" src="http://maps.google.com/maps/api/js?sensor=false&region=GB"></script>
-    <script type="application/javascript" src="/static/js/jquery-1.4.2.js"></script>
-
+    <script type="application/javascript" src="/static/js/jquery-1.6.2.min.js"></script>
+    <script type="application/javascript" src="/static/js/jquery-ui-1.8.14.custom.min.js"></script>
+    
     <script type="application/javascript" src="/static/js/jquery.flot.min.js"></script>
     <script type="application/javascript" src="/static/js/jquery.flot.pie.min.js"></script>
 
@@ -19,18 +20,46 @@
   </head>
 
   <body>
-    <script type="application/javascript"> var webservice_id = {{ webservice.id }}; </script>
-    <div id="navbar"> </div>
+    <script type="application/javascript">var webservice_id = {{ webservice.id }}; </script>
+    <div id="navbar">
+        {% for w in webservices %}
+            <div class="entry">
+                <a href="/view/dashboard/{{ w.id }}">
+                {% ifequal webservice.id w.id %}
+                    <b>{{ w.name }}</b>
+                {% else %}
+                    {{ w.name }}
+                {% endifequal %}
+                </a> 
+            </div>
+        {% endfor %}
+    </div>
     <div id="container">
         <div id="left_column">
-            <div id="per_os" class="piechart"></div>
-            <div id="per_device" class="piechart"></div>
+            <h3>Users by Operating System</h3>
+            <div><div id="per_os" class="piechart"></div></div>
+            <h3>Users by Device</h3>
+            <div><div id="per_device" class="piechart"></div></div>
         </div>
         <div id="right_column">
-            <div id="map_canvas" class="map"></div>
-            <div id="per_country" class="list"></div>
-            <div id="requests" class="linechart"></div>
-        </div>
+            <h3>Users by Location</h3>
+            <div>
+                <div id="map_canvas" class="map"></div>
+                <div id="per_country" class="list"></div>
+            </div>
+            <h3>Requests in Real-Time</h3>
+            <div>
+                <div id="requests" class="linechart"></div>
+                <div>
+                Show me the last <input type="text" id="txt_timespan"> </input>
+                    <select id="cbo_request_count_per">
+		                <option value="second">Seconds</option>
+		                <option value="minute">Minutes</option>
+		                <option value="hour">Hours</option>
+		                <option value="day">Days</option>
+	                </select>
+                </div>
+            </div>
     </div>
   </body>
 

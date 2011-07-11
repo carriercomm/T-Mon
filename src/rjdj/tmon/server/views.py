@@ -102,14 +102,14 @@ def loginpage(request):
         return SimpleTemplateResponse("dashboard.html", 
                                        context = ctx)
     elif request.method == 'POST':
-        # authenticate
+        # authentication goes here
         return SimpleTemplateResponse("dashboard.html", 
                                        context = ctx)
     
 def dashboard(request, wsid):
     from rjdj.tmon.server.models import WebService
     try:
-        ctx = { "webservice" : db.get_webservice(wsid) }
+        ctx = { "webservice" : db.get_webservice(wsid), "webservices" : [ db.get_webservice(wsid) ] }
     except WebService.DoesNotExist:
         raise InvalidWebService()
         
