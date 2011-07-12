@@ -26,22 +26,40 @@ from couchdb.design import ViewDefinition
 from rjdj.tmon.server.utils.connection import connection
 from django.core.cache import cache
 from rjdj.tmon.server.models import WebService
+from rjdj.tmon.server.exceptions import *
 
-CACHE_TIME = 2629744 # seconds = 1 month
+# memcached's retention time
+CACHE_TIME = 2629744 # seconds of 1 month
+
+def get_webservice(wsid):
+    """ Retrieves a WebService instance from Django's DB. """ 
+    
+    try:
+        webservice = cache.get(wsid) or WebService.objects.get(id = wsid)
+        cache.set(wsid, webservice, CACHE_TIME)
+        return webservice   
+        
+    except WebService.DoesNotExist as ws: 
+        raise InvalidWebService(ws)
 
 def store(data, wsid):
+    """ Writes the given data to the associated CouchDB. """
+    ws_name = get_webservice(wsid).name
+    
     if data:
-        data.store(connection.switch_db(wsid))
+        data.store(connection.switch_db(ws_name))
 
-def execute(query, wsid, cls = None, **options):
+def execute(query, wsid, **options):
+    """ Executes a query from utils.queries. """
+
     if isinstance(query, ViewDefinition):
-        return query(connection.switch_db(wsid), **options)
+    
+        ws_name = get_webservice(wsid).name
+        return query(connection.switch_db(ws_name), **options)
 
 def sync(query, wsid):
+    """ Syncs the given utils.query query with the associated CouchDB. """
+    
     if isinstance(query, ViewDefinition):
-        query.sync(connection.switch_db(wsid))
-        
-def get_webservice(wsid):
-    webservice = cache.get(wsid) or WebService.objects.get(id = wsid)
-    cache.set(wsid, webservice, CACHE_TIME)
-    return webservice
+        ws_name = get_webservice(wsid).name
+        query.sync(connection.switch_db(ws_name))

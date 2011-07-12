@@ -22,15 +22,27 @@
 
 __docformat__ = "reStructuredText"
 
+import json
 from rjdj.tmon.server.utils import decrypt_message, location
 from rjdj.tmon.server.utils.resolution import CHART_RESOLUTIONS
 from rjdj.tmon.server.models import TrackingData
 from rjdj.tmon.server.exceptions import *
 from datetime import datetime
-import json
 from db import get_webservice
 
 class TrackingRequestParser(object):
+    """ 
+        Parses a request containing trackable data from a client to a CouchDB document.
+        
+        Example:
+        >>> post_data = { 
+        ...     "data": "ABCDEFGHIJKLMNOPQRSTUVW", # AES encrypted payload, using the corresponding 
+        ...                                        # secret of the web service's id
+        ...     "wsid": 1 # the web service's id in T-Mon's environment
+        ... }
+        >>> TrackingRequestParser.create_document(post_data)
+        (<WebService object at ...>, <TrackingData object at ...>)
+    """
 
     WSID_KEY = 'wsid'
     DATA_KEY = 'data'
@@ -42,6 +54,13 @@ class TrackingRequestParser(object):
 
     @staticmethod
     def create_document(post_data):
+        """ 
+            Creates a CouchDB-document from the given POST data and returns the 
+            corresponding WebService object. 
+        """
+        if not isinstance(post_data, dict): 
+            raise InvalidPostData(type(post_data))
+            
         data = None
         webservice = None
         try:
@@ -50,12 +69,9 @@ class TrackingRequestParser(object):
             secret = webservice.secret
             decrypted_data = decrypt_message(post_data[TrackingRequestParser.DATA_KEY], secret)
             data = json.loads(decrypted_data)
-        except KeyError as ke:
-            raise InvalidPostData(ke)
-        except ValueError as ve:
-            raise DecryptionFailed(ve)
-        except WebService.DoesNotExist as ws:
-            raise InvalidWebService(ws)
+            
+        except KeyError as ke: raise InvalidPostData(ke)
+        except ValueError as ve: raise DecryptionFailed(ve)
 
         try:
             ip = data[TrackingRequestParser.IP_KEY]
@@ -88,7 +104,16 @@ class TrackingRequestParser(object):
 
 
 class ChartResolutionParser(object):
+    """ """
 
     @staticmethod
     def get(name):
-        return CHART_RESOLUTIONS[name]()
+        """ """
+        
+        if not (isinstance(name, unicode) or isinstance(name, str)): 
+            raise InvalidRequest(type(name))
+        
+        try:
+            return CHART_RESOLUTIONS[name]()
+        except KeyError as ke:
+            raise InvalidRequest(ke)

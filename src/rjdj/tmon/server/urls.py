@@ -30,34 +30,37 @@ from rjdj.tmon.server import views
 
 admin.autodiscover()
 
+# Specially served under http://<site_url>/
 ROOT_FILES = (
     'favicon.ico',
     'crossdomain.xml',
     'robots.txt',
     )
 
+# Default error pages
 handler404 = views.not_found
 handler500 = views.server_error
 
+
 urlpatterns = patterns('',
-#    (r'^$', views.default),
+    # Administration & LogIn
     (r'^admin/', include(admin.site.urls)),
 
-    # JavaScript GET interfaces
+    # GET interfaces (JavaScript)
     (r'^(?P<wsid>[\d]+)/data/users/country', views.users_per_country),
     (r'^(?P<wsid>[\d]+)/data/users/device', views.users_per_device),
     (r'^(?P<wsid>[\d]+)/data/users/os', views.users_per_os),
     (r'^(?P<wsid>[\d]+)/data/users/locations/(?P<ne_lat>[\d.-]+)/(?P<ne_lng>[\d.-]+)/(?P<sw_lat>[\d.-]+)/(?P<sw_lng>[\d.-]+)', views.users_locations),
     (r'^(?P<wsid>[\d]+)/data/requests/(?P<grouping>(second|minute|hour|day))/(?P<limit>[\d]+)', views.request_count),
     
-    # HTML Pages
-    (r'^view/dashboard/(?P<wsid>[\d]+)', views.dashboard),
-    (r'^view/login', views.loginpage),
-
     # POST interfaces
     (r'^data/collect', views.data_collect),
+    
+    # HTML Pages
+    (r'^view/dashboard/(?P<wsid>[\d]+)', views.dashboard),
+    (r'^$', views.overview),
 
-   # static files
+    # static file serving
     (r'^(%s)$' % '|'.join(ROOT_FILES),
      'django.views.static.serve', {'document_root': settings.MEDIA_ROOT}),
     (r'^static/(.*)$',

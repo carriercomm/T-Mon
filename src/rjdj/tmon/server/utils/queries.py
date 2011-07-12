@@ -27,7 +27,11 @@ from couchdb.design import ViewDefinition
 users_per_country = ViewDefinition(
                         design = "geographic",
                         name = "users_per_country",
-                        map_fun = """function(doc) { emit(doc["country"], 1); }""",
+                        map_fun = """   function(doc) { 
+                                            if(doc["country"] != null) {    
+                                                emit(doc["country"], 1); 
+                                            }
+                                        }""",
                         reduce_fun = """function(keys, values) { return sum(values); }""",
                         group = True)
 
@@ -82,7 +86,9 @@ users_locations = ViewDefinition(
                         design = "geographic",
                         name = "users_locations",
                         map_fun = """   function(doc) {
-                                            emit([doc["latitude"], doc["longitude"]], 1)
+                                            if(doc["latitude"] != null && doc["longitude"] != null) {
+                                                emit([doc["latitude"], doc["longitude"]], 1);
+                                            }
                                         } """,
                         reduce_fun = """function(keys, values) { return sum(values); }""",
                         group = True)

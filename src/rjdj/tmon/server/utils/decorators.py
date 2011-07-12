@@ -29,17 +29,22 @@ import logging
 
 def return_json(view):
     """ A decorator, so the view returns proper messages. """
+    
     def restful_view(request, *args, **kwargs):
+        """ """
+        
         status = 200
         msg = ""
         data = {}
         try:
             data = view(request, *args, **kwargs) or {}
             if data: data = { "results" : data }
+            
         except TMonServerError as ex: # could as well be more diverse
             status = ex.http_status_code 
             if settings.DEBUG: msg = str(ex)
             logging.error("status code %d: %s" % (status, ex))
+            
         except Exception as ex:
             status = 500
             if settings.DEBUG: msg = str(ex)
@@ -51,12 +56,15 @@ def return_json(view):
     return restful_view
 
 def print_request_time(func):
-
+    """ Writes the duration of a request to logging.info. """
+    
     def funct(*args, **kwargs):
+        """ """
+        
         start = datetime.now()
         try:
             return func(*args, **kwargs)
         finally:
-            print "request took %s" % (datetime.now() - start)
+            logging.info("request took %s" % (datetime.now() - start))
 
     return funct

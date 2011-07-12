@@ -23,9 +23,15 @@
 __docformat__ = "reStructuredText"
 
 class ChartResolution(object):
-    pass
+    """ """
+    def diff(self, dtA, dtB):
+        """ """
+        
+        raise NotImplementedError()
 
 class SecondsResolution(ChartResolution):
+    """ """
+    
     group_level = 6
     friendly_name = "second"
     
@@ -33,6 +39,8 @@ class SecondsResolution(ChartResolution):
         return int((dtA - dtB).seconds) 
 
 class MinutesResolution(ChartResolution):
+    """ """
+    
     group_level = 5
     friendly_name = "minute"    
     
@@ -40,6 +48,8 @@ class MinutesResolution(ChartResolution):
         return int((dtA - dtB).seconds / 60) 
 
 class HoursResolution(ChartResolution):
+    """ """
+    
     group_level = 4
     friendly_name = "hour"
         
@@ -47,12 +57,15 @@ class HoursResolution(ChartResolution):
         return int((dtA - dtB).seconds / 3600) # 60 * 60
         
 class DaysResolution(ChartResolution):
+    """ """
+    
     group_level = 3
     friendly_name = "day"
         
     def diff(self, dtA, dtB):
         return int((dtA - dtB).days) 
 
+# A collection of all the possible Resolutions mapped to their friendly names
 
 CHART_RESOLUTIONS = {
     SecondsResolution.friendly_name: SecondsResolution,

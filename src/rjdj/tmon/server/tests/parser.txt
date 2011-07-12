@@ -1,0 +1,159 @@
+=====================================
+Tests for parsers
+=====================================
+
+    >>> import json
+    >>> import base64
+    >>> import hashlib
+    >>> import time
+    >>> from rjdj.tmon.server.models import WebService
+    >>> from django.contrib.auth.models import User 
+    >>> from Crypto.Cipher import AES
+    >>> from django.test import Client
+    >>> from rjdj.tmon.server.utils import parser
+
+Helper function:
+---------------
+    >>> def make_post_data_dict(data, wsid):
+    ...     payload = json.dumps(data)
+    ...     cipher = AES.new(TEST_SECRET, AES.MODE_CFB)
+    ...     encryped_payload = cipher.encrypt(payload)
+    ...     encoded_payload = base64.b64encode(encryped_payload)
+    ...     return { "data" : encoded_payload, "wsid" : wsid }
+
+TrackingParser objects:
+----------------------
+
+Arguments for instantiation are not necessary:
+    >>> tracking_parser = parser.TrackingRequestParser("an argument")
+    Traceback (most recent call last):
+    ...
+    TypeError: object.__new__() takes no parameters
+
+    >>> tracking_parser = parser.TrackingRequestParser()
+
+Creation method is required:
+    >>> dir(tracking_parser)
+    [...'create_document'...]
+    
+It takes a dict as argument:
+    >>> tracking_parser.create_document()
+    Traceback (most recent call last):
+    ...
+    TypeError: create_document() takes exactly 1 argument (0 given)
+
+    >>> tracking_parser.create_document("invalid data")
+    Traceback (most recent call last):
+    ...
+    InvalidPostData: <type 'str'>
+    
+The dict has to be shaped with a "data" and "wsid" key:
+    >>> tracking_parser.create_document({"moo": "", "abcd": 1})
+    Traceback (most recent call last):
+    ...
+    InvalidPostData: 'wsid'
+
+The "wsid" key is looked at immediately to find out the encryption secret for "data".
+If this wsid does not exist, an exception will be thrown:
+    >>> tracking_parser.create_document({"data": "", "wsid": 1})
+    Traceback (most recent call last):
+    ...
+    InvalidWebService: WebService matching query does not exist.
+
+Preparation for some more parsing:
+----------------------------------
+    >>> c = Client()
+    >>> TEST_SECRET = "AAAAAAABCDEFABCDEFABCDEF"
+
+    >>> user = User()
+    >>> user.username = "another_testuser"
+    >>> user.set_password("!test")
+    >>> user.email = "test@test.com"
+    >>> user.save()
+
+    >>> ws = WebService()    
+    >>> ws.owner = user
+    >>> ws.secret = TEST_SECRET
+    >>> ws.name = "_".join(("testdb", hashlib.md5(str(time.time())).hexdigest()))
+    >>> ws.save()
+
+Creating CouchDB Documents:
+-------------------
+
+    >>> post_data = { "ip": "72.32.231.8",
+    ...     "useragent": "Mozilla/5.0 (iPad; U; CPU OS 3_2_1 like Mac OS X; en-us) AppleWebKit/531.21.10 (KHTML, like Gecko) Mobile/7B405", 
+    ...     "url": "/" }
+
+A tupel will be returned, with the corresponding WebService and the Document:
+    >>> parser.TrackingRequestParser.create_document(make_post_data_dict(post_data, ws.id))
+    (<WebService: WebService object>, <TrackingData None@None {'username': None, 'url': u'/', 'country': u'USA', 'longitude': -73.9782, 'user_agent': u'Mozilla/5.0 (iPad; U; CPU OS 3_2_1 like Mac OS X; en-us) AppleWebKit/531.21.10 (KHTML, like Gecko) Mobile/7B405', 'timestamp': '...', 'latitude': 40.7449}>)
+
+A private IP will result in None-values for country, latitude and longitude:
+    >>> post_data = { "ip": "127.0.0.1", "useragent": "some user agent", "url": "/" }
+    >>> parser.TrackingRequestParser.create_document(make_post_data_dict(post_data, ws.id))
+    (<WebService: WebService object>, <TrackingData None@None {'username': None, 'url': u'/', 'country': None, 'longitude': None, 'user_agent': u'some user agent', 'timestamp': '...', 'latitude': None}>)
+    
+A missing key will result in an exception:
+    >>> post_data = { "useragent": "some user agent", "url": "/" }
+    >>> parser.TrackingRequestParser.create_document(make_post_data_dict(post_data, ws.id))
+    Traceback (most recent call last):
+    ...
+    FieldMissing: 'ip'
+
+Only the username field is optional:
+    >>> post_data = { "ip": "127.0.0.1", "useragent": "some user agent", "url": "/", "username": "john doe" }
+    >>> parser.TrackingRequestParser.create_document(make_post_data_dict(post_data, ws.id))
+    (<WebService: WebService object>, <TrackingData ...'username': u'john doe'...>)
+    
+When the encryption keys don't match (and hence the web services was wrongly identified by the user), an exception will be raised:
+    >>> old_test_secret = TEST_SECRET
+    >>> TEST_SECRET = "my_new_secret_is_better!"
+    >>> post_data = { "ip": "127.0.0.1", "useragent": "some user agent", "url": "/", "username": "john doe" }
+    >>> parser.TrackingRequestParser.create_document(make_post_data_dict(post_data, ws.id))
+    Traceback (most recent call last):
+    ...
+    DecryptionFailed: No JSON object could be decoded
+
+ChartResolutionParser objects:
+------------------------------
+
+Arguments for instantiation are not necessary:   
+    >>> chartres_parser = parser.ChartResolutionParser("an argument")
+    Traceback (most recent call last):
+    ...
+    TypeError: object.__new__() takes no parameters
+
+    >>> chartres_parser = parser.ChartResolutionParser()
+    
+Creation method is required:
+    >>> dir(chartres_parser)
+    [...'get'...]
+    
+A (valid) string as argument is required:
+    >>> chartres_parser.get()
+    Traceback (most recent call last):
+    ...
+    TypeError: get() takes exactly 1 argument (0 given)
+
+    >>> chartres_parser.get("invalid_key")
+    Traceback (most recent call last):
+    ...
+    InvalidRequest: 'invalid_key'
+    
+    >>> chartres_parser.get(["something", "else"])
+    Traceback (most recent call last):
+    ...
+    InvalidRequest: <type 'list'>
+    
+A valid string is any friendly name of a ChartResolution object (module: rjdj.tmon.server.utils.resolution), which will the corresponding object:
+    >>> chartres_parser.get("second")
+    <rjdj.tmon.server.utils.resolution.SecondsResolution object at ...>
+    
+    >>> chartres_parser.get("minute")
+    <rjdj.tmon.server.utils.resolution.MinutesResolution object at ...>
+    
+    >>> chartres_parser.get("hour")
+    <rjdj.tmon.server.utils.resolution.HoursResolution object at ...>
+
+    >>> chartres_parser.get("day")
+    <rjdj.tmon.server.utils.resolution.DaysResolution object at ...>

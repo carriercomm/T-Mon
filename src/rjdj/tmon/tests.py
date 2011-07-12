@@ -1,7 +1,20 @@
 ##############################################################################
 #
 # Copyright (c) 2011 Reality Jockey Ltd. and Contributors.
-# All Rights Reserved.
+# This file is part of T-Mon.
+#
+# T-Mon is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# T-Mon is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with T-Mon. If not, see <http://www.gnu.org/licenses/>.
 #
 ##############################################################################
 
@@ -26,7 +39,7 @@ from zope.testing.doctestunit import DocFileSuite
 
 from rjdj.tmon.server.utils.connection import connection as conn
 
-KEEP_DATA = True
+KEEP_DATA = False
 
 ## https://bitbucket.org/andrewgodwin/south/changeset/21a635231327
 class SkipFlushCommand(FlushCommand):
@@ -58,14 +71,14 @@ class DjangoLayer(object):
         connection.creation.create_test_db = patch(connection.creation.create_test_db)
         connection.creation.create_test_db(verbosity = 0, autoclobber = True)
         
-        saved_state = [d for d in conn.server]
+        self.saved_state = [d for d in conn.server]
         
     @classmethod
     def tearDown(self):
         call_command('flush', verbosity = 0, interactive = False)
         
         if not KEEP_DATA and conn.database:
-            for db in db.server:
+            for db in conn.server:
                 if db not in self.saved_state and not db.startswith("_"):
                     del conn.server[db]
 
@@ -79,13 +92,16 @@ class DjangoLayer(object):
 
 
 def test_suite():
-    collect = DocFileSuite('server/collect.txt',
+    collect = DocFileSuite('server/tests/views_collect.txt',
         optionflags = doctest.NORMALIZE_WHITESPACE | doctest.ELLIPSIS,
         )
-    analyze = DocFileSuite('server/analyze.txt',
+    analyze = DocFileSuite('server/tests/views_analyze.txt',
         optionflags = doctest.NORMALIZE_WHITESPACE | doctest.ELLIPSIS,
         )
-    client = DocFileSuite('client/tests.txt',
+    parser = DocFileSuite('server/tests/parser.txt',
+        optionflags = doctest.NORMALIZE_WHITESPACE | doctest.ELLIPSIS,
+        )
+    client = DocFileSuite('client/tests/tests.txt',
         optionflags = doctest.NORMALIZE_WHITESPACE | doctest.ELLIPSIS,
         )
 
@@ -94,6 +110,7 @@ def test_suite():
                                 collect,
                                 analyze,
                                 client,
+                                parser,
                                 ))
     suite.layer = DjangoLayer
     return suite

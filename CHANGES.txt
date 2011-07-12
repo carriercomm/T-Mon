@@ -3,6 +3,24 @@ CHANGES for rjdj.tmon
 
 trunk
 -----
+  - celaus: added docstrings (some empty) and comments
+  
+  - celaus: added buildout download for GeoLiteCity database
+  
+  - celaus: added loadtest binary
+  
+  - celaus: improved overall code structure
+  
+  - celaus: added tests for parsers.py, improved tests for views and client
+  
+  - celaus: added couchdb command for instance
 
+  - celaus: login is now required for /view/dashboard/xx
+
+  - celaus: added customized live updates at /view/dashboard/xx
+  
+  - celaus: improved visual state of /view/dashboard/xx
+  
   - chaudum: cleaned up bits of code
 
+  - celaus: created initial structure, buildout-configs and much more

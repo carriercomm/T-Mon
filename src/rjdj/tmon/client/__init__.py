@@ -25,52 +25,115 @@ __docformat__ = "reStructuredText"
 import urllib2
 import urllib
 import json
+import base64
 from sys import stderr
-from rjdj.tmon.client import config
-from rjdj.tmon.client.exceptions import * 
-from rjdj.tmon.client.utils import *
-
-
-REMOTE_URL = "data/collect"
-
-IP_KEY = 'ip'
-UA_KEY = 'useragent'
-USER_KEY = 'username'
-URL_KEY = 'url'
+from Crypto.Cipher import AES
 
 #
-# { data: {ip: ..., useragent: ..., username: ...} wsid: ... }
-#         |   <-- encrypted payload -->          |  
+# Exceptions
 #
 
-def track(url, user_agent, remote_ip, username = ""):
-    if not (config.SERVER_URL and config.WEBSERVICE_ID and config.WEBSERVICE_SECRET):
-        raise NotConfigured()
+# Error superclass
+class TMonClientError(Exception):
+    """ Super-class for errors of the client. """
+    pass
     
-    server = ""
-    if config.SERVER_URL.endswith("/"):
-        server = "".join((config.SERVER_URL, REMOTE_URL))
-    else:
-        server = "/".join((config.SERVER_URL, REMOTE_URL))
+# Configuration Errors
+class InvalidSettings(TMonClientError):
+    """ Configuration of the T-Mon Server is missing. """
+    pass
+
+
+
+#
+# Implementation
+#
+
+# API class
+class TMonClient(object):
+    """
+        An easy-to-use client for the T-Mon web service real-time tracking solution. 
+        
+        Example:
+        >>> settings = { 
+        ...              "secret" : "abcdef123456789abcdef12",   # AES secret for the web service
+        ...              "webservice_id" : 1,                    # The ID of the web service to be monitored
+        ...              "url" : "http://tracker.example.com/",  # The location of the T-Mon server
+        ...            }
+        >>> client = TMonClient(settings)
+        ... client.track("/", "Mozilla/5.0 (iPad ...", "123.123.123.123") # send monitoring data
     
-    data = { IP_KEY : remote_ip,
-             UA_KEY : user_agent,
-             URL_KEY: url }
-    if username:
-        data.update({ USER_KEY: username })
-    wsid = int(config.WEBSERVICE_ID)
-    encrypted_data = encrypt_message(json.dumps(data), config.WEBSERVICE_SECRET)
-    try:
-        urllib2.urlopen(server, urllib.urlencode({"data": encrypted_data, "wsid": wsid })).read()
-    except Exception as ex: 
-        stderr.write("""
+    """
+
+    REMOTE_URL = "data/collect" # URL of the RESTful collection interface
+
+    # Keys for the tracking package 
+    IP_KEY = 'ip'
+    UA_KEY = 'useragent'
+    USER_KEY = 'username'
+    URL_KEY = 'url'
+
+    # Keys for the settings dictionary
+    SECRET_KEY = "secret"
+    WSID_KEY = "wsid"
+    SERVER_URL_KEY = "url"
+    
+    # Logging entry
+    ERROR_MESSAGE = """
 Error while tracking the webservice: %s
 Parameters: 
     url: %s
     user agent: %s
     ip: %s
     username: %s
-    
-    """ % (ex, url, user_agent, remote_ip, username)) 
 
+"""
+    
+    def __init__(self, settings_dict):
+        """ Create an instance of T-Mon client with the given settings. """
+        if not isinstance(settings_dict, dict): 
+            raise InvalidSettings(type(settings_dict))
+        self.config = settings_dict
+        if not (self.config and \
+                 self.config[self.SERVER_URL_KEY] and \
+                 self.config[self.WSID_KEY] and \
+                 self.config[self.SECRET_KEY]):
+            raise InvalidSettings()
+
+
+    def track(self, url, user_agent, remote_ip, username = ""):
+        """ Track a web service. """
+        
+        data = { self.IP_KEY : remote_ip,
+                 self.UA_KEY : user_agent,
+                 self.URL_KEY: url }
+        if username:
+            data.update({ self.USER_KEY: username })
+            
+        wsid = int(self.config[self.WSID_KEY]) 
+        encrypted_data = base64.b64encode(self.__encrypt(json.dumps(data)))
+        try:
+            self.__send(encrypted_data, wsid)
+        except Exception as ex: 
+            stderr.write(self.ERROR_MESSAGE % (ex, url, user_agent, remote_ip, username)) 
+    
+    
+    def __send(self, data, wsid):
+        """ Sends the given data to the server. """
+        
+        server_url = self.config[self.SERVER_URL_KEY]
+        server = ""
+        if server_url.endswith("/"):
+            server = "".join((server_url, self.REMOTE_URL))
+        else:
+            server = "/".join((server_url, self.REMOTE_URL))
+        
+        urllib2.urlopen(server, urllib.urlencode({"data": data, "wsid": wsid })).read()
+
+
+    def __encrypt(self, msg):
+        """ Encrypts and Base64-encodes messages with the given secret (AES) """
+        
+        cipher = AES.new(self.config[self.SECRET_KEY], AES.MODE_CFB)
+        return cipher.encrypt(msg)
 

@@ -25,6 +25,8 @@ __docformat__ = "reStructuredText"
 from django.db import models
 from django.contrib.auth.models import User
 from rjdj.tmon.server.utils.connection import connection
+from django.db import transaction
+
 
 from couchdb.mapping import ( Document, 
                               TextField, 
@@ -40,9 +42,10 @@ class WebService(models.Model):
     secret = models.CharField("Secret for web service authentication", max_length = 128, unique = True)
     name = models.CharField("Name of the Service", max_length = 40, unique = True)
     
+    @transaction.commit_on_success
     def save(self, *args, **kwargs):
         super(WebService, self).save(*args, **kwargs)
-        connection.setup_db(self.id)
+        connection.setup_db(self.name)
     
 class TrackingData(Document):
     """ A class for saving trackable data """

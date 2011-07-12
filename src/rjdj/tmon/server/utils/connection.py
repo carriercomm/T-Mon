@@ -29,8 +29,11 @@ from couchdb import Server
 from django.conf import settings
 
 class DBConnection(object):
+    """ """
     
     def __init__(self, protocol, host, port, user = None, password = None):
+        """ """
+        
         self.protocol = protocol
         self.host = host
         self.port = port
@@ -39,18 +42,19 @@ class DBConnection(object):
         self.server = self.connect()
         self.database = None
         
-    def switch_db(self, wsid):
-        db_name = "_".join((settings.WEB_SERVICE_DB_PREFIX, str(wsid)))
+    def switch_db(self, name):
+        """ """
         
-        if db_name not in self.server:
-            raise InvalidWebService(wsid)
+        if name not in self.server:
+            raise InvalidWebService(name)
         
-        if not self.database or self.database.name != db_name:
-            self.database = self.server[db_name]
+        if not self.database or self.database.name != name:
+            self.database = self.server[name]
         
         return self.database
 
     def connect(self):
+        """ """
         if self.user and self.password:
             url =  "%s://%s:%s@%s:%d" % (self.protocol, 
                                          self.user, 
@@ -61,16 +65,17 @@ class DBConnection(object):
             url =  "%s://%s:%d" % (self.protocol, self.host, self.port)
         return Server(url)
 
-    def setup_db(self, wsid):
-        db_name = "_".join((settings.WEB_SERVICE_DB_PREFIX, str(wsid)))
+    def setup_db(self, name):
+        """ """
         
-        if db_name not in self.server:
-            self.database = self.server.create(db_name)
+        if name not in self.server:
+            self.database = self.server.create(name)
             for q in all_queries:
                 q.sync(self.database)
-        elif db_name in self.server:
+        elif name in self.server:
             self.switch_db(wsid)
             
         return self.database
-        
+
+# the one and only connection to the CouchDB       
 connection = DBConnection(**settings.TRACKING_DATABASE)
