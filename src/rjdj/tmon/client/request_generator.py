@@ -53,9 +53,9 @@ UAS = (
     )
     
 USER = (
-    "claus",
-    "martin",
-    "christian", 
+    "foo",
+    "bar",
+    "foobar", 
     "dom", 
     "joe", 
     "", "", # double the chances 

@@ -22,9 +22,8 @@
 
 __docformat__ = "reStructuredText"
 
-from rjdj.tmon.server.utils import *
-from rjdj.tmon.server.utils.resolution import class_dict
-from rjdj.tmon.server.utils import location
+from rjdj.tmon.server.utils import decrypt_message, location
+from rjdj.tmon.server.utils.resolution import CHART_RESOLUTIONS
 from rjdj.tmon.server.models import TrackingData
 from rjdj.tmon.server.exceptions import *
 from datetime import datetime
@@ -92,4 +91,4 @@ class ChartResolutionParser(object):
 
     @staticmethod
     def get(name):
-        return class_dict[name]()
+        return CHART_RESOLUTIONS[name]()

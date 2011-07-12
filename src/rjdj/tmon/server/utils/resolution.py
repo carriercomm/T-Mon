@@ -53,10 +53,10 @@ class DaysResolution(ChartResolution):
     def diff(self, dtA, dtB):
         return int((dtA - dtB).days) 
 
-   
-class_dict = {
+
+CHART_RESOLUTIONS = {
     SecondsResolution.friendly_name: SecondsResolution,
     MinutesResolution.friendly_name: MinutesResolution,
     HoursResolution.friendly_name: HoursResolution,
     DaysResolution.friendly_name: DaysResolution,
-}   
+}

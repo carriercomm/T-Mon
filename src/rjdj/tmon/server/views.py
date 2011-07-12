@@ -36,6 +36,7 @@ from rjdj.tmon.server.utils.decorators import return_json
 from rjdj.tmon.server.utils import location, db
 
 from rjdj.tmon.server.utils import queries
+from rjdj.tmon.server.models import WebService
 
 from datetime import timedelta
 
@@ -43,8 +44,9 @@ from django.http import  (
                          HttpResponseNotFound,
                          HttpResponseServerError,
                          )
-                         
+
 from django.template.response import SimpleTemplateResponse
+from django.contrib.auth.decorators import login_required
 
 def not_found(request):
     return HttpResponseNotFound()
@@ -97,22 +99,14 @@ def users_per_os(request, wsid):
     query = queries.users_per_os
     return PieChartAdapter(db.execute(query, wsid)).process()
 
-def loginpage(request):
-    if request.method == 'GET':
-        return SimpleTemplateResponse("dashboard.html", 
-                                       context = ctx)
-    elif request.method == 'POST':
-        # authentication goes here
-        return SimpleTemplateResponse("dashboard.html", 
-                                       context = ctx)
-    
+
+@login_required(login_url='/admin/')
 def dashboard(request, wsid):
-    from rjdj.tmon.server.models import WebService
     try:
-        ctx = { "webservice" : db.get_webservice(wsid), "webservices" : [ db.get_webservice(wsid) ] }
+        context = { "webservice" : db.get_webservice(wsid), "webservices" : [ db.get_webservice(wsid) ] }
     except WebService.DoesNotExist:
         raise InvalidWebService()
-        
-    return SimpleTemplateResponse("dashboard.html",     
-                                   context = ctx)
+
+    return SimpleTemplateResponse("dashboard.html",
+                                  context = context)
 
