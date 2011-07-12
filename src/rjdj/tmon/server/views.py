@@ -123,15 +123,14 @@ def users_per_os(request, wsid):
 @login_required(login_url='/admin/')
 def dashboard(request, wsid):
     """ """
-    
     try:
         context = { "webservice" : db.get_webservice(wsid), 
                     "webservices" : [ db.get_webservice(wsid) ] }
-    except WebService.DoesNotExist:
-        raise InvalidWebService()
+    except InvalidWebService:
+        return not_found(request)
 
     return SimpleTemplateResponse("dashboard.html",
                                    context = context)
 
 def overview(request):
-    return "T-Mon at your service"
+    return SimpleTemplateResponse("index.html")
