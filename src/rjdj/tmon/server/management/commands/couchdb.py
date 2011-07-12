@@ -49,6 +49,7 @@ class Command(BaseCommand):
             for database in connection.server:
                 if not database.startswith("_"):
                     del connection.server[database]
+                    dbs += 1 
                     
             print dbs if dbs else "No", "databases deleted."
     
