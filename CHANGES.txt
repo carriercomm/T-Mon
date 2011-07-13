@@ -3,6 +3,10 @@ CHANGES for rjdj.tmon
 
 trunk
 -----
+
+0.1rc2 - 13/07/2011
+-------------------
+
   - celaus: Put the DOCUMENTATION.md as index.html
 
   - celaus: added a test for queries
