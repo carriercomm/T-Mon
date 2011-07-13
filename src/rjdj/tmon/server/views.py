@@ -125,7 +125,7 @@ def dashboard(request, wsid):
     """ """
     try:
         context = { "webservice" : db.get_webservice(wsid), 
-                    "webservices" : [ db.get_webservice(wsid) ] }
+                    "webservices" : db.get_webservices(request.user) }
     except InvalidWebService:
         return not_found(request)
 

@@ -42,6 +42,10 @@ def get_webservice(wsid):
     except WebService.DoesNotExist as ws: 
         raise InvalidWebService(ws)
 
+def get_webservices(user):
+    """ """
+    return user.webservice_set.all()
+
 def store(data, wsid):
     """ Writes the given data to the associated CouchDB. """
     ws_name = get_webservice(wsid).name
