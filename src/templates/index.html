@@ -1,9 +1,171 @@
-<html>
-  <head>
-    <title>Index of T-Mon</title>
-  </head>
+<h1>RjDj T-Mon Realtime Traffic Monitoring Server</h1>
 
-  <body>
-    Welcome to RjDj's Realtime Tracking Service: T-Mon!
-  </body>
-</html>
+<h2>Basic Setup:</h2>
+
+<ol>
+<li>Start the server as stated in README</li>
+<li>Connect to <strong>http://localhost:8000/admin</strong> with your browser</li>
+<li>Log In using the created administrator credentials</li>
+<li>Create a new WebService with a <strong>unique name</strong> and a secret</li>
+<li>With the secret and the webservice's id, use the client package to add some data!</li>
+</ol>
+
+<h2>General</h2>
+
+<h3>Request</h3>
+
+<p>POST data: [data=...&amp;wsid=...]</p>
+
+<pre><code>data      :  Base64 encoded and AES encrypted JSON string using the secret
+wsid      :  The id of the web service to be tracked
+</code></pre>
+
+<h3>Response</h3>
+
+<p>Mime-Type: application/json (gzipped)</p>
+
+<h4>Success</h4>
+
+<pre><code>{
+    "status_code": 200
+}
+</code></pre>
+
+<h4>Error</h4>
+
+<pre><code>{
+    "status_code": 400/405
+}
+</code></pre>
+
+<p>If an error occurs, the corresponding HTTP status code is also set.</p>
+
+<h3>Authentication</h3>
+
+<p>Every web service requires to be authenticated with a valid user account (can be created in the Django Admin interface), except for the data collection web service, which relies on AES encryption with a shared secret.</p>
+
+<h2>Web Pages</h2>
+
+<h2>GET "/" HTTP1.1</h2>
+
+<p><em>Root/Index page.</em></p>
+
+<p>Returns this page.</p>
+
+<h2>GET "/view/dashboard/$wsid" HTTP1.1</h2>
+
+<p><em>Root/Index page.</em></p>
+
+<h3>Request</h3>
+
+<pre><code>wsid           : long [optional]
+</code></pre>
+
+<p>Shows the dashboard for the specified web service or a page to choose one web service from.</p>
+
+<h2>RESTful Interfaces</h2>
+
+<h2>POST "/data/collect" HTTP1.1</h2>
+
+<p><em>Collecting Data for T-Mon.</em></p>
+
+<h3>Request</h3>
+
+<pre><code>url            : string
+ip             : string
+useragent      : string
+username       : string [optional]
+</code></pre>
+
+<h3>Response</h3>
+
+<pre><code>status_code    : long
+</code></pre>
+
+<h4>Example</h4>
+
+<p>POST /data/collect: data=ANENCRYPTEDBASE64STRING&amp;wsid=1</p>
+
+<pre><code>data: 
+{
+    "ip": "72.32.231.8",
+    "useragent": "Mozilla/5.0 (iPad; U; CPU OS 3_2_1 like Mac OS X; en-us) AppleWebKit/531.21.10 (KHTML, like Gecko) Mobile/7B405", 
+    "url": "/" 
+}
+</code></pre>
+
+<h2>GET "/$wsid/data/users/country" HTTP1.1</h2>
+
+<p><em>Retrieves the users grouped per country for this web service.</em></p>
+
+<h3>Request</h3>
+
+<pre><code>wsid           : long
+</code></pre>
+
+<h3>Response</h3>
+
+<pre><code>status_code    : long
+</code></pre>
+
+<h2>GET "/$wsid/data/users/locations/$ne<em>lat/$ne</em>lng/$sw<em>lat/$sw</em>lng" HTTP1.1</h2>
+
+<p><em>Retrieves the users grouped by latitude and longitude this web service.</em></p>
+
+<h3>Request</h3>
+
+<pre><code>wsid           : long
+ne_lat         : float 
+ne_lng         : float
+sw_lat         : float
+sw_lng         : float
+</code></pre>
+
+<h3>Response</h3>
+
+<pre><code>status_code    : long
+</code></pre>
+
+<h2>GET "/$wsid/data/users/os" HTTP1.1</h2>
+
+<p><em>Retrieves the users grouped per operating system for this web service.</em></p>
+
+<h3>Request</h3>
+
+<pre><code>wsid           : long
+</code></pre>
+
+<h3>Response</h3>
+
+<pre><code>status_code    : long
+</code></pre>
+
+<h2>GET "/$wsid/data/users/device" HTTP1.1</h2>
+
+<p><em>Retrieves the users grouped per device for this web service.</em></p>
+
+<h3>Request</h3>
+
+<pre><code>wsid           : long
+</code></pre>
+
+<h3>Response</h3>
+
+<pre><code>status_code    : long
+</code></pre>
+
+<h2>GET "/$wsid/data/requests/$resolution/$limit" HTTP1.1</h2>
+
+<p><em>Retrieves the number of requests in the specified resolution.</em></p>
+
+<h3>Request</h3>
+
+<pre><code>wsid           : long
+resolution     : second|minute|hour|day
+limit          : long
+</code></pre>
+
+<h3>Response</h3>
+
+<pre><code>status_code    : long
+</code></pre>

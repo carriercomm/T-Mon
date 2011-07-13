@@ -30,10 +30,10 @@ DEBUG = False
 DATABASES = {
     "default": {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'tmon',
-        'USER': 'rjdj',
+        'NAME': '',
+        'USER': '',
         'PASSWORD': '',
-        'HOST': '50.17.235.44',
+        'HOST': '',
         'PORT': '5432',
         },
     }

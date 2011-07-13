@@ -62,7 +62,6 @@ If this wsid does not exist, an exception will be thrown:
 
 Preparation for some more parsing:
 ----------------------------------
-    >>> c = Client()
     >>> TEST_SECRET = "AAAAAAABCDEFABCDEFABCDEF"
 
     >>> user = User()

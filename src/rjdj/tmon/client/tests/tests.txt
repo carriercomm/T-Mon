@@ -61,6 +61,39 @@ Yes we are!
     ...         "213.131.233.151" ]
     
     >>> webservices = [ "/register", "/login", "/get/data/from/something" ]
+
+Preparations for result capturing:    
+    >>> client.DEBUG = True
     
+Alright, let's start:
     >>> for i in xrange(len(useragents)):
-    ...    client.track(webservices[i], useragents[i], ips[i]) 
+    ...    client.track(webservices[i], useragents[i], ips[i])
+    <BLANKLINE>
+    Error while tracking the webservice: <urlopen error [Errno 111] Connection refused>
+    Parameters: 
+        url: /...
+        user agent: ...
+        ip: ...
+        username: 
+    <BLANKLINE>
+    <BLANKLINE>
+    <BLANKLINE>
+    Error while tracking the webservice: <urlopen error [Errno 111] Connection refused>
+    Parameters: 
+        url: /...
+        user agent: ...
+        ip: ...
+        username: 
+    <BLANKLINE>
+    <BLANKLINE>
+    <BLANKLINE>
+    Error while tracking the webservice: <urlopen error [Errno 111] Connection refused>
+    Parameters: 
+        url: /...
+        user agent: ...
+        ip: ...
+        username: 
+    <BLANKLINE>
+    <BLANKLINE>
+
+

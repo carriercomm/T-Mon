@@ -92,6 +92,7 @@ class DjangoLayer(object):
 
 
 def test_suite():
+    # Server Tests    
     collect = DocFileSuite('server/tests/views_collect.txt',
         optionflags = doctest.NORMALIZE_WHITESPACE | doctest.ELLIPSIS,
         )
@@ -101,6 +102,11 @@ def test_suite():
     parser = DocFileSuite('server/tests/parser.txt',
         optionflags = doctest.NORMALIZE_WHITESPACE | doctest.ELLIPSIS,
         )
+    queries = DocFileSuite('server/tests/queries.txt',
+        optionflags = doctest.NORMALIZE_WHITESPACE | doctest.ELLIPSIS,
+        )
+
+    # Client Tests
     client = DocFileSuite('client/tests/tests.txt',
         optionflags = doctest.NORMALIZE_WHITESPACE | doctest.ELLIPSIS,
         )
@@ -109,8 +115,9 @@ def test_suite():
     suite = unittest.TestSuite((
                                 collect,
                                 analyze,
-                                client,
                                 parser,
+                                queries,
+                                client,
                                 ))
     suite.layer = DjangoLayer
     return suite

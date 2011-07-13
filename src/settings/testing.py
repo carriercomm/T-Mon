@@ -30,7 +30,7 @@ DEBUG = True
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': '/home/claus/sandbox/rjdj.tmon/db/tmon_testing.db',
+        'NAME': '/home/claus/sandbox/rjdj.tmon/parts/tmon_testing.db',
         },
     }
     

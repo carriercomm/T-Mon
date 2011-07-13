@@ -28,6 +28,7 @@ import json
 import base64
 from sys import stderr
 from Crypto.Cipher import AES
+from threading import Thread
 
 #
 # Exceptions
@@ -65,7 +66,7 @@ class TMonClient(object):
     
     """
 
-    REMOTE_URL = "data/collect" # URL of the RESTful collection interface
+    REMOTE_URL = "/data/collect" # URL of the RESTful collection interface
 
     # Keys for the tracking package 
     IP_KEY = 'ip'
@@ -88,6 +89,8 @@ Parameters:
     username: %s
 
 """
+    # Debug flag, it should ALWAYS be False outside testing
+    DEBUG = False 
     
     def __init__(self, settings_dict):
         """ Create an instance of T-Mon client with the given settings. """
@@ -104,6 +107,14 @@ Parameters:
     def track(self, url, user_agent, remote_ip, username = ""):
         """ Track a web service. """
         
+        worker = Thread(target = self.__track_worker, args = (url, user_agent, remote_ip, username))
+        worker.daemon = True
+        worker.start()
+        if self.DEBUG: worker.join()
+        
+    def __track_worker(self, url, user_agent, remote_ip, username):
+        """ Makes sending the tracking request non-blocking! """
+        
         data = { self.IP_KEY : remote_ip,
                  self.UA_KEY : user_agent,
                  self.URL_KEY: url }
@@ -115,7 +126,9 @@ Parameters:
         try:
             self.__send(encrypted_data, wsid)
         except Exception as ex: 
-            stderr.write(self.ERROR_MESSAGE % (ex, url, user_agent, remote_ip, username)) 
+            msg = self.ERROR_MESSAGE % (ex, url, user_agent, remote_ip, username)
+            if self.DEBUG: print msg
+            else: stderr.write(msg) 
     
     
     def __send(self, data, wsid):
@@ -124,10 +137,11 @@ Parameters:
         server_url = self.config[self.SERVER_URL_KEY]
         server = ""
         if server_url.endswith("/"):
-            server = "".join((server_url, self.REMOTE_URL))
+            server = self.REMOTE_URL[1:]
         else:
-            server = "/".join((server_url, self.REMOTE_URL))
+            server = self.REMOTE_URL
         
+        server = "".join((server_url, server))
         urllib2.urlopen(server, urllib.urlencode({"data": data, "wsid": wsid })).read()
 
 

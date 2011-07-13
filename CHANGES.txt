@@ -3,6 +3,16 @@ CHANGES for rjdj.tmon
 
 trunk
 -----
+  - celaus: Put the DOCUMENTATION.md as index.html
+
+  - celaus: added a test for queries
+  
+  - celaus: renamed var/default.cfg to var/loadtest.sample.cfg
+  
+  - celaus: moved the client's request to a different Thread
+
+  - celaus: added some text to DOCUMENTATION.md
+
   - celaus: added docstrings (some empty) and comments
   
   - celaus: added buildout download for GeoLiteCity database
