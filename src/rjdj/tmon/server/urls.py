@@ -57,7 +57,9 @@ urlpatterns = patterns('',
     (r'^data/collect', views.data_collect),
     
     # HTML Pages
+    (r'^view/dashboard/?$', views.dashboard_redirect),
     (r'^view/dashboard/(?P<wsid>[\d]+)', views.dashboard),
+    (r'^login', 'django.contrib.auth.views.login', {'template_name': 'login.html'}),
     (r'^$', views.overview),
 
     # static file serving

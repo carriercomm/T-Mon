@@ -3,6 +3,12 @@ CHANGES for rjdj.tmon
 
 trunk
 -----
+  - celaus: added couchdb command for iterating through documents
+
+  - celaus: added redirection handler to the first dashboard of a logged in user
+ 
+  - celaus: added login: url, template and handler
+
   - celaus: moved Client API to its own repository 
 (https://github.com/celaus/T-Mon-Client-API)
 

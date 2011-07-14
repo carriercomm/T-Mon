@@ -27,6 +27,9 @@ from rjdj.tmon.server.utils.queries import all_queries
 from rjdj.tmon.server.models import WebService
 from rjdj.tmon.server.utils import db
 from rjdj.tmon.server.utils.connection import connection
+from pprint import pprint
+
+DOCUMENTS_PER_ROUND = 5
 
 class Command(BaseCommand):
     """ """
@@ -91,6 +94,27 @@ class Command(BaseCommand):
             print name, "not found or it is a system database (leading '_')"
     
     
+    def iterate(name):
+        """ """
+        
+        if name in connection.server:
+            database = connection.server[name]
+            print "Iterating through", name, "with", DOCUMENTS_PER_ROUND, "Documents per round ..."
+            
+            rounds = 1
+            for doc in database:
+                d = database[doc]
+                if not d["_id"].startswith("_"):
+                    for k, v in d.iteritems():
+                        print " " * 4, k, ":", v
+                    print " " * 4, "-" * 10, "\n"
+                    
+                    if rounds % DOCUMENTS_PER_ROUND == 0:
+                        user_input = raw_input("Another %d Documents? (n/q) " % DOCUMENTS_PER_ROUND)
+                        if user_input.lower() != 'n': return
+
+                    rounds += 1
+                    
     available_commands = { 
         "flush": flush,
         "list": list_all,
@@ -98,6 +122,7 @@ class Command(BaseCommand):
         
         "detail": detail,
         "delete": delete,
+        "iter": iterate
     }
     commands_text = "\n  -" + "\n  -".join(available_commands.keys())
     

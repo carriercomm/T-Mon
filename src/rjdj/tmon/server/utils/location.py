@@ -29,13 +29,16 @@ from rjdj.tmon.server.exceptions import *
 def resolve(ip):
     """ Resolves an IP (v4) address to a dict containing 3-letter country code and lat/lng.  """
     geoip = pygeoip.GeoIP(settings.GEOIP_DB_LOCATION)
-    
-    addr_rec = geoip.record_by_addr(ip)
     res = {}
+    addr_rec = None
+    try:    
+        addr_rec = geoip.record_by_addr(ip)
+    except pygeoip.GeoIPError: 
+        pass
+    
     if addr_rec:
         res["country"] = addr_rec["country_code3"]
         res["latitude"] = addr_rec["latitude"]
         res["longitude"] = addr_rec["longitude"]
-#    else:
-#        raise InvalidIPAdress(ip)
+
     return res

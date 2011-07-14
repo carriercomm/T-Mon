@@ -42,6 +42,7 @@ from django.http import  (
                          )
 from django.template.response import SimpleTemplateResponse
 from django.contrib.auth.decorators import login_required
+from django.shortcuts import redirect
 
 #
 # Error pages
@@ -120,7 +121,7 @@ def users_per_os(request, wsid):
 # HTML Page(s)
 #
 
-@login_required(login_url='/admin/')
+@login_required()
 def dashboard(request, wsid):
     """ """
     try:
@@ -131,6 +132,16 @@ def dashboard(request, wsid):
 
     return SimpleTemplateResponse("dashboard.html",
                                    context = context)
+
+@login_required()
+def dashboard_redirect(request):
+    """ """
+    try:
+        webservices = db.get_webservices(request.user) 
+    except InvalidWebService:
+        return not_found(request)
+
+    return redirect('/view/dashboard/%d' % webservices[0].id)
 
 def overview(request):
     return SimpleTemplateResponse("index.html")
