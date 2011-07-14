@@ -3,6 +3,8 @@ CHANGES for rjdj.tmon
 
 trunk
 -----
+  - celaus: moved Client API to its own repository 
+(https://github.com/celaus/T-Mon-Client-API)
 
 0.1rc2 - 13/07/2011
 -------------------

@@ -43,8 +43,7 @@ setup(name = "rjdj.tmon",
                           'pygeoip',
                           ],
       entry_points = {
-          'console_scripts':['instance=nsdjango.management:execute_manager', 
-                             'loadtest=rjdj.tmon.tools.request_generator:run_from_commandline']
+          'console_scripts':['instance=nsdjango.management:execute_manager', ]
           },
       include_package_data = True,
       zip_safe = False,

@@ -106,18 +106,11 @@ def test_suite():
         optionflags = doctest.NORMALIZE_WHITESPACE | doctest.ELLIPSIS,
         )
 
-    # Client Tests
-    client = DocFileSuite('client/tests/tests.txt',
-        optionflags = doctest.NORMALIZE_WHITESPACE | doctest.ELLIPSIS,
-        )
-
-
     suite = unittest.TestSuite((
                                 collect,
                                 analyze,
                                 parser,
                                 queries,
-                                client,
                                 ))
     suite.layer = DjangoLayer
     return suite
