@@ -105,12 +105,12 @@ Creating CouchDB Documents:
 
 A tupel will be returned, with the corresponding WebService and the Document:
     >>> parser.TrackingRequestParser.create_document(make_post_data_dict(post_data, ws.id))
-    (<WebService: WebService object>, <TrackingData None@None {'username': None, 'url': u'/', 'country': u'USA', 'longitude': -73.9782, 'user_agent': u'Mozilla/5.0 (iPad; U; CPU OS 3_2_1 like Mac OS X; en-us) AppleWebKit/531.21.10 (KHTML, like Gecko) Mobile/7B405', 'timestamp': '...', 'latitude': 40.7449}>)
+    (<WebService: WebService object>, <TrackingData None@None {...}>)
 
 A private IP will result in None-values for country, latitude and longitude:
     >>> post_data = { "ip": "127.0.0.1", "useragent": "some user agent", "url": "/" }
     >>> parser.TrackingRequestParser.create_document(make_post_data_dict(post_data, ws.id))
-    (<WebService: WebService object>, <TrackingData None@None {'username': None, 'url': u'/', 'country': None, 'longitude': None, 'user_agent': u'some user agent', 'timestamp': '...', 'latitude': None}>)
+    (<WebService: WebService object>, <TrackingData None@None {...}>)
     
 A missing key will result in an exception:
     >>> post_data = { "useragent": "some user agent", "url": "/" }
