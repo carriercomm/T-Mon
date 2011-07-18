@@ -126,7 +126,7 @@ ChartController = function(canvas_id, data_source, options, label){
 };
 
 ChartController.prototype.updateData = function(){
-    if (this.waiting_for_request) {
+    if (this.locked) {
         return;
     }
     
