@@ -135,14 +135,14 @@ ChartController.prototype.updateData = function(){
                         self.data = received.results;
                         var real_data = self.label != ""? [ { label: self.label,  data: self.data } ]: self.data;
                         $.plot(self.canvas, real_data, self.options);
-                        self.unlock;
+                        self.unlock();
                     };
     this.last_request = $.ajax(this.data_source, {
         method: 'GET',
         dataType: 'json',
         success: onSuccess
     });
-    this.lock;
+    this.lock();
 };
 
 ChartController.prototype.setAutoRefresh = function(interval) {
