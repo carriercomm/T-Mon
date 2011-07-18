@@ -48,6 +48,7 @@ urlpatterns = patterns('',
 
     # GET interfaces (JavaScript)
     (r'^(?P<wsid>[\d]+)/data/users/country', views.users_per_country),
+    (r'^(?P<wsid>[\d]+)/data/users/city', views.users_per_city),
     (r'^(?P<wsid>[\d]+)/data/users/device', views.users_per_device),
     (r'^(?P<wsid>[\d]+)/data/users/os', views.users_per_os),
     (r'^(?P<wsid>[\d]+)/data/users/locations/(?P<ne_lat>[\d.-]+)/(?P<ne_lng>[\d.-]+)/(?P<sw_lat>[\d.-]+)/(?P<sw_lng>[\d.-]+)', views.users_locations),

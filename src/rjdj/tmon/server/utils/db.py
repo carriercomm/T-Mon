@@ -46,11 +46,17 @@ def get_webservices(user):
     """ """
     return user.webservice_set.all()
 
+def bulkinsert(documents, wsid):
+    if documents and wsid:
+        ws_name = get_webservice(wsid).name
+        database = connection.switch_db(ws_name)
+        database.update(documents)
+
 def store(data, wsid):
     """ Writes the given data to the associated CouchDB. """
-    ws_name = get_webservice(wsid).name
     
     if data:
+        ws_name = get_webservice(wsid).name
         data.store(connection.switch_db(ws_name))
 
 def execute(query, wsid, **options):

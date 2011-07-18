@@ -28,13 +28,16 @@ from rjdj.tmon.server.exceptions import *
 
 from rjdj.tmon.server.utils.parser import TrackingRequestParser, ChartResolutionParser
 from rjdj.tmon.server.utils.result_adapter import (DefaultDictAdapter,
-                                            RequestResultAdapter, 
-                                            PieChartAdapter,
-                                            MapAdapter,
-                                            )
+                                                   GeoRequestAdapter,
+                                                   RequestResultAdapter, 
+                                                   PieChartAdapter,
+                                                   MapAdapter,
+                                                    )
 from rjdj.tmon.server.utils.decorators import return_json
 from rjdj.tmon.server.utils import db
 from rjdj.tmon.server.utils import queries
+from rjdj.tmon.server.utils.bulkinsert_manager import BulkInsertManager
+
 
 from django.http import  (
                          HttpResponseNotFound,
@@ -43,6 +46,12 @@ from django.http import  (
 from django.template.response import SimpleTemplateResponse
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect
+
+#
+# Constants
+#
+
+MAX_DATA_AGE = 15
 
 #
 # Error pages
@@ -68,7 +77,7 @@ def data_collect(request):
     if request.method != "POST": raise InvalidRequest("GET is not allowed")
     
     webservice, data = TrackingRequestParser.create_document(request.POST)
-    db.store(data, webservice.id)
+    BulkInsertManager.insert(data, webservice.id)
 
 
 @return_json
@@ -76,7 +85,16 @@ def users_per_country(request, wsid):
     """ """
 
     query = queries.users_per_country
-    return DefaultDictAdapter(db.execute(query, wsid)).process()
+    
+    return GeoRequestAdapter(db.execute(query, wsid)[:[MAX_DATA_AGE]]).process()
+
+@return_json
+def users_per_city(request, wsid):
+    """ """
+ 
+    query = queries.users_per_city
+    return GeoRequestAdapter(db.execute(query, wsid)[:[MAX_DATA_AGE]]).process()
+
 
 @return_json
 def users_per_device(request, wsid):

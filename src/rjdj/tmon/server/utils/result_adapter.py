@@ -23,30 +23,64 @@
 __docformat__ = "reStructuredText"
 
 from datetime import datetime
+import operator
 
 class BasicAdapter(object):
+    """ """
 
     def __init__(self, query_results, max_results = 0, converter = None):
+        """ """
+        
         self.raw_results = query_results
         self.max_results = max_results
         self.converter = converter
         
     def process(self):
+        """ 
+        Uses the key() and value() methods to extract information from all rows.
+        Returns a list of dicts { key(): value() } per default, should be overwritten when necessary.
+        """
         return [{ self.key(res) : self.value(res) } for res in self.raw_results]
         
     def key(self, row): raise NotImplementedError()
     def value(self, row): raise NotImplementedError()
         
 class DefaultDictAdapter(BasicAdapter):
-
+    """ """
+    
     def key(self, row):
         return row["key"]
     
     def value(self, row):
         return row["value"]
+        
+class GeoRequestAdapter(BasicAdapter):
+    """ """
+    
+    def process(self):
+        results = {}
+        for res in self.raw_results:
+            key = self.key(res)
+            val = self.value(res)
+            if results.has_key(key):
+                results[key] += val
+            else:
+                results[key] = val
+        
+        return [{k: v} for k, v in sorted(results.iteritems(), key = operator.itemgetter(1), reverse = True)]
+    
+    def key(self, row):
+        if isinstance(row["key"], list):
+            return row["key"][1]
+        else:
+            return row["key"]
+    
+    def value(self, row):
+        return row["value"]
     
 class PieChartAdapter(BasicAdapter):    
-
+    """ """
+    
     def process(self):
         return [{ "label": self.key(res), "data": self.value(res) } for res in self.raw_results]
 
@@ -58,17 +92,27 @@ class PieChartAdapter(BasicAdapter):
 
 
 class MapAdapter(BasicAdapter):
-
+    """ """
+    
     def process(self):
-        return [ self.key(res) for res in self.raw_results]
+        results = []
+        
+        for res in self.raw_results:
+            lat_lng = self.key(res)
+            lat_lng.update(self.value(res))
+            results.append(lat_lng)
+            
+        return results
         
     def key(self, row): 
         return {"lat": row["key"][0], "lng" : row["key"][1]}
         
-    def value(self, row): raise NotImplementedError()
+    def value(self, row): 
+        return { "count": row["value"] }
     
 class RequestResultAdapter(BasicAdapter):
-
+    """ """
+    
     def process(self):
         if not self.converter: raise ValueError("a converter is required for this adapter")
         tmp = [0] * self.max_results

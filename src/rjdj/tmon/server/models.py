@@ -57,3 +57,6 @@ class TrackingData(Document):
     latitude = FloatField()
     longitude = FloatField()
     username = TextField()
+    city = TextField()
+    
+    

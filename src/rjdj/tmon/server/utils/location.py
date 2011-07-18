@@ -28,6 +28,7 @@ from rjdj.tmon.server.exceptions import *
 
 def resolve(ip):
     """ Resolves an IP (v4) address to a dict containing 3-letter country code and lat/lng.  """
+    
     geoip = pygeoip.GeoIP(settings.GEOIP_DB_LOCATION)
     res = {}
     addr_rec = None
@@ -38,6 +39,7 @@ def resolve(ip):
     
     if addr_rec:
         res["country"] = addr_rec["country_code3"]
+        res["city"] = addr_rec.has_key("city") and addr_rec["city"] or None
         res["latitude"] = addr_rec["latitude"]
         res["longitude"] = addr_rec["longitude"]
 

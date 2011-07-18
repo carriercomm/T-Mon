@@ -90,3 +90,5 @@ CACHES = {
 
 LOGIN_REDIRECT_URL = "/view/dashboard"
 LOGIN_URL = "/login"
+
+MAX_BATCH_ENTRIES = 10

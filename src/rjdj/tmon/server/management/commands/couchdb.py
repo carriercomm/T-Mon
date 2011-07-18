@@ -23,9 +23,9 @@
 __docformat__ = "reStructuredText"
 
 from django.core.management.base import BaseCommand
-from rjdj.tmon.server.utils.queries import all_queries
 from rjdj.tmon.server.models import WebService
 from rjdj.tmon.server.utils import db
+from rjdj.tmon.server.utils import queries
 from rjdj.tmon.server.utils.connection import connection
 from pprint import pprint
 
@@ -38,7 +38,7 @@ class Command(BaseCommand):
         """ """
     
         for ws in WebService.objects.all():
-            for q in all_queries:
+            for q in queries.all_queries:
                 db.sync(q, ws.id)
                     
     def flush():
@@ -114,6 +114,24 @@ class Command(BaseCommand):
                         if user_input.lower() != 'n': return
 
                     rounds += 1
+    
+    def cleanup(name, age):
+        """ """
+        
+        if name in connection.server:
+            rows = 0
+        
+            database = connection.server[name]
+            query = queries.age_in_days
+            results = query(database)
+            age = int(age)
+            for row in results[:age]:
+                del database[row.id]
+                rows += 1
+            
+            print "Deleted", rows, "entries from", name
+        
+        
                     
     available_commands = { 
         "flush": flush,
@@ -122,7 +140,8 @@ class Command(BaseCommand):
         
         "detail": detail,
         "delete": delete,
-        "iter": iterate
+        "iter": iterate,
+        "cleanup": cleanup,
     }
     commands_text = "\n  -" + "\n  -".join(available_commands.keys())
     

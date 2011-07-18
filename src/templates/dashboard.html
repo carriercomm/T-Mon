@@ -1,4 +1,21 @@
 <html>
+
+<!-- Copyright (c) 2011 Reality Jockey Ltd. and Contributors.-->
+<!-- This file is part of T-Mon.-->
+
+<!-- T-Mon is free software: you can redistribute it and/or modify-->
+<!-- it under the terms of the GNU Lesser General Public License as published by-->
+<!-- the Free Software Foundation, either version 3 of the License, or-->
+<!-- (at your option) any later version.-->
+
+<!-- T-Mon is distributed in the hope that it will be useful,-->
+<!-- but WITHOUT ANY WARRANTY; without even the implied warranty of-->
+<!-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the-->
+<!-- GNU Lesser General Public License for more details.-->
+
+<!-- You should have received a copy of the GNU Lesser General Public License-->
+<!-- along with T-Mon. If not, see <http://www.gnu.org/licenses/>.-->
+
   <head>
     <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Droid+Serif&subset=latin" />
     <link rel="stylesheet" type="text/css" href="/static/dashboard.css" />
@@ -34,18 +51,38 @@
             </div>
         {% endfor %}
     </div>
+    <span style="margin-left: 10px"><a id="lnk_show_secret" href="#">Show Secret</a></span>
+    <div id="infobox">
+        Secret: <br><textarea disabled="true"  rows="4" cols="32" style="resize:none">{{ webservice.secret }}</textarea>
+    </div>
+    <!-- Main Canvas -->
     <div id="container">
+    
+    <!-- LEFT --> 
         <div id="left_column">
-            <h3>Users by Operating System</h3>
+            <h3>Recent Users by Operating System</h3>
             <div><div id="per_os" class="piechart"></div></div>
-            <h3>Users by Device</h3>
+            <h3>Recent Users by Device</h3>
             <div><div id="per_device" class="piechart"></div></div>
         </div>
+        
+        
+    <!-- RIGHT --> 
         <div id="right_column">
-            <h3>Users by Location</h3>
+            <h3>Recent Users by Location</h3>
             <div>
                 <div id="map_canvas" class="map"></div>
-                <div id="per_country" class="list"></div>
+                <div id="lists" style="width: 510px;">
+                    <div style="float:left">
+                        <h3> ... by Country</h3>
+                        <div id="per_country" class="list" style="float:left"></div>
+                    </div>
+                    <div style="float:right">
+                        <h3> ... by City</h3>
+                        <div id="per_city" class="list"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                </div>
             </div>
             <h3>Requests in Real-Time</h3>
             <div>
@@ -58,6 +95,7 @@
 		                <option value="hour">Hours</option>
 		                <option value="day">Days</option>
 	                </select>
+	                <input id="btn_change_resolution" type="button" value="Change" />
                 </div>
             </div>
     </div>

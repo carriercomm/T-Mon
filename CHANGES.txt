@@ -3,6 +3,23 @@ CHANGES for rjdj.tmon
 
 trunk
 -----
+  - celaus: added login.css as a simple style for the login page
+
+  - celaus: some JavaScript improvements
+
+  - celaus: added city as a database field
+
+  - celaus: number of users is now shown at their locations
+
+  - celaus: added top cities and top countries to the web interface
+
+  - celaus: performance improvements for queries
+
+  - celaus: added bulk insertion for couchdb
+
+  - celaus: added couchdb command for deleting documents older than x 
+days
+
   - celaus: added couchdb command for iterating through documents
 
   - celaus: added redirection handler to the first dashboard of a logged in user

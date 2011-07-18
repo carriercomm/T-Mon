@@ -1,5 +1,25 @@
+##############################################################################
+#
+# Copyright (c) 2011 Reality Jockey Ltd. and Contributors.
+# This file is part of T-Mon.
+#
+# T-Mon is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# T-Mon is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with T-Mon. If not, see <http://www.gnu.org/licenses/>.
+#
+##############################################################################
+
 =====================================
-Tests for queries
+$ Tests for queries
 =====================================
 
     >>> import json
@@ -13,6 +33,7 @@ Tests for queries
     >>> from rjdj.tmon.server.utils.parser import TrackingRequestParser
     >>> from rjdj.tmon.server.utils import db
     >>> from rjdj.tmon.server.utils import queries
+
 
 Helper function:
 ---------------
@@ -57,13 +78,18 @@ Preparation:
     
 Now for some queries:
 ---------------------
-
     >>> query = queries.users_per_country
     >>> for result in db.execute(query, ws.id):
     ...     print result
-    <Row key='AUT', value=1>
-    <Row key='DEU', value=1>
-    <Row key='USA', value=1>
+    <Row key=['AUT', ...], value=1>
+    <Row key=['DEU', ...], value=1>
+    <Row key=['USA', ...], value=1>
+    
+    >>> query = queries.users_per_city
+    >>> for result in db.execute(query, ws.id):
+    ...     print result
+    <Row key=['...', ...], value=1>
+
 
     >>> query = queries.users_per_device
     >>> for result in db.execute(query, ws.id):

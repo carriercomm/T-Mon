@@ -27,13 +27,61 @@ from couchdb.design import ViewDefinition
 users_per_country = ViewDefinition(
                         design = "geographic",
                         name = "users_per_country",
-                        map_fun = """   function(doc) { 
-                                            if(doc["country"] != null) {    
-                                                emit(doc["country"], 1); 
+                        map_fun = """   function(doc) {
+                                            if(doc["country"] != null) {  
+                                                var regexp = /(\d+)-(\d+)-(\d+)T(\d+):(\d+):(\d+)Z/;
+                                                var matched = doc.timestamp.match(regexp);
+                                                matched.shift();
+                                                for(var i = 0; i < matched.length; i++) {
+                                                    matched[i] = Number(matched[i]);
+                                                }
+
+                                                var timestamp = new Date(matched[0], 
+                                                                         matched[1] - 1, 
+                                                                         matched[2], 
+                                                                         matched[3], 
+                                                                         matched[4], 
+                                                                         matched[5], 0);
+                                                var now = new Date();
+                                                var diff_date = now - timestamp;
+                                                var num_minutes = Math.ceil(diff_date / 60000); 
+                                                emit([ num_minutes, doc["country"] ], 1); 
                                             }
                                         }""",
                         reduce_fun = """function(keys, values) { return sum(values); }""",
-                        group = True)
+                        group = True,
+                        limit = 100)
+                        
+                                        
+users_per_city = ViewDefinition(
+                        design = "geographic",
+                        name = "users_per_city",
+                        map_fun = """   function(doc) {
+                                            if(doc["city"] != null) {    
+                                                var regexp = /(\d+)-(\d+)-(\d+)T(\d+):(\d+):(\d+)Z/;
+                                                var matched = doc.timestamp.match(regexp);
+                                                matched.shift();
+
+                                                for(var i = 0; i < matched.length; i++) {
+                                                    matched[i] = Number(matched[i]);
+                                                }
+
+                                                var timestamp = new Date(matched[0], 
+                                                                         matched[1] - 1, 
+                                                                         matched[2], 
+                                                                         matched[3], 
+                                                                         matched[4], 
+                                                                         matched[5], 0);
+                                                var now = new Date();
+                                                var diff_date = now - timestamp;
+                                                var num_minutes = Math.ceil(diff_date / 60000); 
+                                                emit([ num_minutes, doc["city"] ], 1); 
+                                            }
+                                        } """,
+                        reduce_fun = """function(keys, values) { return sum(values); }""",
+                        group = True,
+                        limit = 100)
+
 
 users_per_device = ViewDefinition(
                         design = "geographic",
@@ -49,7 +97,8 @@ users_per_device = ViewDefinition(
                                             }
                                         } """,
                         reduce_fun = """function(keys, values) { return sum(values); }""",
-                        group = True)
+                        group = True,
+                        limit = 1000)
 
 users_per_os = ViewDefinition(
                         design = "geographic",
@@ -64,7 +113,8 @@ users_per_os = ViewDefinition(
                                             }
                                         } """,
                         reduce_fun = """function(keys, values) { return sum(values); }""",
-                        group = True)
+                        group = True,
+                        limit = 1000)
 
 request_count = ViewDefinition(
                         design = "requests",
@@ -93,10 +143,38 @@ users_locations = ViewDefinition(
                         reduce_fun = """function(keys, values) { return sum(values); }""",
                         group = True)
 
+
+# hacky ... from http://www.java2s.com/Tutorial/JavaScript/0240__Date/Getyearmonthanddayfromdatedifference.htm
+age_in_days = ViewDefinition(
+                        design = "entries",
+                        name = "age_in_days",
+                        map_fun = """   function(doc) {
+                                            var regexp = /(\d+)-(\d+)-(\d+)T(\d+):(\d+):(\d+)Z/;
+                                            var matched = doc.timestamp.match(regexp);
+                                            matched.shift();
+
+                                            for(var i = 0; i < matched.length; i++) {
+                                                matched[i] = Number(matched[i]);
+                                            }
+
+                                            var timestamp = new Date(matched[0], 
+                                                                     matched[1] - 1, 
+                                                                     matched[2], 
+                                                                     matched[3], 
+                                                                     matched[4], 
+                                                                     matched[5], 0);
+                                            var now = new Date();
+                                            var diff_date = now - timestamp;
+                                            var num_days = Math.ceil(((diff_date % 31536000000) % 2628000000)/86400000); 
+                                            emit(num_days, doc._id);
+                                        } """,
+                                        descending = True)
 all_queries = (
         users_per_country,
+        users_per_city,
         users_per_os,
         users_per_device,
         request_count,
         users_locations,
+        age_in_days,
     )

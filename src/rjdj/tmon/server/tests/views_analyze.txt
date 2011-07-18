@@ -1,11 +1,32 @@
-=====================================
-Tests for the RESTful API (/data/...)
-=====================================
+##############################################################################
+#
+# Copyright (c) 2011 Reality Jockey Ltd. and Contributors.
+# This file is part of T-Mon.
+#
+# T-Mon is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# T-Mon is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with T-Mon. If not, see <http://www.gnu.org/licenses/>.
+#
+##############################################################################
+
+=======================================
+$ Tests for the RESTful API (/data/...)
+=======================================
 
     >>> import json
     >>> import base64
     >>> import hashlib
     >>> import time
+    >>> import random
     >>> from rjdj.tmon.server.models import WebService
     >>> from django.contrib.auth.models import User 
     >>> from Crypto.Cipher import AES
@@ -17,7 +38,7 @@ Preparations:
     >>> c = Client()
     >>> TEST_URL = "/data/collect"
     >>> TEST_SECRET = "AAAAAAABCDEFABCDEFABCDEF"
-
+    
     >>> user = User()
     >>> user.username = "another_testuser"
     >>> user.set_password("!test")
@@ -27,7 +48,7 @@ Preparations:
     >>> ws = WebService()    
     >>> ws.owner = user
     >>> ws.secret = TEST_SECRET
-    >>> ws.name = "_".join(("testdb", hashlib.md5(str(time.time())).hexdigest()))
+    >>> ws.name = "_".join(("testdb", hashlib.md5(str(random.random() + time.time())).hexdigest()))
     >>> ws.save()
     
     
@@ -102,7 +123,7 @@ Real-Time Request-Counting API (possible values are second, minute, hour, day an
 Retrieve the number of users by country:
 
     >>> make_request("/data/users/country", ws.id)
-    {u'status': 200, u'results': [{u'USA': ...}]}
+    {u'status': 200, u'results': [{u'USA':...}]}
     
 .. and by operating system:
     

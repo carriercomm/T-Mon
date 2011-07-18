@@ -84,17 +84,22 @@ class TrackingRequestParser(object):
         user_location = location.resolve(ip)
         
         country = None
+        city = None
         latitude = None
         longitude = None
         
+        
         if user_location:
+            # some (127.0.0.0, 10.0.0.0, 192.168.0.0 or other) IP addresses could result in None
             country = user_location["country"]
+            city = user_location["city"]
             latitude = user_location["latitude"]
             longitude = user_location["longitude"]
            
         tracking_data = TrackingData(user_agent = useragent,
                                      timestamp = datetime.now(),
                                      country = country,
+                                     city = city,
                                      latitude = latitude,
                                      longitude = longitude,
                                      username = username,

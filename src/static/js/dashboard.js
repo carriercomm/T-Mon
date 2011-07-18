@@ -1,3 +1,19 @@
+// Copyright (c) 2011 Reality Jockey Ltd. and Contributors.
+// This file is part of T-Mon.
+
+// T-Mon is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+
+// T-Mon is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU Lesser General Public License for more details.
+
+// You should have received a copy of the GNU Lesser General Public License
+// along with T-Mon. If not, see <http://www.gnu.org/licenses/>.
+
 var markesArray = [];
 
 function round(number,X) {
@@ -76,7 +92,7 @@ MapController.prototype.updateMarkers = function(){
                   var marker = new google.maps.Marker({
                           position: new google.maps.LatLng(positions[i]["lat"], positions[i]["lng"]),
                           title: "Origin of one or more requests!",
-                          icon: "http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=!|FFFF00|000000"
+                          icon: "http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=" + positions[i]["count"] + "|FFFF00|000000"
                       });
                   marker.setMap(self.map);
                   self.markers[i] = marker;
@@ -105,22 +121,28 @@ ChartController = function(canvas_id, data_source, options, label){
     this.updateData();
     this.interval_id = null;
     this.label = label;
+    this.locked = false;
+    this.last_request = null;
 };
 
 ChartController.prototype.updateData = function(){
-    //showLoadingImage(this.canvas)
+    if (this.waiting_for_request) {
+        return;
+    }
+    
     var self = this;
     var onSuccess = function(received) {
                         self.data = received.results;
                         var real_data = self.label != ""? [ { label: self.label,  data: self.data } ]: self.data;
-                         $.plot(self.canvas, real_data, self.options);
+                        $.plot(self.canvas, real_data, self.options);
+                        self.unlock;
                     };
-    $.ajax({
-        url: this.data_source,
+    this.last_request = $.ajax(this.data_source, {
         method: 'GET',
         dataType: 'json',
         success: onSuccess
     });
+    this.lock;
 };
 
 ChartController.prototype.setAutoRefresh = function(interval) {
@@ -130,13 +152,26 @@ ChartController.prototype.setAutoRefresh = function(interval) {
 
 ChartController.prototype.clearAutoRefresh = function(interval) {
     clearInterval(this.inverval_id);
+    if (this.locked) { 
+        this.last_request.abort();
+        this.unlock;
+    }
+};
+
+ChartController.prototype.lock = function(){
+    this.locked = true;
+};
+
+ChartController.prototype.unlock = function(){
+    this.locked = false;
 };
 
 ChartController.prototype.clearData = function(){
-    this.data = []
+    this.data = [];
 };
 
 ChartController.prototype.switchSource = function(new_source, label) {
+    showLoadingImage(this.canvas)
     this.data_source = new_source;
     this.clearData();
     this.updateData();    
@@ -144,12 +179,65 @@ ChartController.prototype.switchSource = function(new_source, label) {
 };
 
 
+// Lists
+// -----------------------------------------------------------------------------
+
+var ListController;
+ListController = function(canvas_id, data_source){
+    this.canvas = $("#" + canvas_id);
+    this.data_source = data_source;
+    this.data = [];
+    this.updateData();
+    this.interval_id = null;
+};
+
+ListController.prototype.updateData = function(){
+    var self = this;
+    var onSuccess = function(received) {
+                        self.data = received.results;
+                        self.canvas.empty();
+                        self.canvas.html("<ol>");
+                        var country_list = self.canvas.find("ol");
+                        for (var res in self.data) {
+                            var obj = self.data[res];
+                            for (var country in obj) {                                
+                                country_list.append("<li><b>" + country + "</b>: " + obj[country] + "</li>");
+                            }
+                        }                        
+                    };
+    $.ajax({
+        url: this.data_source,
+        method: 'GET',
+        dataType: 'json',
+        success: onSuccess
+    });
+};
+
+ListController.prototype.setAutoRefresh = function(interval) {
+    var callback = Delegate.create(this, this.updateData);
+    this.inverval_id = setInterval(callback, interval);
+};
+
+ListController.prototype.clearAutoRefresh = function(interval) {
+    clearInterval(this.inverval_id);
+};
+
+ListController.prototype.clearData = function(){
+    this.data = [];
+};
+
 // Application
 // -----------------------------------------------------------------------------
 var Application = {};
 Application = function(e){
     
     this.map = new MapController("map_canvas");
+
+    this.users_per_country = new ListController("per_country", 
+                                                 "/" + webservice_id + "/data/users/country");
+                                                 
+    this.users_per_city = new ListController("per_city", 
+                                               "/" + webservice_id + "/data/users/city");
     
     this.per_os = new ChartController("per_os", 
                                        "/" + webservice_id + "/data/users/os",  
@@ -174,11 +262,14 @@ Application = function(e){
                                             },
                                             "requests per second" );
 
+
 };
 
 Application.prototype.setRealtime = function() {
     this.req_per_sec.setAutoRefresh(1000);
     this.map.setAutoRefresh(5000);
+    this.users_per_country.setAutoRefresh(60000);
+    this.users_per_city.setAutoRefresh(60000);
 };
 
 Application.prototype.clearRealtime = function() {
@@ -192,10 +283,36 @@ var app;
 document.addEventListener("DOMContentLoaded", function(e){
         app = new Application(e);
         app.setRealtime();
+
         $('#cbo_request_count_per').change(function() {
             var count = Number($('#txt_timespan').val());
-            var res = $(this).val();
-            app.changeResolution(res, count);
+            if(count > 0){
+                var res = $(this).val();
+                app.changeResolution(res, count);
+            }
+        });
+        
+        $('#txt_timespan').keydown(function(e) {
+            var code = (e.keyCode ? e.keyCode : e.which);
+            if(code == 13 || code == 9) { //Enter keycode
+                var count = Number($('#txt_timespan').val());
+                var res = $('#cbo_request_count_per').val();
+                if(count > 0) {
+                    app.changeResolution(res, count);
+                }
+            }
+        });
+        $('#btn_change_resolution').click(function() {
+            var count = Number($('#txt_timespan').val());
+            if(count > 0) {
+                var res = $('#cbo_request_count_per').val();
+                app.changeResolution(res, count);
+            }
+        });
+        $('#lnk_show_secret').click(function(e) {
+            e.preventDefault();
+            var visibility = $('#infobox').css('display');
+            $('#infobox').css('display', visibility == 'block'? 'none': 'block');
         });
     }, false);
 
