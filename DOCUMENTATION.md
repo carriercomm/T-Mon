@@ -1,15 +1,22 @@
 RjDj T-Mon Realtime Traffic Monitoring Server
 =============================================================================
 
+## Features:
+* Realtime monitoring of multiple web services from multiple users
+* Platform independency
+* Show the 100 latest requests on a map
+* Ranking of the 10 most active countries and cities
+* and much more!
+
 ## Basic Setup:
 
 1. Start the server as stated in README
 2. Connect to __http://localhost:8000/admin__ with your browser
-3. Log In using the created administrator credentials
-4. Create a new WebService with a __unique name__ and a secret
+3. Log in using the created administrator credentials
+4. Create a new WebService with a __unique name__. An ID and a secret will be created on save.
 5. With the secret and the webservice's id, use the client package to add some data!
 
-## General
+## Web Services and Web Pages by T-Mon
 
 ### Request
 POST data: [data=...&wsid=...]
@@ -34,7 +41,7 @@ If an error occurs, the corresponding HTTP status code is also set.
 
 ### Authentication
 
-Every web service requires to be authenticated with a valid user account (can be created in the Django Admin interface), except for the data collection web service, which relies on AES encryption with a shared secret.
+Every web service requires to be authenticated with a valid user account (can be created in the Django Admin interface), except for the data collection web service, which relies on (256 bit) AES encryption with a generated shared secret.
 
 ## Web Pages
 
@@ -44,14 +51,20 @@ _Root/Index page._
 
 Returns this page.
 
+GET "/login" HTTP1.1
+-----------------------------------------------------------------------------
+_Log In page._
+
+Lets a user log in, to monitor his web services.
+
 GET "/view/dashboard/$wsid" HTTP1.1
 -----------------------------------------------------------------------------
-_Root/Index page._
+_Dashboard for server monitoring._
 
 ### Request
     wsid           : long [optional]
 
-Shows the dashboard for the specified web service or a page to choose one web service from.
+Shows the dashboard for the specified web service or a page to choose one web service from. If the $wsid is missing, the first web service of the user will be shown.
 
 
 ## RESTful Interfaces
@@ -82,7 +95,17 @@ POST /data/collect: data=ANENCRYPTEDBASE64STRING&wsid=1
 
 GET "/$wsid/data/users/country" HTTP1.1
 -----------------------------------------------------------------------------
-_Retrieves the users grouped per country for this web service._
+_Retrieves the users grouped by country for this web service._
+
+### Request
+    wsid           : long
+
+### Response
+    status_code    : long
+    
+GET "/$wsid/data/users/city" HTTP1.1
+-----------------------------------------------------------------------------
+_Retrieves the users grouped by city for this web service._
 
 ### Request
     wsid           : long
@@ -106,7 +129,7 @@ _Retrieves the users grouped by latitude and longitude this web service._
     
 GET "/$wsid/data/users/os" HTTP1.1
 -----------------------------------------------------------------------------
-_Retrieves the users grouped per operating system for this web service._
+_Retrieves the users grouped by operating system for this web service._
 
 ### Request
     wsid           : long
@@ -116,7 +139,7 @@ _Retrieves the users grouped per operating system for this web service._
     
 GET "/$wsid/data/users/device" HTTP1.1
 -----------------------------------------------------------------------------
-_Retrieves the users grouped per device for this web service._
+_Retrieves the users grouped by device for this web service._
 
 ### Request
     wsid           : long

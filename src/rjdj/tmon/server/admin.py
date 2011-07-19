@@ -22,7 +22,34 @@
 
 __docformat__ = "reStructuredText"
 
+import time
+import hashlib
+
 from django.contrib import admin
 from rjdj.tmon.server.models import *
 
-admin.site.register(WebService)
+
+class WebServiceAdmin(admin.ModelAdmin):
+    
+    readonly_fields = ('id', 'secret')
+    fieldsets = (
+        (None, {
+            'fields': (('id','owner'),'name', 'secret')
+        }),
+    )
+    
+    list_display = ('id', 'name', 'owner')
+    list_display_links = ('id', 'name', 'owner')
+    search_fields = ('name', )
+    list_filter = ('owner__username', )
+    
+    def save_model(self, request, obj, form, change):
+        """ Generates the secret and saves the model. """
+        
+        if not change:
+            obj.secret = hashlib.md5(obj.name + str(time.time())).hexdigest()
+        obj.save()    
+
+admin.site.register(WebService, WebServiceAdmin)
+
+

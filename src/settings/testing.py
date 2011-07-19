@@ -41,6 +41,3 @@ TRACKING_DATABASE = {
     'user': 'admin',
     'password': 'admin',
     }
-
-LOGFILE = path.join(BASE_DIR, "..", "testing.log")
-LOGLEVEL = "debug"
