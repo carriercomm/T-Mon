@@ -25,14 +25,16 @@ __docformat__ = "reStructuredText"
 from rjdj.tmon.server.utils.responses import GenericJSONResponse
 from rjdj.tmon.server.exceptions import *
 from django.conf import settings
+from datetime import datetime
 import logging
+
+logger = logging.getLogger("debug")
 
 def return_json(view):
     """ A decorator, so the view returns proper messages. """
     
     def restful_view(request, *args, **kwargs):
         """ """
-        
         status = 200
         msg = ""
         data = {}
@@ -43,12 +45,13 @@ def return_json(view):
         except TMonServerError as ex: # could as well be more diverse
             status = ex.http_status_code 
             if settings.DEBUG: msg = str(ex)
-            logging.error("status code %d: %s" % (status, ex))
+            logger.error("status code %d: %s" % (status, ex))
             
         except Exception as ex:
             status = 500
+            
             if settings.DEBUG: msg = str(ex)
-            logging.error("status code %d: %s" % (status, ex))
+            logger.error("status code %d: %s" % (status, ex))
             
         if msg and settings.DEBUG: data.update({ "message": msg })
         return GenericJSONResponse(status, data).create()
@@ -65,6 +68,6 @@ def print_request_time(func):
         try:
             return func(*args, **kwargs)
         finally:
-            logging.info("request took %s" % (datetime.now() - start))
+            logger.info("request took %s" % (datetime.now() - start))
 
     return funct

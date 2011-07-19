@@ -33,7 +33,7 @@ from rjdj.tmon.server.utils.result_adapter import (DefaultDictAdapter,
                                                    PieChartAdapter,
                                                    MapAdapter,
                                                     )
-from rjdj.tmon.server.utils.decorators import return_json
+from rjdj.tmon.server.utils.decorators import return_json, print_request_time
 from rjdj.tmon.server.utils import db
 from rjdj.tmon.server.utils import queries
 from rjdj.tmon.server.utils.bulkinsert_manager import BulkInsertManager
@@ -51,7 +51,7 @@ from django.shortcuts import redirect
 # Constants
 #
 
-MAX_DATA_AGE = 15
+MAX_DATA_AGE = 600
 
 #
 # Error pages
@@ -70,6 +70,7 @@ def server_error(request):
 # RESTful web services 
 #
 
+@print_request_time
 @return_json
 def data_collect(request):
     """ """

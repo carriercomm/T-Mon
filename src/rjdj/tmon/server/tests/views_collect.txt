@@ -108,3 +108,14 @@ Invalid IPs fail silently:
     >>> request = {"ip": "192.168.1.1", "useragent": "some_user_agent", "url": "/"}
     >>> make_request(TEST_URL, ws.id, request)
     {u'status': 200}
+    
+    
+    >>> request = { 
+    ...             "ip": "157.205.71.166",
+    ...             "useragent": "Mozilla/5.0 (Linux; U; Android 2.2.1; fr-ch;" + \
+    ...                          "A43 Build/FROYO) AppleWebKit/533.1 (KHTML, like Gecko) Version/4.0 Mobile Safari/533.1",
+    ...             "url": "/register" }
+    >>> make_request(TEST_URL, ws.id, request)
+    {u'status': 200}
+
+

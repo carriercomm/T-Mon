@@ -26,7 +26,7 @@ import os
 from setuptools import setup, find_packages
 
 setup(name = "rjdj.tmon",
-      version = "0.1rc2",
+      version = "0.1rc3",
       author = 'Reality Jockey Ltd.',
       author_email = 'info@rjdj.me',
       description = 'RjDj Tracking Monitor',

@@ -91,4 +91,45 @@ CACHES = {
 LOGIN_REDIRECT_URL = "/view/dashboard"
 LOGIN_URL = "/login"
 
-MAX_BATCH_ENTRIES = 10
+MAX_BATCH_ENTRIES = 300
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': True,
+    'formatters': {
+        'verbose': {
+            'format': '%(levelname)s [%(asctime)s] %(module)s.py: %(message)s'
+        },
+        'simple': {
+            'format': '%(levelname)s [%(asctime)s]: %(message)s'
+        },
+    },
+    'handlers': {
+        'console': {
+            'level':'DEBUG',
+            'class':'logging.StreamHandler',
+            'formatter': 'simple'
+        },
+        'console-verbose': {
+            'level':'DEBUG',
+            'class':'logging.StreamHandler',
+            'formatter': 'verbose'
+        },
+        "null": {
+            'level':'DEBUG',
+            'class':'django.utils.log.NullHandler',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers':['console'],
+            'propagate': True,
+            'level':'INFO',
+        },
+        'debug': {
+            'handlers':['console-verbose'],
+            'propagate': True,
+            'level':'DEBUG',
+        }
+    }
+}

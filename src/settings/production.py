@@ -43,7 +43,3 @@ TRACKING_DATABASE = {
     'host': 'localhost',
     'port': 5984,
     }
-
-
-LOGFILE = path.join(BASE_DIR,"..","tmon.log")
-LOGLEVEL = "info"

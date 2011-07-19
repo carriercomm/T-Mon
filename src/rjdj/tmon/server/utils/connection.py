@@ -73,7 +73,7 @@ class DBConnection(object):
             for q in all_queries:
                 q.sync(self.database)
         elif name in self.server:
-            self.switch_db(wsid)
+            self.switch_db(name)
             
         return self.database
 

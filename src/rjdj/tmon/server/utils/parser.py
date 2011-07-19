@@ -30,6 +30,10 @@ from rjdj.tmon.server.exceptions import *
 from datetime import datetime
 from db import get_webservice
 
+import logging
+
+logger = logging.getLogger('debug')
+
 class TrackingRequestParser(object):
     """ 
         Parses a request containing trackable data from a client to a CouchDB document.
@@ -92,7 +96,12 @@ class TrackingRequestParser(object):
         if user_location:
             # some (127.0.0.0, 10.0.0.0, 192.168.0.0 or other) IP addresses could result in None
             country = user_location["country"]
-            city = user_location["city"]
+            try:
+                city = unicode(user_location["city"] or "", "utf-8")
+            except UnicodeError as err:
+                city = u""
+                logger.error("%s: %s" % (err, user_location["city"]))
+                
             latitude = user_location["latitude"]
             longitude = user_location["longitude"]
            

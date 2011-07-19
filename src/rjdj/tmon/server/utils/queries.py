@@ -28,7 +28,7 @@ users_per_country = ViewDefinition(
                         design = "geographic",
                         name = "users_per_country",
                         map_fun = """   function(doc) {
-                                            if(doc["country"] != null) {  
+                                            if(doc["country"] != null && doc["country"] != "") {  
                                                 var regexp = /(\d+)-(\d+)-(\d+)T(\d+):(\d+):(\d+)Z/;
                                                 var matched = doc.timestamp.match(regexp);
                                                 matched.shift();
@@ -50,14 +50,14 @@ users_per_country = ViewDefinition(
                                         }""",
                         reduce_fun = """function(keys, values) { return sum(values); }""",
                         group = True,
-                        limit = 100)
+                        limit = 10)
                         
                                         
 users_per_city = ViewDefinition(
                         design = "geographic",
                         name = "users_per_city",
                         map_fun = """   function(doc) {
-                                            if(doc["city"] != null) {    
+                                            if(doc["city"] != null && doc["city"] != "") {    
                                                 var regexp = /(\d+)-(\d+)-(\d+)T(\d+):(\d+):(\d+)Z/;
                                                 var matched = doc.timestamp.match(regexp);
                                                 matched.shift();
@@ -80,7 +80,7 @@ users_per_city = ViewDefinition(
                                         } """,
                         reduce_fun = """function(keys, values) { return sum(values); }""",
                         group = True,
-                        limit = 100)
+                        limit = 10)
 
 
 users_per_device = ViewDefinition(
@@ -98,7 +98,7 @@ users_per_device = ViewDefinition(
                                         } """,
                         reduce_fun = """function(keys, values) { return sum(values); }""",
                         group = True,
-                        limit = 1000)
+                        limit = 500)
 
 users_per_os = ViewDefinition(
                         design = "geographic",
@@ -114,7 +114,7 @@ users_per_os = ViewDefinition(
                                         } """,
                         reduce_fun = """function(keys, values) { return sum(values); }""",
                         group = True,
-                        limit = 1000)
+                        limit = 500)
 
 request_count = ViewDefinition(
                         design = "requests",

@@ -3,6 +3,10 @@ CHANGES for rjdj.tmon
 
 trunk
 -----
+  - celaus: added package source http://download.rjdj.me/python
+
+  - celaus: added logging handlers "debug" and "django"
+
   - celaus: added login.css as a simple style for the login page
 
   - celaus: some JavaScript improvements
