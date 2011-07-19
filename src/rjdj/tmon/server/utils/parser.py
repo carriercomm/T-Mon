@@ -83,9 +83,10 @@ class TrackingRequestParser(object):
             url = data[TrackingRequestParser.URL_KEY]
         except KeyError as ke:
             raise FieldMissing(ke)
-
-        username = data.get(TrackingRequestParser.USER_KEY)
-        user_location = location.resolve(ip)
+    
+        username = data.get(TrackingRequestParser.USER_KEY)        
+        
+        user_location = ip and location.resolve(ip) or None
         
         country = None
         city = None

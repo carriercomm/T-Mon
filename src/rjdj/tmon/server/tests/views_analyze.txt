@@ -88,7 +88,10 @@ Inserting some sample data:
     ...             "url": "/login" }, { 
     ...             "ip": "72.32.231.8",
     ...             "useragent": "Mozilla/5.0 -- some weird user agent", 
-    ...             "url": "/register" } ]
+    ...             "url": "/register" }, { 
+    ...             "ip": "72.32.231.8",
+    ...             "useragent": "Dimensions 1.0 (iPod touch; iPhone OS 4.3.4; de_AT)", 
+    ...             "url": "/register" }]
 
 Finally insert the data:
 
@@ -101,7 +104,7 @@ Finally insert the data:
     {u'status': 200}
     {u'status': 200}
     {u'status': 200}
-
+    {u'status': 200}
 
 Now for some requests (GET-API for JavaScript calls):
 -----------------------------------------------------
