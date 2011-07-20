@@ -111,6 +111,11 @@ A private IP will result in None-values for country, latitude and longitude:
     >>> post_data = { "ip": "127.0.0.1", "useragent": "some user agent", "url": "/" }
     >>> parser.TrackingRequestParser.create_document(make_post_data_dict(post_data, ws.id))
     (<WebService: WebService object>, <TrackingData None@None {...}>)
+
+... as will "None" for IP:
+    >>> post_data = { "ip": None, "useragent": "some user agent", "url": "/" }
+    >>> parser.TrackingRequestParser.create_document(make_post_data_dict(post_data, ws.id))
+    (<WebService: WebService object>, <TrackingData None@None {...}>)
     
 A missing key will result in an exception:
     >>> post_data = { "useragent": "some user agent", "url": "/" }

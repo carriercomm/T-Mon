@@ -28,38 +28,44 @@ from rjdj.djangotornado.signals import tornado_exit
 from django.conf import settings
 from django.dispatch import receiver
 
-insertion_stacks = {}
-
-__all__ = ["BulkInsertManager"]
+__all__ = ["bulkInsertManager"]
 
 class BulkInsertManager(object):
     """ """
     
-    @staticmethod
-    def insert(document, wsid):
+    def __init__(self):
+        """ """
+        
+        self.insertion_stacks = {}
+
+    
+    def insert(self, document, wsid):
         """ Adds a document to an insertion queue which will be inserted after a certain number of  """
         
-        if not insertion_stacks.has_key(wsid):
-            insertion_stacks[wsid] = [document]
+        if not self.insertion_stacks.has_key(wsid):
+            self.insertion_stacks[wsid] = [document]
         else:
-            insertion_stacks[wsid].append(document)
+            self.insertion_stacks[wsid].append(document)
         
                     
-        if settings.DEBUG or len(insertion_stacks[wsid]) > settings.MAX_BATCH_ENTRIES:
-            db.bulkinsert(insertion_stacks[wsid], wsid)
-            insertion_stacks[wsid] = []        
-            
-    @staticmethod
-    def insert_all():
+        if settings.DEBUG or len(self.insertion_stacks[wsid]) > settings.MAX_BATCH_ENTRIES:
+            db.bulkinsert(self.insertion_stacks[wsid], wsid)
+            self.insertion_stacks[wsid] = []        
+
+    def insert_all(self):
         """ Inserts all remaining documents in the cache regardless of their number. """ 
         
-        for wsid, stack in insertion_stacks.items():
+        for wsid, stack in self.insertion_stacks.items():
             db.bulkinsert(stack, wsid)
             
-        insertion_stacks = {}
-        
+        self.insertion_stacks = {}
+
+bulkInsertManager = BulkInsertManager()
+    
 def on_tornado_exit(sender, **kwargs):
     """ When Tornado exits, write everything from the buffer to the database. """
-    BulkInsertManager.insert_all()
+    bulkInsertManager.insert_all()
 
 tornado_exit.connect(on_tornado_exit)
+
+

@@ -36,7 +36,7 @@ from rjdj.tmon.server.utils.result_adapter import (DefaultDictAdapter,
 from rjdj.tmon.server.utils.decorators import return_json, print_request_time
 from rjdj.tmon.server.utils import db
 from rjdj.tmon.server.utils import queries
-from rjdj.tmon.server.utils.bulkinsert_manager import BulkInsertManager
+from rjdj.tmon.server.utils.bulkinsert_manager import bulkInsertManager
 
 
 from django.http import  (
@@ -51,7 +51,7 @@ from django.shortcuts import redirect
 # Constants
 #
 
-MAX_DATA_AGE = 600
+MAX_DATA_AGE = 15
 
 #
 # Error pages
@@ -59,10 +59,12 @@ MAX_DATA_AGE = 600
 
 def not_found(request):
     """ HTTP Error Code 404. """
+    
     return HttpResponseNotFound()
 
 def server_error(request):
     """ HTTP Error Code 500. """ 
+    
     return HttpResponseServerError()
 
 
@@ -78,8 +80,8 @@ def data_collect(request):
     if request.method != "POST": raise InvalidRequest("GET is not allowed")
     
     webservice, data = TrackingRequestParser.create_document(request.POST)
-    BulkInsertManager.insert(data, webservice.id)
-
+    
+    bulkInsertManager.insert(data, webservice.id)
 
 @return_json
 def users_per_country(request, wsid):
@@ -132,6 +134,7 @@ def users_locations(request, wsid, ne_lat, ne_lng, sw_lat, sw_lng):
 @return_json
 def users_per_os(request, wsid):
     """ """
+    
     query = queries.users_per_os
     return PieChartAdapter(db.execute(query, wsid)).process()
 
