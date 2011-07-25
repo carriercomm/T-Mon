@@ -45,7 +45,9 @@ users_per_country = ViewDefinition(
                                                 var now = new Date();
                                                 var diff_date = now - timestamp;
                                                 var num_minutes = Math.round(diff_date / 60000); 
-                                                emit([ num_minutes, doc["country"] ], 1); 
+                                                if(num_minutes < 10) {
+                                                    emit(doc["country"], 1); 
+                                                }
                                             }
                                         }""",
                         reduce_fun = """function(keys, values) { return sum(values); }""",
@@ -75,7 +77,10 @@ users_per_city = ViewDefinition(
                                                 var now = new Date();
                                                 var diff_date = now - timestamp;
                                                 var num_minutes = Math.round(diff_date / 60000); 
-                                                emit([ num_minutes, doc["city"] ], 1); 
+                                                
+                                                if(num_minutes < 10) {
+                                                    emit([ num_minutes, doc["city"] ], 1); 
+                                                }
                                             }
                                         } """,
                         reduce_fun = """function(keys, values) { return sum(values); }""",

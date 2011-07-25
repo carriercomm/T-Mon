@@ -49,12 +49,6 @@ from django.contrib.auth import logout
 from django.shortcuts import redirect
 
 #
-# Constants
-#
-
-MAX_DATA_AGE = 15
-
-#
 # Error pages
 #
 
@@ -89,15 +83,15 @@ def users_per_country(request, wsid):
     """ """
 
     query = queries.users_per_country
-    
-    return GeoRequestAdapter(db.execute(query, wsid)[:[MAX_DATA_AGE]]).process()
+    return GeoRequestAdapter(db.execute(query, wsid)).process()[:5]
+
 
 @return_json
 def users_per_city(request, wsid):
     """ """
  
     query = queries.users_per_city
-    return GeoRequestAdapter(db.execute(query, wsid)[:[MAX_DATA_AGE]]).process()
+    return GeoRequestAdapter(db.execute(query, wsid)).process()[:5]
 
 
 @return_json
@@ -176,7 +170,7 @@ def dashboard_redirect(request):
     except InvalidWebService:
         return not_found(request)
 
-    return redirect('/view/dashboard/%d' % webservices[-1].id)
+    return redirect('/view/dashboard/%d' % webservices[0].id)
 
 def overview(request):
     """ Shows the documentation text. """

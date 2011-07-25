@@ -60,20 +60,12 @@ class GeoRequestAdapter(BasicAdapter):
     def process(self):
         results = {}
         for res in self.raw_results:
-            key = self.key(res)
-            val = self.value(res)
-            if results.has_key(key):
-                results[key] += val
-            else:
-                results[key] = val
-        
+            results[self.key(res)] = self.value(res)
+
         return [{k: v} for k, v in sorted(results.iteritems(), key = operator.itemgetter(1), reverse = True)]
     
     def key(self, row):
-        if isinstance(row["key"], list):
-            return row["key"][1]
-        else:
-            return row["key"]
+        return row["key"]
     
     def value(self, row):
         return row["value"]
