@@ -44,13 +44,13 @@ users_per_country = ViewDefinition(
                                                                          matched[5], 0);
                                                 var now = new Date();
                                                 var diff_date = now - timestamp;
-                                                var num_minutes = Math.ceil(diff_date / 60000); 
+                                                var num_minutes = Math.round(diff_date / 60000); 
                                                 emit([ num_minutes, doc["country"] ], 1); 
                                             }
                                         }""",
                         reduce_fun = """function(keys, values) { return sum(values); }""",
                         group = True,
-                        limit = 10)
+                        limit = 5)
                         
                                         
 users_per_city = ViewDefinition(
@@ -74,13 +74,13 @@ users_per_city = ViewDefinition(
                                                                          matched[5], 0);
                                                 var now = new Date();
                                                 var diff_date = now - timestamp;
-                                                var num_minutes = Math.ceil(diff_date / 60000); 
+                                                var num_minutes = Math.round(diff_date / 60000); 
                                                 emit([ num_minutes, doc["city"] ], 1); 
                                             }
                                         } """,
                         reduce_fun = """function(keys, values) { return sum(values); }""",
                         group = True,
-                        limit = 10)
+                        limit = 5)
 
 
 users_per_device = ViewDefinition(
@@ -100,6 +100,7 @@ users_per_device = ViewDefinition(
                         group = True,
                         limit = 500)
 
+
 users_per_os = ViewDefinition(
                         design = "geographic",
                         name = "users_per_os",
@@ -115,6 +116,7 @@ users_per_os = ViewDefinition(
                         reduce_fun = """function(keys, values) { return sum(values); }""",
                         group = True,
                         limit = 500)
+
 
 request_count = ViewDefinition(
                         design = "requests",
@@ -132,16 +134,34 @@ request_count = ViewDefinition(
                         group = True,
                         descending = True)
                         
+                        
 users_locations = ViewDefinition(
                         design = "geographic",
                         name = "users_locations",
                         map_fun = """   function(doc) {
                                             if(doc["latitude"] != null && doc["longitude"] != null) {
-                                                emit([doc["latitude"], doc["longitude"]], 1);
+                                                var regexp = /(\d+)-(\d+)-(\d+)T(\d+):(\d+):(\d+)Z/;
+                                                var matched = doc.timestamp.match(regexp);
+                                                matched.shift();
+
+                                                for(var i = 0; i < matched.length; i++) {
+                                                    matched[i] = Number(matched[i]);
+                                                }
+
+                                                var timestamp = new Date(matched[0], 
+                                                                         matched[1] - 1, 
+                                                                         matched[2], 
+                                                                         matched[3], 
+                                                                         matched[4], 
+                                                                         matched[5], 0);
+                                                var now = new Date();
+                                                var diff_date = (now - timestamp) / 1000;
+                                                emit([ diff_date, doc["latitude"], doc["longitude"] ], 1);
                                             }
                                         } """,
                         reduce_fun = """function(keys, values) { return sum(values); }""",
-                        group = True)
+                        group = True,
+                        descending = True)
 
 
 # hacky ... from http://www.java2s.com/Tutorial/JavaScript/0240__Date/Getyearmonthanddayfromdatedifference.htm
@@ -165,7 +185,7 @@ age_in_days = ViewDefinition(
                                                                      matched[5], 0);
                                             var now = new Date();
                                             var diff_date = now - timestamp;
-                                            var num_days = Math.ceil(((diff_date % 31536000000) % 2628000000)/86400000); 
+                                            var num_days = ((diff_date % 31536000000) % 2628000000) / 86400000; 
                                             emit(num_days, doc._id);
                                         } """,
                                         descending = True)
@@ -178,3 +198,15 @@ all_queries = (
         users_locations,
         age_in_days,
     )
+
+def get_queries_as_dict():
+    """ """
+    
+    queries_dict = {}
+    for q in all_queries:
+        if isinstance(queries_dict[q.design_doc], list):
+            queries_dict[q.design_doc] = [q.name]  
+        else:
+            queries_dict[q.design_doc].append(q.name)
+            
+    return queries_dict

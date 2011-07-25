@@ -45,6 +45,7 @@ from django.http import  (
                          )
 from django.template.response import SimpleTemplateResponse
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth import logout
 from django.shortcuts import redirect
 
 #
@@ -106,6 +107,7 @@ def users_per_device(request, wsid):
     query = queries.users_per_device
     return PieChartAdapter(db.execute(query, wsid)).process()
 
+
 @return_json
 def request_count(request, wsid, grouping, limit):
     """ """
@@ -131,6 +133,7 @@ def users_locations(request, wsid, ne_lat, ne_lng, sw_lat, sw_lng):
     resp = MapAdapter(result)
     return resp.process()
 
+
 @return_json
 def users_per_os(request, wsid):
     """ """
@@ -144,8 +147,17 @@ def users_per_os(request, wsid):
 #
 
 @login_required()
+def logout_user(request):
+    """ Logs the user out and redirects to the login page. """
+    
+    logout(request)
+    
+    return redirect('/login')
+
+@login_required()
 def dashboard(request, wsid):
-    """ """
+    """ Shows the corresponding dashboard of this web service monitoring. """
+    
     try:
         context = { "webservice" : db.get_webservice(wsid), 
                     "webservices" : db.get_webservices(request.user) }
@@ -157,13 +169,16 @@ def dashboard(request, wsid):
 
 @login_required()
 def dashboard_redirect(request):
-    """ """
+    """ Redirects to the dashboard of the user's last web service. """
+    
     try:
         webservices = db.get_webservices(request.user) 
     except InvalidWebService:
         return not_found(request)
 
-    return redirect('/view/dashboard/%d' % webservices[0].id)
+    return redirect('/view/dashboard/%d' % webservices[-1].id)
 
 def overview(request):
+    """ Shows the documentation text. """
+    
     return SimpleTemplateResponse("index.html")

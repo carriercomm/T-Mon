@@ -19,6 +19,7 @@
   <head>
     <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Droid+Serif&subset=latin" />
     <link rel="stylesheet" type="text/css" href="/static/dashboard.css" />
+    <link rel="stylesheet" type="text/css" href="/static/ui-lightness/jquery-ui-1.8.14.custom.css" />
     
     <script type="application/javascript" src="http://maps.google.com/maps/api/js?sensor=false&region=GB"></script>
     <script type="application/javascript" src="/static/js/jquery-1.6.2.min.js"></script>
@@ -37,68 +38,95 @@
   </head>
 
   <body>
-    <script type="application/javascript">var webservice_id = {{ webservice.id }}; </script>
-    <div id="navbar">
-        {% for w in webservices %}
-            <div class="entry">
-                <a href="/view/dashboard/{{ w.id }}">
-                {% ifequal webservice.id w.id %}
-                    <b>{{ w.name }}</b>
-                {% else %}
-                    {{ w.name }}
-                {% endifequal %}
-                </a> 
-            </div>
-        {% endfor %}
-    </div>
-    <span style="margin-left: 10px"><a id="lnk_show_secret" href="#">Show Secret</a></span>
-    <div id="infobox">
-        Secret: <br><textarea disabled="true"  rows="4" cols="32" style="resize:none">{{ webservice.secret }}</textarea>
-    </div>
-    <!-- Main Canvas -->
-    <div id="container">
+    <script type="application/javascript">
+        var webservice_id = {{ webservice.id }}; 
+        var webservice_name = "{{ webservice.name }}"; 
+    </script>
     
-    <!-- LEFT --> 
-        <div id="left_column">
-            <h3>Recent Users by Operating System</h3>
-            <div><div id="per_os" class="piechart"></div></div>
-            <h3>Recent Users by Device</h3>
-            <div><div id="per_device" class="piechart"></div></div>
+    <div id="navbar">
+         <div class="entry" style="padding-top: 0px">
+            <select id="cbo_webservices">
+                {% for w in webservices %}
+                    {% ifequal w.id webservice.id %}
+                        <option value="{{ w.id }}" selected="selected">{{ w.name }}</option>
+                    {% else %}
+                        <option value="{{ w.id }}">{{ w.name }}</option>
+                    {% endifequal %}
+                {% endfor %}
+            </select>
+        </div>
+    
+        <div class="entry">
+            <a id="lnk_information" href="#">details ...</a>
         </div>
         
-        
-    <!-- RIGHT --> 
-        <div id="right_column">
-            <h3>Recent Users by Location</h3>
-            <div>
-                <div id="map_canvas" class="map"></div>
-                <div id="lists" style="width: 510px;">
-                    <div style="float:left">
-                        <h3> ... by Country</h3>
-                        <div id="per_country" class="list" style="float:left"></div>
-                    </div>
-                    <div style="float:right">
-                        <h3> ... by City</h3>
-                        <div id="per_city" class="list"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                </div>
+        <div style="float: right; margin-right: 10px;">
+            <div class="entry" >
+                <i>Welcome {{ webservice.owner.username }}!</i>
             </div>
-            <h3>Requests in Real-Time</h3>
-            <div>
-                <div id="requests" class="linechart"></div>
-                <div>
-                Show me the last <input type="text" id="txt_timespan"> </input>
-                    <select id="cbo_request_count_per">
-		                <option value="second">Seconds</option>
-		                <option value="minute">Minutes</option>
-		                <option value="hour">Hours</option>
-		                <option value="day">Days</option>
-	                </select>
-	                <input id="btn_change_resolution" type="button" value="Change" />
-                </div>
+            
+             <div class="entry" >
+                <a href="/logout">logout</a>
             </div>
+        </div>
     </div>
-  </body>
+    
+    <!-- Main Canvas -->
+    <div id="container">
+        <h3>Requests in Real-Time</h3>
+        <div>
+            <div id="requests" class="linechart"></div>
+            <div>
+            Show me the last 
+                <select id="cbo_timespan">
+	                <option value="2">1</option>
+	                <option value="10">10</option>
+	                <option value="24">24</option>
+	                <option value="30">30</option>
+	                <option value="60" selected="selected">60</option>
+	                <option value="120">120</option>
+	                <option value="360">360</option>
+                </select>
+                <select id="cbo_request_count_per">
+	                <option value="second">Seconds</option>
+	                <option value="minute">Minutes</option>
+	                <option value="hour">Hours</option>
+	                <option value="day">Days</option>
+                </select>
+            </div>
+        </div>
+        
+        <!-- COLUMNS -->
+        
+        <div class="column">
+            <div id="lists">
+                <h3>Top Cities</h3>
+                <div id="per_city" class="list"></div>
+                <h3>Top Countries</h3>
+                <div id="per_country" class="list"></div>
+               
+                <div id="map_canvas"  class="map"></div>
 
+                <a class="enlarge" id="map_enlarge" href="#">... bigger!</a>
+            </div>
+        </div>
+        
+        <div class="column">
+            <h3>Operating Systems</h3>
+            <div id="per_os" class="piechart"></div>
+            <div id="os_label"></div>
+            <a class="enlarge" id="os_enlarge" href="#">... bigger!</a>
+        </div>
+        
+        <div class="column">
+            <h3>Devices</h3>
+            <div id="per_device" class="piechart"></div>
+            <div id="dev_label"></div>
+            <a class="enlarge" id="dev_enlarge" href="#">... bigger!</a>
+        </div>
+    </div>
+
+    {% include "dialogs.html" %}
+    
+  </body>
 </html>

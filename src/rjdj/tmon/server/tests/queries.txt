@@ -81,15 +81,14 @@ Now for some queries:
     >>> query = queries.users_per_country
     >>> for result in db.execute(query, ws.id):
     ...     print result
-    <Row key=[1, 'AUT'], value=1>
-    <Row key=[1, 'DEU'], value=1>
-    <Row key=[1, 'USA'], value=1>
-
+    <Row key=[0, 'AUT'], value=1>
+    <Row key=[0, 'DEU'], value=1>
+    <Row key=[0, 'USA'], value=1>
     
     >>> query = queries.users_per_city
     >>> for result in db.execute(query, ws.id):
     ...     print result
-    <Row key=[1, 'New York'], value=1>
+    <Row key=[0, 'New York'], value=1>
 
     >>> query = queries.users_per_device
     >>> for result in db.execute(query, ws.id):
@@ -106,11 +105,13 @@ Now for some queries:
     <Row key='CPU OS 3_2_1 like Mac OS X', value=1>
 
     >>> query = queries.users_locations
-    >>> for result in db.execute(query, ws.id):
+    >>> for result in sorted(db.execute(query, ws.id), key = lambda x: x["key"][0]):
     ...     print result
-    <Row key=[40.7449, -73.9782], value=1>
-    <Row key=[47.33330000000001, 13.33330000000001], value=1>
-    <Row key=[51, 9], value=1>
+    <Row key=[...], value=1>
+    <Row key=[...], value=1>
+    <Row key=[...], value=1>
+
+
 
     >>> query = queries.request_count
     >>> for result in db.execute(query, ws.id):

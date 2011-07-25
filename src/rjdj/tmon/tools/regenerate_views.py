@@ -15,12 +15,25 @@ import time
 import urllib2
 
 from threading import Thread
+from rjdj.tmon.server.utils.queries import get_queries_as_dict
+from rjdj.tmon.server.utils.connection import connection
 
 flags = {
     'is_running': True
 }
 
 changed_docs = {}
+
+def create_view_dict():
+    """ """
+    
+    result = {}
+    queries = get_queries_as_dict()
+    for db in connection.server:
+        result[db] = queries
+        
+    return result
+    
 
 class ViewUpdater(object):
     """Updates the views.
@@ -37,14 +50,7 @@ class ViewUpdater(object):
     
     # One entry for each design document 
     # in each database
-    VIEWS = {
-        'my_db': {
-            'design_doc': [
-                'view_name',
-                # ...
-            ]
-        }
-    }
+    VIEWS = create_view_dict()
     
     def start(self):
         Thread(target = self._run).start()

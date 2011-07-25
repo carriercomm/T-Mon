@@ -98,7 +98,7 @@ class TrackingRequestParser(object):
             # some (127.0.0.0, 10.0.0.0, 192.168.0.0 or other) IP addresses could result in None
             country = user_location["country"]
             try:
-                city = unicode(user_location["city"] or "", "utf-8")
+                city = user_location["city"]
             except UnicodeError as err:
                 city = u""
                 logger.error("%s: %s" % (err, user_location["city"]))

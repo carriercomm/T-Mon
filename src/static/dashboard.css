@@ -16,7 +16,7 @@
 
 
 html {
-    background-color: darkgray;
+    background-color: #EEE ;
 }
 
 body {
@@ -50,28 +50,27 @@ a:hover {
     padding-bottom: 10px;
 }
 
-#left_column {
-    width: 49%;
-    float: left;
-    border-right: 1px solid black;
-}
-
-#right_column {
-    width: 49%;
-    padding-left: 15px;
-    float: right;
-}
-
 #navbar {
-    height: 20px;
-    border-bottom: 1px solid steelblue;
-    background-color: lightgray;
+    height: 30px;
+    border-bottom: 1px solid #E78F08;
+/*    border-bottom: 1px solid steelblue; */
+/*    background-color: lightgray; */
+    background-color: #F6A828;
+    color: white;
 }
 
 #navbar .entry  {
     float: left;
-    margin-left: 10px;   
+    margin-left: 10px;  
+    padding-top: 4px; 
+    display: block;
 }
+#navbar a  {
+    color: white;
+    text-decoration: underline;
+    font-weight: bold;
+}
+
 
 #content h2 {
     font-weight: bold;                
@@ -88,6 +87,21 @@ a:hover {
     font-size: small;
 }
 
+.column {
+    float: left;
+    padding-right: 1em;
+    margin-right: 1em;
+    border-right: 1px solid black;
+    height: 400px;
+}
+
+.enlarge {
+    text-align: right;
+    padding-top: 5px;
+    min-width: 125px;
+    display: block;
+}
+
 img.loader {
     background-color: white;
     margin-left: auto;
@@ -98,15 +112,13 @@ img.loader {
 }
 
 div.piechart {
-	height: 300px;
-	margin: 10px;
+	height: 200px;
+	width: 125px;
 	padding: 10px;
 }
 
 div.linechart {
-	width: 500px;
-	height: 100px;
-	margin: 10px;
+	height: 200px;
 	padding: 10px;
 }
 
@@ -114,12 +126,19 @@ div.list {
 }
 
 div.map {
-    height: 300px;
-    width: 510px;
+    height: 156px;
+    width: 250px;
     border: 1px solid black;
     margin-bottom: 1em;
 }
 
-p.error {
-    color: rgb(112,32,32);
+span.chart_label {
+    background-color: black; 
+    padding: 3px; 
+    opacity: 0.6; 
+}
+span.large_chart_label {
+    font-size:11pt; 
+    text-align:center; 
+    padding: 2px; 
 }

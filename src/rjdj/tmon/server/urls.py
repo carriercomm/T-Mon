@@ -43,7 +43,7 @@ handler500 = views.server_error
 
 
 urlpatterns = patterns('',
-    # Administration & LogIn
+    # Administration
     (r'^admin/', include(admin.site.urls)),
 
     # GET interfaces (JavaScript)
@@ -61,7 +61,9 @@ urlpatterns = patterns('',
     (r'^view/dashboard/?$', views.dashboard_redirect),
     (r'^view/dashboard/(?P<wsid>[\d]+)', views.dashboard),
     (r'^login', 'django.contrib.auth.views.login', {'template_name': 'login.html'}),
+    (r'^logout', views.logout_user),
     (r'^$', views.overview),
+ 
 
     # static file serving
     (r'^(%s)$' % '|'.join(ROOT_FILES),

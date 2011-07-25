@@ -39,7 +39,7 @@ def resolve(ip):
     
     if addr_rec:
         res["country"] = addr_rec["country_code3"]
-        res["city"] = addr_rec.has_key("city") and addr_rec["city"] or None
+        res["city"] = addr_rec.has_key("city") and addr_rec["city"].decode('latin-1') or None
         res["latitude"] = addr_rec["latitude"]
         res["longitude"] = addr_rec["longitude"]
 

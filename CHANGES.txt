@@ -3,6 +3,12 @@ CHANGES for rjdj.tmon
 
 trunk
 -----
+  - celaus: improved user experience
+  
+  - celaus: fixed issues with queries
+  
+  - celaus: improved overall performance
+
   - celaus: added package source http://download.rjdj.me/python
 
   - celaus: added logging handlers "debug" and "django"

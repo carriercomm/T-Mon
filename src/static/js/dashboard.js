@@ -26,14 +26,18 @@ function showLoadingImage(element){
     element.empty().html('<img src="/static/loader.gif" class="loader" />');
 }
 
+function drawChart(canvas, data, options){
+    canvas.empty();
+    $.plot(canvas, data, options);
+};
+
 // Google Map
 // -----------------------------------------------------------------------------
-var MapController;
-MapController = function(canvas_id){
+var MapController = function(canvas_id){
     this.canvas = document.getElementById(canvas_id);
     this.markers = [];
     this.options = {
-        zoom: 10,
+        zoom: 2,
         center: new google.maps.LatLng(0,0),
         mapTypeId: google.maps.MapTypeId.ROADMAP
     };
@@ -44,21 +48,24 @@ MapController = function(canvas_id){
 MapController.prototype.initMapWithLocation = function() {
     var self = this;
     var success = function(e) {
-        self.options.center = new google.maps.LatLng(e.coords.latitude,
-                                                     e.coords.longitude);
+        self.options.center = new google.maps.LatLng(e.coords.latitude, e.coords.longitude);
+        
         self.map = new google.maps.Map(self.canvas, self.options);
         google.maps.event.addListenerOnce(self.map, 'idle', function(e){
                 self.onMapLoad();
             });
     };
-    var error = function(e){
-        alert("You need to allow the browser to use your location.");
+    
+    var error = function(e) {
+        self.map = new google.maps.Map(self.canvas, self.options);
+        google.maps.event.addListenerOnce(self.map, 'idle', function(e){
+                self.onMapLoad();
+            });
     };
-    navigator.geolocation.getCurrentPosition(success,error);
+    navigator.geolocation.getCurrentPosition(success, error);
 };
 
 MapController.prototype.onMapLoad = function(){
-    var self = this;
     this.updateMarkers();
 };
 
@@ -84,10 +91,12 @@ MapController.prototype.updateMarkers = function(){
     var zoom = this.map.getZoom();
 
     $.get(this.getURL(northEast, southWest), {},
+    
           function(data) {
               self.deleteMarkers();
               var positions = data["results"];
               var pos = null;
+              
               for(var i = 0; i < positions.length; i++) {   
                   var marker = new google.maps.Marker({
                           position: new google.maps.LatLng(positions[i]["lat"], positions[i]["lng"]),
@@ -95,7 +104,7 @@ MapController.prototype.updateMarkers = function(){
                           icon: "http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=" + positions[i]["count"] + "|FFFF00|000000"
                       });
                   marker.setMap(self.map);
-                  self.markers[i] = marker;
+                  self.markers.push(marker);
               }
           });
 };
@@ -109,11 +118,25 @@ MapController.prototype.clearAutoRefresh = function(interval) {
     clearInterval(this.inverval_id);
 };
 
+MapController.prototype.enlarge = function(canvas_id){
+    $(this.canvas).empty();
+    this.large_canvas = document.getElementById(canvas_id);
+    this.map = new google.maps.Map(this.large_canvas, this.options); 
+    
+    this.updateMarkers();
+};
+
+MapController.prototype.shrink = function(){
+    $(this.large_canvas).empty();
+    this.map = new google.maps.Map(this.canvas, this.options); 
+    this.updateMarkers();
+};
+
+
 // Charts
 // -----------------------------------------------------------------------------
 
-var ChartController;
-ChartController = function(canvas_id, data_source, options, label){
+var ChartController = function(canvas_id, data_source, options, label, hover_canvas_id){
     this.canvas = $("#" + canvas_id);
     this.data_source = data_source;
     this.data = [];
@@ -123,6 +146,12 @@ ChartController = function(canvas_id, data_source, options, label){
     this.label = label;
     this.locked = false;
     this.last_request = null;
+    this.drawable_data = [];
+    this.hover_canvas = $("#" + hover_canvas_id);
+    if(hover_canvas_id != "") {
+        this.setHover();
+    }
+    
 };
 
 ChartController.prototype.updateData = function(){
@@ -133,8 +162,8 @@ ChartController.prototype.updateData = function(){
     var self = this;
     var onSuccess = function(received) {
                         self.data = received.results;
-                        var real_data = self.label != ""? [ { label: self.label,  data: self.data } ]: self.data;
-                        $.plot(self.canvas, real_data, self.options);
+                        self.drawable_data = self.label != ""? [ { label: self.label,  data: self.data } ]: self.data;
+                        drawChart(self.canvas, self.drawable_data, self.options);
                         self.unlock();
                     };
     this.last_request = $.ajax(this.data_source, {
@@ -178,12 +207,32 @@ ChartController.prototype.switchSource = function(new_source, label) {
     this.label = label;
 };
 
+ChartController.prototype.enlarge = function(canvas_id, options){
+    drawChart($("#" + canvas_id), this.data, options);
+};
+
+ChartController.prototype.setHover = function(){
+    var self = this;
+    this.canvas.bind("plothover", function(event, pos, obj) {
+        if (!obj) {
+            return;
+        }
+	    percent = parseFloat(obj.series.percent).toFixed(2);
+	    self.hover_canvas.html('<span class="chart_label" style="color: ' + obj.series.color + '">' + obj.series.label 
+	                                 + ' (' + percent + '%)</span>');
+         
+    });
+    
+    this.canvas.mouseout(function() {
+        self.hover_canvas.empty();
+    });
+};
+
 
 // Lists
 // -----------------------------------------------------------------------------
 
-var ListController;
-ListController = function(canvas_id, data_source){
+var ListController = function(canvas_id, data_source){
     this.canvas = $("#" + canvas_id);
     this.data_source = data_source;
     this.data = [];
@@ -228,8 +277,7 @@ ListController.prototype.clearData = function(){
 
 // Application
 // -----------------------------------------------------------------------------
-var Application = {};
-Application = function(e){
+var Application = function(e){
     
     this.map = new MapController("map_canvas");
 
@@ -241,28 +289,34 @@ Application = function(e){
     
     this.per_os = new ChartController("per_os", 
                                        "/" + webservice_id + "/data/users/os",  
-                                       { series: { pie: { show: true, innerRadius: 0.4 } }, 
-                                         legend: { show: false } 
+                                       { series: { 
+                                                    pie: { 
+                                                            show: true, 
+                                                            label: { show: false }, 
+                                                            combine: {
+                                                                color: '#999',
+                                                                threshold: 0.03}
+                                                    } }, 
+                                         legend: { show: false },
+                                         grid: { hoverable: true },
                                        },
-                                       "");
+                                       "", "os_label");
                                        
     this.per_device = new ChartController("per_device", 
                                            "/" + webservice_id + "/data/users/device", 
-                                           { series: { pie: { show: true, innerRadius: 0.4 } }, 
-                                             legend: { show: false } 
+                                           { series: { pie: { show: true, label: { show: false } } }, 
+                                             legend: { show: false }, 
+                                             grid: { hoverable: true } 
                                            },
-                                           "");
-                                           
+                                           "", "dev_label");
     this.req_per_sec = new ChartController("requests", 
                                             "/" + webservice_id + "/data/requests/second/60", 
                                             { series: { lines: { show: true, fill: true } }, 
-                                              xaxes: [ { label: "time from now"} ],
                                               yaxes: [ { min: 0 } ], 
                                               legend: { position: 'nw' } 
                                             },
-                                            "requests per second" );
-
-
+                                            "requests per second", "" );
+                                            
 };
 
 Application.prototype.setRealtime = function() {
@@ -279,40 +333,138 @@ Application.prototype.clearRealtime = function() {
 Application.prototype.changeResolution = function(resolution, count) {
     this.req_per_sec.switchSource("/" + webservice_id + "/data/requests/" + resolution + "/" + count, "requests per " + resolution);
 };
+
 var app;
 document.addEventListener("DOMContentLoaded", function(e){
+
         app = new Application(e);
         app.setRealtime();
 
+
         $('#cbo_request_count_per').change(function() {
-            var count = Number($('#txt_timespan').val());
-            if(count > 0){
+                var count = $('#cbo_timespan').val();
                 var res = $(this).val();
                 app.changeResolution(res, count);
+        });
+        
+        $('#cbo_timespan').change(function() {
+            var count = $(this).val();
+            var res = $('#cbo_request_count_per').val();
+            app.changeResolution(res, count);
+        });
+        
+        $('#information').click(
+            function() {
+                $("#dlg_information").dialog({
+		            height: 180,
+		            width: 330,
+		            modal: true,
+		            resizable: false,
+		            title: "More about " + webservice_name,
+	            }); 
+            }
+        );
+        
+        $('#os_enlarge').click(
+            function() {
+                $("#dlg_big_os").dialog({
+		            height: 684,
+		            width: 703,
+		            resizable: false,
+		            title: "Operating Systems",
+		            create: function() {
+		                app.per_os.enlarge("os_charting_area", 
+		                    { series: { pie: { 
+		                                       radius: 2/3, 
+		                                       show: true, 
+		                                       label: { 
+		                                                show: true,
+	                                                    formatter: function(label, series){
+                                                            return '<span class="large_chart_label" style="color:' + 
+                                                                        series.color + ';">' + label + '<br/>' + Math.round(series.percent) + 
+                                                                        '%</div>';
+                                                        }, 
+                                                        threshold: 0.03
+                                               },
+                                               combine: {
+                                                    color: '#999',
+                                                    threshold: 0.03
+                                                }
+                                        } 
+                             }, 
+                             legend: { show: false }
+                           });
+		            }
+	            }); 
+            }
+        );
+        
+        $('#dev_enlarge').click(
+            function() {
+                $("#dlg_big_dev").dialog({
+		            height: 684,
+		            width: 703,
+		            resizable: false,
+		            title: "Devices",
+		            create: function() {
+		                app.per_device.enlarge("dev_charting_area", 
+		                    { series: { pie: { 
+		                                       radius: 2/3, 
+		                                       show: true, 
+		                                       label: { 
+		                                                show: true,
+	                                                    formatter: function(label, series){
+                                                            return '<span class="large_chart_label" style="color:' + 
+                                                                        series.color + ';">' + label + '<br/>' + Math.round(series.percent) + 
+                                                                        '%</div>';
+                                                        }, 
+                                                        threshold: 0.03
+                                               },
+                                               combine: {
+                                                    color: '#999',
+                                                    threshold: 0.03
+                                                }
+                                        } 
+                             }, 
+                             legend: { show: false }
+                           });
+		            }
+	            }); 
+            }
+        );
+        
+         $('#map_enlarge').click(
+            function() {
+                $("#dlg_big_map").dialog({
+		            height: 600,
+		            width: 960,
+		            minWidth: 300,
+		            minHeight: 300,
+		            resizable: true,
+		            title: "Map",
+		            
+		            resizeStop: function(event, ui) { 
+		                google.maps.event.trigger(app.map.map, 'resize')  
+	                },
+                    open: function(event, ui) { 
+                        app.map.enlarge("big_map"); 
+                        google.maps.event.trigger(app.map.map, 'resize'); 
+                    },
+                    close: function(event, ui) {
+                        app.map.shrink(); 
+                        google.maps.event.trigger(app.map.map, 'resize'); 
+                    },
+		           
+	            }); 
+            }
+        );
+        
+        $('#cbo_webservices').change(function() {
+            var webservice = $(this).val();
+            if(webservice != webservice_id) {
+                window.location = "/view/dashboard/" + webservice;
             }
         });
         
-        $('#txt_timespan').keydown(function(e) {
-            var code = (e.keyCode ? e.keyCode : e.which);
-            if(code == 13 || code == 9) { //Enter keycode
-                var count = Number($('#txt_timespan').val());
-                var res = $('#cbo_request_count_per').val();
-                if(count > 0) {
-                    app.changeResolution(res, count);
-                }
-            }
-        });
-        $('#btn_change_resolution').click(function() {
-            var count = Number($('#txt_timespan').val());
-            if(count > 0) {
-                var res = $('#cbo_request_count_per').val();
-                app.changeResolution(res, count);
-            }
-        });
-        $('#lnk_show_secret').click(function(e) {
-            e.preventDefault();
-            var visibility = $('#infobox').css('display');
-            $('#infobox').css('display', visibility == 'block'? 'none': 'block');
-        });
     }, false);
-
+         

@@ -95,20 +95,23 @@ class MapAdapter(BasicAdapter):
     """ """
     
     def process(self):
-        results = []
+        sources = {}
         
         for res in self.raw_results:
-            lat_lng = self.key(res)
-            lat_lng.update(self.value(res))
-            results.append(lat_lng)
+            lat, lng = self.key(res)
+            if sources.has_key((lat, lng)):
+                sources[(lat, lng)] += self.value(res)
+            else:
+                sources[(lat, lng)] = self.value(res)
             
-        return results
+            
+        return [ {"lat": k[0], "lng": k[1], "count": v } for k, v in sources.iteritems() ]
         
     def key(self, row): 
-        return {"lat": row["key"][0], "lng" : row["key"][1]}
+        return (row["key"][1], row["key"][2])
         
     def value(self, row): 
-        return { "count": row["value"] }
+        return row["value"]
     
 class RequestResultAdapter(BasicAdapter):
     """ """
