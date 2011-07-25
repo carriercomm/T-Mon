@@ -128,7 +128,7 @@ def users_locations(request, wsid, ne_lat, ne_lng, sw_lat, sw_lng):
     """ """
     
     query = queries.users_locations
-    result = db.execute(query, wsid, limit = 100)
+    result = db.execute(query, wsid, limit = 500)
     
     resp = MapAdapter(result)
     return resp.process()

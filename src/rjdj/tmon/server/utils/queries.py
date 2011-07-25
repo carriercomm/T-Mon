@@ -160,8 +160,7 @@ users_locations = ViewDefinition(
                                             }
                                         } """,
                         reduce_fun = """function(keys, values) { return sum(values); }""",
-                        group = True,
-                        descending = True)
+                        group = True)
 
 
 # hacky ... from http://www.java2s.com/Tutorial/JavaScript/0240__Date/Getyearmonthanddayfromdatedifference.htm
