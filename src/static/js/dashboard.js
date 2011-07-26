@@ -440,11 +440,11 @@ document.addEventListener("DOMContentLoaded", function(e){
 	                                                    formatter: function(label, series){
                                                             return '<div class="large_chart_label"><b>' + label + '</b> (' + Math.round(series.percent) + '%)</div>';
                                                         }, 
-                                                        threshold: 0.03,
+                                                        threshold: 0.02,
                                                },
                                                combine: {
                                                     color: '#999',
-                                                    threshold: 0.03
+                                                    threshold: 0.02
                                                 }
                                         } 
                              }, 
@@ -473,11 +473,11 @@ document.addEventListener("DOMContentLoaded", function(e){
 	                                                    formatter: function(label, series){
                                                             return '<div class="large_chart_label"><b>' + label + '</b> (' + Math.round(series.percent) + '%</div>';
                                                         }, 
-                                                        threshold: 0.03,
+                                                        threshold: 0.02,
                                                },
                                                combine: {
                                                     color: '#999',
-                                                    threshold: 0.03
+                                                    threshold: 0.02
                                                 }
                                         } 
                              }, 

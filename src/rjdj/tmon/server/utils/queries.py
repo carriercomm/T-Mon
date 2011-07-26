@@ -51,8 +51,7 @@ users_per_country = ViewDefinition(
                                             }
                                         }""",
                         reduce_fun = """function(keys, values) { return sum(values); }""",
-                        group = True,
-                        limit = 5)
+                        group = True)
                         
                                         
 users_per_city = ViewDefinition(
@@ -79,13 +78,12 @@ users_per_city = ViewDefinition(
                                                 var num_minutes = Math.round(diff_date / 60000); 
                                                 
                                                 if(num_minutes < 10) {
-                                                    emit(doc["city"], 1); 
+                                                    emit(doc["city"] + " (" + doc["country"] + ")", 1); 
                                                 }
                                             }
                                         } """,
                         reduce_fun = """function(keys, values) { return sum(values); }""",
-                        group = True,
-                        limit = 5)
+                        group = True)
 
 
 users_per_device = ViewDefinition(
