@@ -1,5 +1,3 @@
-<html>
-
 <!-- Copyright (c) 2011 Reality Jockey Ltd. and Contributors.-->
 <!-- This file is part of T-Mon.-->
 
@@ -16,6 +14,7 @@
 <!-- You should have received a copy of the GNU Lesser General Public License-->
 <!-- along with T-Mon. If not, see <http://www.gnu.org/licenses/>.-->
 
+<html>
   <head>
     <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Droid+Serif&subset=latin" />
     <link rel="stylesheet" type="text/css" href="/static/dashboard.css" />
@@ -74,7 +73,7 @@
     <!-- Main Canvas -->
     <div id="container">
         <h3>Requests in Real-Time</h3>
-        <div>
+        <div id="top_bar">
             <div id="requests" class="linechart"></div>
             <div>
             Show me the last 
@@ -104,17 +103,12 @@
                 <div id="per_city" class="list"></div>
                 <h3>Top Countries</h3>
                 <div id="per_country" class="list"></div>
-               
-                <div id="map_canvas"  class="map"></div>
-
-                <a class="enlarge" id="map_enlarge" href="#">... bigger!</a>
             </div>
         </div>
         
         <div class="column">
             <h3>Operating Systems</h3>
             <div id="per_os" class="piechart"></div>
-            <div id="os_label"></div>
             <a class="enlarge" id="os_enlarge" href="#">... bigger!</a>
         </div>
         
@@ -124,6 +118,13 @@
             <div id="dev_label"></div>
             <a class="enlarge" id="dev_enlarge" href="#">... bigger!</a>
         </div>
+        
+        <div class="column">
+            <h3>Map</h3>
+            <div id="map_canvas"  class="map"></div>
+            <a class="enlarge" id="map_enlarge" href="#">... bigger!</a>
+        </div>
+        
     </div>
 
     {% include "dialogs.html" %}

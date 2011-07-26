@@ -79,7 +79,7 @@ users_per_city = ViewDefinition(
                                                 var num_minutes = Math.round(diff_date / 60000); 
                                                 
                                                 if(num_minutes < 10) {
-                                                    emit([ num_minutes, doc["city"] ], 1); 
+                                                    emit(doc["city"], 1); 
                                                 }
                                             }
                                         } """,

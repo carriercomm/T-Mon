@@ -31,6 +31,21 @@ function drawChart(canvas, data, options){
     $.plot(canvas, data, options);
 };
 
+function showTooltip(x, y, contents) {
+    $('<div id="tooltip">' + contents + '</div>').css( {
+        top: y + 5,
+        left: x + 5,
+        color: "black",
+        position: 'absolute',
+        display: 'none',
+        border: '1px solid darkgray',
+        padding: '2px',
+        'background-color': 'white',
+        'border-radius': '4px',
+        opacity: 0.80
+    }).appendTo("body").fadeIn(150);
+}
+
 // Google Map
 // -----------------------------------------------------------------------------
 var MapController = function(canvas_id){
@@ -42,6 +57,8 @@ var MapController = function(canvas_id){
         mapTypeId: google.maps.MapTypeId.ROADMAP
     };
     this.inverval_id = null;
+    this.locked = false;
+    this.last_request = null;
     this.initMapWithLocation();
 };
 
@@ -84,15 +101,16 @@ MapController.prototype.deleteMarkers = function(){
 };
 
 MapController.prototype.updateMarkers = function(){
+    if (this.locked) {
+        return;
+    }
     var self = this;
     var bounds = this.map.getBounds();
     var southWest = bounds.getSouthWest();
     var northEast = bounds.getNorthEast();
     var zoom = this.map.getZoom();
 
-    $.get(this.getURL(northEast, southWest), {},
-    
-          function(data) {
+    var onSuccess = function(data) {
               self.deleteMarkers();
               var positions = data["results"];
               var pos = null;
@@ -106,7 +124,16 @@ MapController.prototype.updateMarkers = function(){
                   marker.setMap(self.map);
                   self.markers.push(marker);
               }
-          });
+              self.unlock();
+          };
+          
+    this.last_request = $.ajax(this.getURL(northEast, southWest), {
+        method: 'GET',
+        dataType: 'json',
+        success: onSuccess,
+        error: self.unlock
+    });
+    this.lock();
 };
 
 MapController.prototype.setAutoRefresh = function(interval) {
@@ -116,6 +143,10 @@ MapController.prototype.setAutoRefresh = function(interval) {
 
 MapController.prototype.clearAutoRefresh = function(interval) {
     clearInterval(this.inverval_id);
+    if (this.locked) { 
+        this.last_request.abort();
+        this.unlock;
+    }
 };
 
 MapController.prototype.enlarge = function(canvas_id){
@@ -132,26 +163,31 @@ MapController.prototype.shrink = function(){
     this.updateMarkers();
 };
 
+MapController.prototype.lock = function(){
+    this.locked = true;
+};
+
+MapController.prototype.unlock = function(){
+    this.locked = false;
+};
+
 
 // Charts
 // -----------------------------------------------------------------------------
 
-var ChartController = function(canvas_id, data_source, options, label, hover_canvas_id){
+var ChartController = function(canvas_id, data_source, options, label){
     this.canvas = $("#" + canvas_id);
     this.data_source = data_source;
     this.data = [];
     this.options = options;
+
     this.updateData();
+    
     this.interval_id = null;
     this.label = label;
     this.locked = false;
     this.last_request = null;
     this.drawable_data = [];
-    this.hover_canvas = $("#" + hover_canvas_id);
-    if(hover_canvas_id != "") {
-        this.setHover();
-    }
-    
 };
 
 ChartController.prototype.updateData = function(){
@@ -169,7 +205,8 @@ ChartController.prototype.updateData = function(){
     this.last_request = $.ajax(this.data_source, {
         method: 'GET',
         dataType: 'json',
-        success: onSuccess
+        success: onSuccess,
+        error: self.unlock
     });
     this.lock();
 };
@@ -213,18 +250,23 @@ ChartController.prototype.enlarge = function(canvas_id, options){
 
 ChartController.prototype.setHover = function(){
     var self = this;
-    this.canvas.bind("plothover", function(event, pos, obj) {
-        if (!obj) {
-            return;
-        }
-	    percent = parseFloat(obj.series.percent).toFixed(2);
-	    self.hover_canvas.html('<span class="chart_label" style="color: ' + obj.series.color + '">' + obj.series.label 
-	                                 + ' (' + percent + '%)</span>');
-         
-    });
     
-    this.canvas.mouseout(function() {
-        self.hover_canvas.empty();
+    this.canvas.bind("plothover", function (event, pos, item) {
+        if (item) {
+            $("#tooltip").remove();
+            
+            var y = parseFloat(item.datapoint[1]);
+            
+            var label = item.series.label + ": " + y;
+            if(self.options.series.hasOwnProperty('pie')) {
+                label = item.series.label + ": " + parseFloat(item.series.percent).toFixed(2) + "%";
+            }
+
+            showTooltip(pos.pageX, pos.pageY, label);
+        }
+        else {
+            $("#tooltip").remove();
+        }
     });
 };
 
@@ -300,7 +342,7 @@ var Application = function(e){
                                          legend: { show: false },
                                          grid: { hoverable: true },
                                        },
-                                       "", "os_label");
+                                       "");
                                        
     this.per_device = new ChartController("per_device", 
                                            "/" + webservice_id + "/data/users/device", 
@@ -308,14 +350,20 @@ var Application = function(e){
                                              legend: { show: false }, 
                                              grid: { hoverable: true } 
                                            },
-                                           "", "dev_label");
+                                           "");
+                                           
     this.req_per_sec = new ChartController("requests", 
                                             "/" + webservice_id + "/data/requests/second/60", 
-                                            { series: { lines: { show: true, fill: true } }, 
+                                            { series: { lines: { show: true, fill: true } },
+                                              grid: { hoverable: true }, 
                                               yaxes: [ { min: 0 } ], 
-                                              legend: { position: 'nw' } 
+                                              legend: { show: false } 
                                             },
-                                            "requests per second", "" );
+                                            "Requests/Second");
+                                            
+    this.per_os.setHover();
+    this.per_device.setHover();
+    this.req_per_sec.setHover();
                                             
 };
 
@@ -331,7 +379,7 @@ Application.prototype.clearRealtime = function() {
 };
 
 Application.prototype.changeResolution = function(resolution, count) {
-    this.req_per_sec.switchSource("/" + webservice_id + "/data/requests/" + resolution + "/" + count, "requests per " + resolution);
+    this.req_per_sec.switchSource("/" + webservice_id + "/data/requests/" + resolution + "/" + count, "Requests/" + resolution.charAt(0).toUpperCase() + resolution.slice(1));
 };
 
 var app;
@@ -340,7 +388,9 @@ document.addEventListener("DOMContentLoaded", function(e){
         app = new Application(e);
         app.setRealtime();
 
-
+        //
+        // GUI Events
+        //
         $('#cbo_request_count_per').change(function() {
                 var count = $('#cbo_timespan').val();
                 var res = $(this).val();
@@ -353,7 +403,14 @@ document.addEventListener("DOMContentLoaded", function(e){
             app.changeResolution(res, count);
         });
         
-        $('#information').click(
+        $('#cbo_webservices').change(function() {
+            var webservice = $(this).val();
+            if(webservice != webservice_id) {
+                window.location = "/view/dashboard/" + webservice;
+            }
+        });
+        
+        $('#lnk_information').click(
             function() {
                 $("#dlg_information").dialog({
 		            height: 180,
@@ -372,19 +429,18 @@ document.addEventListener("DOMContentLoaded", function(e){
 		            width: 703,
 		            resizable: false,
 		            title: "Operating Systems",
+		            modal: true,
 		            create: function() {
 		                app.per_os.enlarge("os_charting_area", 
 		                    { series: { pie: { 
-		                                       radius: 2/3, 
 		                                       show: true, 
 		                                       label: { 
+		                                                radius: 3/4,
 		                                                show: true,
 	                                                    formatter: function(label, series){
-                                                            return '<span class="large_chart_label" style="color:' + 
-                                                                        series.color + ';">' + label + '<br/>' + Math.round(series.percent) + 
-                                                                        '%</div>';
+                                                            return '<div class="large_chart_label"><b>' + label + '</b> (' + Math.round(series.percent) + '%)</div>';
                                                         }, 
-                                                        threshold: 0.03
+                                                        threshold: 0.03,
                                                },
                                                combine: {
                                                     color: '#999',
@@ -406,19 +462,18 @@ document.addEventListener("DOMContentLoaded", function(e){
 		            width: 703,
 		            resizable: false,
 		            title: "Devices",
+		            modal: true,
 		            create: function() {
 		                app.per_device.enlarge("dev_charting_area", 
 		                    { series: { pie: { 
-		                                       radius: 2/3, 
 		                                       show: true, 
 		                                       label: { 
+		                                                radius: 3/4,
 		                                                show: true,
 	                                                    formatter: function(label, series){
-                                                            return '<span class="large_chart_label" style="color:' + 
-                                                                        series.color + ';">' + label + '<br/>' + Math.round(series.percent) + 
-                                                                        '%</div>';
+                                                            return '<div class="large_chart_label"><b>' + label + '</b> (' + Math.round(series.percent) + '%</div>';
                                                         }, 
-                                                        threshold: 0.03
+                                                        threshold: 0.03,
                                                },
                                                combine: {
                                                     color: '#999',
@@ -441,6 +496,7 @@ document.addEventListener("DOMContentLoaded", function(e){
 		            minWidth: 300,
 		            minHeight: 300,
 		            resizable: true,
+		            modal: true,
 		            title: "Map",
 		            
 		            resizeStop: function(event, ui) { 
@@ -458,13 +514,6 @@ document.addEventListener("DOMContentLoaded", function(e){
 	            }); 
             }
         );
-        
-        $('#cbo_webservices').change(function() {
-            var webservice = $(this).val();
-            if(webservice != webservice_id) {
-                window.location = "/view/dashboard/" + webservice;
-            }
-        });
         
     }, false);
          

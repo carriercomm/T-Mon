@@ -53,8 +53,6 @@ a:hover {
 #navbar {
     height: 30px;
     border-bottom: 1px solid #E78F08;
-/*    border-bottom: 1px solid steelblue; */
-/*    background-color: lightgray; */
     background-color: #F6A828;
     color: white;
 }
@@ -65,15 +63,19 @@ a:hover {
     padding-top: 4px; 
     display: block;
 }
+
 #navbar a  {
     color: white;
     text-decoration: underline;
     font-weight: bold;
 }
 
-
 #content h2 {
     font-weight: bold;                
+}
+
+#top_bar {
+    padding-bottom: 1em;
 }
 
 #infobox {
@@ -106,7 +108,6 @@ img.loader {
     background-color: white;
     margin-left: auto;
     margin-right: auto;
-    margin-top: 15%;
     display: block;
     border: 1px solid black;
 }
@@ -132,13 +133,12 @@ div.map {
     margin-bottom: 1em;
 }
 
-span.chart_label {
-    background-color: black; 
-    padding: 3px; 
-    opacity: 0.6; 
-}
-span.large_chart_label {
-    font-size:11pt; 
+div .large_chart_label {
     text-align:center; 
-    padding: 2px; 
+    padding: 4px;
+    border-radius: 4px;
+    width:150px;
+    color: white;
+    background: rgba(0,0,0,0.6);
+    font-size: 0.7em;
 }
