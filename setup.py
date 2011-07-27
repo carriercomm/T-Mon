@@ -45,7 +45,8 @@ setup(name = "rjdj.tmon",
                           'pygeoip',
                           ],
       entry_points = {
-          'console_scripts':['instance=nsdjango.management:execute_manager', ]
+          'console_scripts':['instance=nsdjango.management:execute_manager', 
+                             'regenerate=rjdj.tmon.tools.regenerate_views:run']
           },
       include_package_data = True,
       zip_safe = False,

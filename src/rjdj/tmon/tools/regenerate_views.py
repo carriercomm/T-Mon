@@ -13,7 +13,7 @@ def refresh(view_name, server):
             db = server[database]
             db.view(view_name, limit = 0)
 
-def main():
+def run(*args):
 
     server = connection.server  
     threads = []
@@ -26,6 +26,3 @@ def main():
     for thread in threads:
         thread.join()    
     
-
-if __name__ == '__main__':
-    main()
