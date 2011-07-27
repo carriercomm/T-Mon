@@ -81,15 +81,15 @@ Now for some queries:
     >>> query = queries.users_per_country
     >>> for result in db.execute(query, ws.id):
     ...     print result
-    <Row key='AUT', value=1>
-    <Row key='DEU', value=1>
-    <Row key='USA', value=1>
+    <Row key=[... 'AUT'], value=1>
+    <Row key=[... 'DEU'], value=1>
+    <Row key=[... 'USA'], value=1>
 
     
     >>> query = queries.users_per_city
     >>> for result in db.execute(query, ws.id):
     ...     print result
-    <Row key='New York (USA)', value=1>
+    <Row key=[... 'New York (USA)'], value=1>
 
     >>> query = queries.users_per_device
     >>> for result in db.execute(query, ws.id):

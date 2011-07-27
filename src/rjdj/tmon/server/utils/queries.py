@@ -31,23 +31,13 @@ users_per_country = ViewDefinition(
                                             if(doc["country"] != null && doc["country"] != "") {  
                                                 var regexp = /(\d+)-(\d+)-(\d+)T(\d+):(\d+):(\d+)Z/;
                                                 var matched = doc.timestamp.match(regexp);
-                                                matched.shift();
+
+                                                matched = matched.slice(1, 6);
                                                 for(var i = 0; i < matched.length; i++) {
                                                     matched[i] = Number(matched[i]);
                                                 }
-
-                                                var timestamp = new Date(matched[0], 
-                                                                         matched[1] - 1, 
-                                                                         matched[2], 
-                                                                         matched[3], 
-                                                                         matched[4], 
-                                                                         matched[5], 0);
-                                                var now = new Date();
-                                                var diff_date = now - timestamp;
-                                                var num_minutes = Math.round(diff_date / 60000); 
-                                                if(num_minutes < 10) {
-                                                    emit(doc["country"], 1); 
-                                                }
+                                                matched.push(doc["country"]);
+                                                emit(matched, 1);
                                             }
                                         }""",
                         reduce_fun = """function(keys, values) { return sum(values); }""",
@@ -61,25 +51,13 @@ users_per_city = ViewDefinition(
                                             if(doc["city"] != null && doc["city"] != "") {    
                                                 var regexp = /(\d+)-(\d+)-(\d+)T(\d+):(\d+):(\d+)Z/;
                                                 var matched = doc.timestamp.match(regexp);
-                                                matched.shift();
-
+                                                
+                                                matched = matched.slice(1, 6);
                                                 for(var i = 0; i < matched.length; i++) {
                                                     matched[i] = Number(matched[i]);
                                                 }
-
-                                                var timestamp = new Date(matched[0], 
-                                                                         matched[1] - 1, 
-                                                                         matched[2], 
-                                                                         matched[3], 
-                                                                         matched[4], 
-                                                                         matched[5], 0);
-                                                var now = new Date();
-                                                var diff_date = now - timestamp;
-                                                var num_minutes = Math.round(diff_date / 60000); 
-                                                
-                                                if(num_minutes < 10) {
-                                                    emit(doc["city"] + " (" + doc["country"] + ")", 1); 
-                                                }
+                                                matched.push(doc["city"] + " (" + doc["country"] + ")");
+                                                emit(matched, 1);
                                             }
                                         } """,
                         reduce_fun = """function(keys, values) { return sum(values); }""",
@@ -145,25 +123,20 @@ users_locations = ViewDefinition(
                                             if(doc["latitude"] != null && doc["longitude"] != null) {
                                                 var regexp = /(\d+)-(\d+)-(\d+)T(\d+):(\d+):(\d+)Z/;
                                                 var matched = doc.timestamp.match(regexp);
-                                                matched.shift();
-
+                                                
+                                                matched = matched.slice(1, 6);
                                                 for(var i = 0; i < matched.length; i++) {
                                                     matched[i] = Number(matched[i]);
                                                 }
-
-                                                var timestamp = new Date(matched[0], 
-                                                                         matched[1] - 1, 
-                                                                         matched[2], 
-                                                                         matched[3], 
-                                                                         matched[4], 
-                                                                         matched[5], 0);
-                                                var now = new Date();
-                                                var diff_date = (now - timestamp) / 1000;
-                                                emit([ diff_date, doc["latitude"], doc["longitude"] ], 1);
+                                                matched.push(doc["latitude"]);
+                                                matched.push(doc["longitude"]);
+                                               
+                                                emit(matched, 1);
                                             }
                                         } """,
                         reduce_fun = """function(keys, values) { return sum(values); }""",
-                        group = True)
+                        group = True,
+                        descending = True)
 
 
 # hacky ... from http://www.java2s.com/Tutorial/JavaScript/0240__Date/Getyearmonthanddayfromdatedifference.htm
@@ -173,22 +146,12 @@ age_in_days = ViewDefinition(
                         map_fun = """   function(doc) {
                                             var regexp = /(\d+)-(\d+)-(\d+)T(\d+):(\d+):(\d+)Z/;
                                             var matched = doc.timestamp.match(regexp);
-                                            matched.shift();
 
+                                            matched = matched.slice(1, 4);
                                             for(var i = 0; i < matched.length; i++) {
                                                 matched[i] = Number(matched[i]);
                                             }
-
-                                            var timestamp = new Date(matched[0], 
-                                                                     matched[1] - 1, 
-                                                                     matched[2], 
-                                                                     matched[3], 
-                                                                     matched[4], 
-                                                                     matched[5], 0);
-                                            var now = new Date();
-                                            var diff_date = now - timestamp;
-                                            var num_days = ((diff_date % 31536000000) % 2628000000) / 86400000; 
-                                            emit(num_days, doc._id);
+                                            emit(matched, doc._id);
                                         } """,
                                         descending = True)
 all_queries = (

@@ -3,6 +3,10 @@ CHANGES for rjdj.tmon
 
 trunk
 -----
+  - celaus: fixed view-regeneration script
+
+  - celaus: fixed queries
+
   - celaus: improved user experience
   
   - celaus: fixed issues with queries

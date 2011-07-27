@@ -48,6 +48,8 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout
 from django.shortcuts import redirect
 
+
+from datetime import datetime, timedelta
 #
 # Error pages
 #
@@ -83,7 +85,8 @@ def users_per_country(request, wsid):
     """ """
 
     query = queries.users_per_country
-    return GeoRequestAdapter(db.execute(query, wsid)).process()[:5]
+    limit = datetime.now() - timedelta(minutes = 10)
+    return GeoRequestAdapter(db.execute(query, wsid)[[limit.year, limit.month, limit.day, limit.hour, limit.minute]:]).process()[:5]
 
 
 @return_json
@@ -91,7 +94,9 @@ def users_per_city(request, wsid):
     """ """
  
     query = queries.users_per_city
-    return GeoRequestAdapter(db.execute(query, wsid)).process()[:5]
+    
+    limit = datetime.now() - timedelta(minutes = 10)
+    return GeoRequestAdapter(db.execute(query, wsid)[[limit.year, limit.month, limit.day, limit.hour, limit.minute]:]).process()[:5]
 
 
 @return_json
@@ -122,8 +127,10 @@ def users_locations(request, wsid, ne_lat, ne_lng, sw_lat, sw_lng):
     """ """
     
     query = queries.users_locations
-    result = db.execute(query, wsid, limit = 500)
     
+    limit = datetime.now() - timedelta(minutes = 10)
+    result = db.execute(query, wsid, limit = 500)[:[limit.year, limit.month, limit.day, limit.hour, limit.minute]]
+
     resp = MapAdapter(result)
     return resp.process()
 

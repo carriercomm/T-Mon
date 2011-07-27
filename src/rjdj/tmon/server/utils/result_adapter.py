@@ -45,6 +45,7 @@ class BasicAdapter(object):
     def key(self, row): raise NotImplementedError()
     def value(self, row): raise NotImplementedError()
         
+        
 class DefaultDictAdapter(BasicAdapter):
     """ """
     
@@ -54,21 +55,27 @@ class DefaultDictAdapter(BasicAdapter):
     def value(self, row):
         return row["value"]
         
+        
 class GeoRequestAdapter(BasicAdapter):
     """ """
     
     def process(self):
         results = {}
         for res in self.raw_results:
-            results[self.key(res)] = self.value(res)
-
+            key = self.key(res)
+            if results.has_key(key):
+                results[key] += self.value(res)
+            else:
+                results[key] = self.value(res)
+            
         return [{k: v} for k, v in sorted(results.iteritems(), key = operator.itemgetter(1), reverse = True)]
     
     def key(self, row):
-        return row["key"]
+        return row["key"][-1]
     
     def value(self, row):
         return row["value"]
+    
     
 class PieChartAdapter(BasicAdapter):    
     """ """
@@ -100,10 +107,11 @@ class MapAdapter(BasicAdapter):
         return [ {"lat": k[0], "lng": k[1], "count": v } for k, v in sources.iteritems() ]
         
     def key(self, row): 
-        return (row["key"][1], row["key"][2])
+        return (row["key"][-2], row["key"][-1])
         
     def value(self, row): 
         return row["value"]
+    
     
 class RequestResultAdapter(BasicAdapter):
     """ """
@@ -116,7 +124,7 @@ class RequestResultAdapter(BasicAdapter):
         
         for row in self.raw_results:
             then = self.key(row)
-            diff = self.converter.diff(now, then)
+            diff = self.converter(now, then)
             
             if diff < self.max_results: 
                 tmp[diff] = self.value(row)

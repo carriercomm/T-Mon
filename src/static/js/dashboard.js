@@ -20,15 +20,17 @@ function round(number,X) {
 // rounds number to X decimal places, defaults to 2
     X = (!X ? 2 : X);
     return Math.round(number * Math.pow(10, X)) / Math.pow(10, X);
-}
+};
 
 function showLoadingImage(element){
     element.empty().html('<img src="/static/loader.gif" class="loader" />');
-}
+};
 
 function drawChart(canvas, data, options){
-    canvas.empty();
-    $.plot(canvas, data, options);
+    if(data != undefined) {
+        canvas.empty();
+        $.plot(canvas, data, options);
+    }
 };
 
 function showTooltip(x, y, contents) {
@@ -44,16 +46,29 @@ function showTooltip(x, y, contents) {
         'border-radius': '4px',
         opacity: 0.80
     }).appendTo("body").fadeIn(150);
-}
+};
 
+function reportProgress(canvas, timeout) {
+    canvas.progressbar('value', 100);
+    var i = timeout;
+    function decrement() {
+        canvas.progressbar('value', 100 * i / timeout);
+        i--;
+        if(i > 1)
+            setTimeout(decrement, 1000);
+    };
+    setTimeout(decrement, 1000);
+};
+    
 // Google Map
 // -----------------------------------------------------------------------------
+
 var MapController = function(canvas_id){
     this.canvas = document.getElementById(canvas_id);
     this.markers = [];
     this.options = {
         zoom: 2,
-        center: new google.maps.LatLng(0,0),
+        center: new google.maps.LatLng(0, 0),
         mapTypeId: google.maps.MapTypeId.ROADMAP
     };
     this.inverval_id = null;
@@ -111,18 +126,21 @@ MapController.prototype.updateMarkers = function(){
     var zoom = this.map.getZoom();
 
     var onSuccess = function(data) {
-              self.deleteMarkers();
               var positions = data["results"];
-              var pos = null;
-              
-              for(var i = 0; i < positions.length; i++) {   
-                  var marker = new google.maps.Marker({
-                          position: new google.maps.LatLng(positions[i]["lat"], positions[i]["lng"]),
-                          title: "Origin of one or more requests!",
-                          icon: "http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=" + positions[i]["count"] + "|FFFF00|000000"
-                      });
-                  marker.setMap(self.map);
-                  self.markers.push(marker);
+              if(positions != undefined) {
+                  self.deleteMarkers();
+                  
+                  var pos = null;
+                  
+                  for(var i = 0; i < positions.length; i++) {   
+                      var marker = new google.maps.Marker({
+                              position: new google.maps.LatLng(positions[i]["lat"], positions[i]["lng"]),
+                              title: "Origin of one or more requests!",
+                              icon: "http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=" + positions[i]["count"] + "|FFFF00|000000"
+                          });
+                      marker.setMap(self.map);
+                      self.markers.push(marker);
+                  }
               }
               self.unlock();
           };
@@ -274,27 +292,35 @@ ChartController.prototype.setHover = function(){
 // Lists
 // -----------------------------------------------------------------------------
 
-var ListController = function(canvas_id, data_source){
+var ListController = function(canvas_id, data_source, progressbar_canvas){
     this.canvas = $("#" + canvas_id);
     this.data_source = data_source;
     this.data = [];
-    this.updateData();
     this.interval_id = null;
+    this.updateData();
+
+    if(progressbar_canvas != "") {
+        this.progressbar = $("#" + progressbar_canvas);
+        this.progressbar.progressbar();
+    }
 };
 
 ListController.prototype.updateData = function(){
     var self = this;
     var onSuccess = function(received) {
-                        self.data = received.results;
-                        self.canvas.empty();
-                        self.canvas.html("<ol>");
-                        var country_list = self.canvas.find("ol");
-                        for (var res in self.data) {
-                            var obj = self.data[res];
-                            for (var country in obj) {                                
-                                country_list.append("<li><b>" + country + "</b>: " + obj[country] + "</li>");
-                            }
-                        }                        
+                        if(received.results != undefined) {
+                            
+                            self.data = received.results;
+                            self.canvas.empty();
+                            self.canvas.html("<ol>");
+                            var country_list = self.canvas.find("ol");
+                            for (var res in self.data) {
+                                var obj = self.data[res];
+                                for (var country in obj) {                                
+                                    country_list.append("<li><b>" + country + "</b>: " + obj[country] + "</li>");
+                                }
+                            }                        
+                        }
                     };
     $.ajax({
         url: this.data_source,
@@ -302,15 +328,25 @@ ListController.prototype.updateData = function(){
         dataType: 'json',
         success: onSuccess
     });
+    
+    if(this.interval_id != null && this.progressbar != undefined) {
+        reportProgress(this.progressbar, this.interval);
+    }
 };
 
 ListController.prototype.setAutoRefresh = function(interval) {
     var callback = Delegate.create(this, this.updateData);
-    this.inverval_id = setInterval(callback, interval);
-};
+    this.interval = interval / 1000;
+    this.interval_id = setInterval(callback, interval);
+    
+    if(this.progressbar != undefined) {
+        reportProgress(this.progressbar, this.interval);
+    }
+}
 
 ListController.prototype.clearAutoRefresh = function(interval) {
     clearInterval(this.inverval_id);
+    this.interval_id = null;
 };
 
 ListController.prototype.clearData = function(){
@@ -319,15 +355,18 @@ ListController.prototype.clearData = function(){
 
 // Application
 // -----------------------------------------------------------------------------
+
 var Application = function(e){
     
     this.map = new MapController("map_canvas");
 
     this.users_per_country = new ListController("per_country", 
-                                                 "/" + webservice_id + "/data/users/country");
+                                                 "/" + webservice_id + "/data/users/country",
+                                                 "prg_country");
                                                  
     this.users_per_city = new ListController("per_city", 
-                                               "/" + webservice_id + "/data/users/city");
+                                               "/" + webservice_id + "/data/users/city",
+                                               "prg_city");
     
     this.per_os = new ChartController("per_os", 
                                        "/" + webservice_id + "/data/users/os",  
@@ -384,7 +423,6 @@ Application.prototype.changeResolution = function(resolution, count) {
 
 var app;
 document.addEventListener("DOMContentLoaded", function(e){
-
         app = new Application(e);
         app.setRealtime();
 
@@ -488,7 +526,7 @@ document.addEventListener("DOMContentLoaded", function(e){
             }
         );
         
-         $('#map_enlarge').click(
+        $('#map_enlarge').click(
             function() {
                 $("#dlg_big_map").dialog({
 		            height: 600,
@@ -515,5 +553,7 @@ document.addEventListener("DOMContentLoaded", function(e){
             }
         );
         
+        
+
     }, false);
          

@@ -22,8 +22,18 @@
 
 __docformat__ = "reStructuredText"
 
+def total_seconds(td):
+    """ Returns the total seconds of a timedelta object. """
+    
+    return (td.microseconds + (td.seconds + td.days * 24 * 3600) * 10 ** 6) / 10 ** 6;
+
 class ChartResolution(object):
     """ """
+    
+    def __call__(self, *args):
+        """ """
+        return self.diff(*args)
+    
     def diff(self, dtA, dtB):
         """ """
         
@@ -36,7 +46,7 @@ class SecondsResolution(ChartResolution):
     friendly_name = "second"
     
     def diff(self, dtA, dtB):
-        return int((dtA - dtB).seconds) 
+        return int(total_seconds(dtA - dtB)) 
 
 class MinutesResolution(ChartResolution):
     """ """
@@ -45,7 +55,7 @@ class MinutesResolution(ChartResolution):
     friendly_name = "minute"    
     
     def diff(self, dtA, dtB):
-        return int((dtA - dtB).seconds / 60) 
+        return int(total_seconds(dtA - dtB) / 60) 
 
 class HoursResolution(ChartResolution):
     """ """
@@ -54,7 +64,7 @@ class HoursResolution(ChartResolution):
     friendly_name = "hour"
         
     def diff(self, dtA, dtB):
-        return int((dtA - dtB).seconds / 3600) # 60 * 60
+        return int(total_seconds(dtA - dtB) / 3600) # 60 * 60
         
 class DaysResolution(ChartResolution):
     """ """
