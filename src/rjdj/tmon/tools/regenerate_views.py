@@ -5,6 +5,9 @@ from rjdj.tmon.server.utils.queries import all_queries
 from rjdj.tmon.server.utils.connection import connection
 
 from threading import Thread
+import time
+
+PAUSE = 5 # seconds
 
 def refresh(view_name, server):
 
@@ -12,7 +15,9 @@ def refresh(view_name, server):
         if not database.startswith("_"):
             db = server[database]
             db.view(view_name, limit = 0)
-
+        time.sleep(PAUSE)
+        
+        
 def run(*args):
 
     server = connection.server  
@@ -25,4 +30,5 @@ def run(*args):
         
     for thread in threads:
         thread.join()    
+    
     
