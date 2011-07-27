@@ -138,7 +138,6 @@ class Command(BaseCommand):
         "flush": flush,
         "list": list_all,
         "sync": sync,
-        "regenerate": regenerate,
         
         "detail": detail,
         "delete": delete,
