@@ -2,6 +2,8 @@
  RjDj T-Mon Server
 ==============================
 
+## VERY basic setup 
+
 $ py26 bootstrap.py
 
 # Default is buildout.testing.cfg
@@ -16,3 +18,4 @@ $ bin/test -vv1
 # Run Server
 $ bin/instance runserver 0.0.0.0:8000
 
+Please also look at DOCUMENTATION.md or src/templates/index.html (which are the same)! 

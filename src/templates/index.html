@@ -3,24 +3,253 @@
 <h2>Features:</h2>
 
 <ul>
+<li>Open Source under the GNU Public License v3</li>
 <li>Realtime monitoring of multiple web services from multiple users</li>
 <li>Platform independency</li>
-<li>Show the 100 latest requests on a map</li>
-<li>Ranking of the 10 most active countries and cities</li>
+<li>Show the 500 latest requests on a map</li>
+<li>Ranking of the most active countries and cities (by request)</li>
 <li>and much more!</li>
 </ul>
 
-<h2>Basic Setup:</h2>
+<h2>Quick Setup:</h2>
 
 <ol>
 <li>Start the server as stated in README</li>
-<li>Connect to <strong>http://localhost:8000/admin</strong> with your browser</li>
+<li>Connect to <code>http://localhost:8000/admin</code> with your browser</li>
 <li>Log in using the created administrator credentials</li>
-<li>Create a new WebService with a <strong>unique name</strong>. An ID and a secret will be created on save.</li>
+<li>Create a new WebService with a <strong>unique name</strong>. An ID and a secret will be created automatically on save.</li>
 <li>With the secret and the webservice's id, use the client package to add some data!</li>
 </ol>
 
-<h2>Web Services and Web Pages by T-Mon</h2>
+<h2>Description</h2>
+
+<p>T-Mon aimes to be a realtime monitoring system for various web services and an addition to other monitoring systems like Google Analytics. It relies on <a href="http://couchdb.apache.org/" title="The Apache CouchDB Project">Apache's CouchDB</a>, <a href="http://python.org" title="Python">Python 2</a>, <a href="http://www.djangoproject.com" title="The Django Project">Django 1.3</a> and <a href="http://www.tornadoweb.org" title="Tornado Web Server">Tornado</a> in order to assert flexibility, security, scalability and performance. </p>
+
+<p>The process of this monitoring system is simple:
+1. Collect data
+2. Filter data
+3. Show data</p>
+
+<p>All of these steps are taken care of with T-Mon. As explained later in more detail, the data collection process is language and platform independent and encrypted. The filtering process is done with CouchDB's views and showing is again taken care of by T-Mon. </p>
+
+<h3>Why T-Mon?</h3>
+
+<p>T-Mon is Open Source and aimes to fill the gap between JavaScript based website monitoring and pure hardware load monitoring, which leads to a collection process that is language- and platform independent and a simple web-based monitoring site to view the collected data. The server application itself is also lightweight and can easily be used for any kind of web service or website tracking. For security reasons the collected data has to be encrypted using a 256 bit <a href="http://en.wikipedia.org/Advanced_Encryption_Standard" title="Wikipedia: Advanced Encryption Standard">AES</a> cipher. </p>
+
+<h4>The Tracking Process</h4>
+
+<p>Data collection is very easy: The server offers a RESTful interface <code>/data/collect</code>, which accepts the (encrypted) monitoring data using HTTP POST (details see below). Per default this data is mainly the user agent, the URL and the IP of the request, but it can easily be enhanced, without the fuss of schemamigrations or similar database activities.</p>
+
+<p>If a Python-based web service should be tracked, there is an additional library that makes tracking easier: <a href="https://github.com/celaus/T-Mon-Client-API" title="T-Mon Client API's GitHub repository">T-Mon Client API</a>.</p>
+
+<h3>Dependencies</h3>
+
+<p>These dependencies are from a Debian-based Linux platform and when using Mac OS X or any other Linux distribution the package names may vary.</p>
+
+<ul>
+<li>python2.6 &lt;</li>
+<li>python2.6-dev &lt;</li>
+<li>bzip2 </li>
+<li>gcc </li>
+<li>g++ </li>
+<li>libxslt1.1 </li>
+<li>libxslt-dev </li>
+<li>libpcre3-dev </li>
+<li>autotools-dev </li>
+<li>libpq5 </li>
+<li>libpq-dev </li>
+<li>memcached </li>
+<li>make </li>
+<li>swig </li>
+<li>psmisc </li>
+<li>python-imaging </li>
+<li>python-crypto</li>
+</ul>
+
+<p>Many of those dependencies come from the fact that during the buildout process, Nginx is being compiled.</p>
+
+<h2>Setup (the scientific approach)</h2>
+
+<p>First checkout the repository from my <a href="https://github.com/celaus/T-Mon" title="T-Mon's GitHub repository">Repository</a> with </p>
+
+<pre><code>git clone git://github.com/celaus/T-Mon.git
+</code></pre>
+
+<p>T-Mon comes with the following folder structure:</p>
+
+<pre><code>T-Mon/
+    base.cfg                          # basic buildout conifguration file
+    bootstrap.py                      # bootstrapping file, generates buildout script
+    buildout.cfg                      # softlink to buildout.testing.cfg
+    buildout.staging.cfg              # buildout config for staging environment
+    buildout.testing.cfg              # buildout config for (local) testing environment
+    buildout.production.cfg           # buildout config for production environment
+    CHANGES.txt                       # the latest changes
+    COPYING                           # a copy of the GPLv3 
+    cron.cfg                          # buildout config for cronjobs
+    DOCUMENTATION.md                  # this file
+    mime.types                        # mime types for nginx
+    nginx.cfg                         # buildout config for nginx
+    nginx.conf                        # configuration file for nginx
+    README                            # basic server setup file
+    setup.py                          # setup.py for easy_install and distribute 
+    src/                              # source code directory
+        __init__.py
+        rjdj/
+            __init__.py  
+            tmon/
+                __init__.py
+                server/               # files for the server
+                    __init__.py
+                    admin.py          
+                    exceptions.py
+                    models.py
+                    urls.py           # url configuration for the server 
+                    views.py
+                    tests/            # contains (zope) tests for the server
+                        ...
+                    utils/            # application logic!
+                        ... 
+                    management/       # management commands for instance executable
+                        ...
+                tools/                # additional tools for the server  
+                    __init__.py
+                    regenerate_views.py
+        settings/                     # deployment settings
+            __init__.py               # basic settings for django
+            testing.py                # testing specific settings
+            staging.py                # staging specific settings
+            production.py             # production specific settings
+        static/                       # everything that is statically served (pictures, JavaScript, ...)
+            js/
+                dashboard.js
+                event.js
+                jquery-1.6.2.min.js
+                jquery-ui-1.8.14.custom.min.js
+                jquery.flot.min.js
+                jquery.flot.pie.min.js
+                utils.js
+            ui-lightness/
+                ...
+            dashboard.css
+            loader.gif
+            login.css
+            map.html
+        templates/                     # Django templates 
+            dashboard.html
+            dialogs.html               # modal dialogs
+            index.html
+            login.html
+</code></pre>
+
+<h3>Prerequisites</h3>
+
+<p>Before anything can happen, it has to be decided how the server should be deployed, as there are three stages:
+* testing: Uses the file <code>testing.py</code> in <code>src/settings/</code> and should be used for local testing
+* staging: When everything is quite clear and T-Mon should be deployed on a live environment (uses <code>staging.py</code>)
+* production: Everything is sorted out and T-Mon should go live! (uses <code>production.py</code>)</p>
+
+<p>Keep in mind that these settings are also Django's settings and they can as well be modified here. The basis for these settings can be found in the init module from <code>src/settings/</code>.</p>
+
+<p>The stage specific settings can be configured in <code>src/settings/</code>. </p>
+
+<h4>Important flag(s):</h4>
+
+<h5>DEBUG</h5>
+
+<p><em>Should be false on production systems or when expecting heavy load in staging.</em></p>
+
+<p><strong>Effects:</strong> </p>
+
+<ul>
+<li>Commits after every insert into couchdb (instead of bulk-inserting - CPU intense)</li>
+<li>Responds with the exception message to every /data/collect request</li>
+</ul>
+
+<h3>Buildout</h3>
+
+<p><em>Buildout is a Python-based build system for creating, assembling and deploying applications from multiple parts, some of which may be non-Python-based. It lets you create a buildout configuration and reproduce the same software later.</em>
+From <a href="http://www.buildout.org/" title="Buildout">www.buildout.org</a></p>
+
+<p>In order to set up T-Mon run (using Python 2.x)</p>
+
+<pre><code>python bootstrap.py
+</code></pre>
+
+<p>This will then create a directory called <code>bin/</code> where the binaries can be found and the <strong>buildout</strong> script. Call it with the desired settings to set T-Mon up.</p>
+
+<pre><code>bin/buildout -vc buildout.xxxx.cfg
+</code></pre>
+
+<p>The flags v (verbose) and c (config file) are not mandatory, especially when no config file is given, the file <code>buildout.cfg</code> will be used (which is actually a link to <code>buildout.testing.cfg</code>).</p>
+
+<p>In case any errors occur, please see the dependencies section. Please note that on some systems they can be named differently.</p>
+
+<p>The bootstrap and buildout process will add the following structure:</p>
+
+<pre><code>T-Mon/
+    bin/                               # contains the binaries (to run the server, install cronjobs, etc)
+    parts/                             # additional resources like the GeoLite database 
+    cron/                              # the cron jobs that will be appended to /etc/crontab when install_cronjobs is run
+    develop-eggs/                      # temporary folders for the buildout process
+    downloads/                         # temporary folders for the buildout process
+    ...
+</code></pre>
+
+<h4>Customizing the Builout process</h4>
+
+<p>In order to customize the Buildout process, the <code>buildout.xxxx.cfg</code> files should be edited. If some parts should not be downloaded and set up, they can be either commented out (using a leading <code>#</code>) or removed. Please note that if a file is removed from <code>extends</code>, the parts from this file also have to be removed from <code>parts</code>. Everything in <code>parts</code> will actually be built and installed.</p>
+
+<pre><code>[buildout]
+extends = cron.cfg
+          base.cfg
+          nginx.cfg
+parts = instance
+        regenerate
+        upstream_fair
+        nginx
+        nginx-ctl
+        webservice
+        GeoLiteCityDB
+        crondir
+        install_cronjobs
+        regenerate_views
+</code></pre>
+
+<p>If no extensions are planned to be made or a local nginx/apache is running, it is not recommended to edit the builout configuration files.</p>
+
+<h2>Web Pages</h2>
+
+<h2>GET "/" HTTP1.1</h2>
+
+<p><em>Root/Index page.</em></p>
+
+<p>Returns this page.</p>
+
+<h2>GET "/login" HTTP1.1</h2>
+
+<p><em>Log In page.</em></p>
+
+<p>Lets a user log in, to monitor his web services.</p>
+
+<h2>GET "/logout" HTTP1.1</h2>
+
+<p><em>Logs the current user out and redirects to /login.</em></p>
+
+<p>Lets a user log in, to monitor his web services.</p>
+
+<h2>GET "/view/dashboard/$wsid" HTTP1.1</h2>
+
+<p><em>Dashboard for server monitoring.</em></p>
+
+<h3>Request</h3>
+
+<pre><code>wsid           : long [optional]
+</code></pre>
+
+<p>Shows the dashboard for the specified web service or a page to choose one web service from. If the $wsid is missing, the last web service of the user will be shown.</p>
+
+<h2>RESTful Interfaces</h2>
 
 <h3>Request</h3>
 
@@ -53,33 +282,6 @@ wsid      :  The id of the web service to be tracked
 <h3>Authentication</h3>
 
 <p>Every web service requires to be authenticated with a valid user account (can be created in the Django Admin interface), except for the data collection web service, which relies on (256 bit) AES encryption with a generated shared secret.</p>
-
-<h2>Web Pages</h2>
-
-<h2>GET "/" HTTP1.1</h2>
-
-<p><em>Root/Index page.</em></p>
-
-<p>Returns this page.</p>
-
-<h2>GET "/login" HTTP1.1</h2>
-
-<p><em>Log In page.</em></p>
-
-<p>Lets a user log in, to monitor his web services.</p>
-
-<h2>GET "/view/dashboard/$wsid" HTTP1.1</h2>
-
-<p><em>Dashboard for server monitoring.</em></p>
-
-<h3>Request</h3>
-
-<pre><code>wsid           : long [optional]
-</code></pre>
-
-<p>Shows the dashboard for the specified web service or a page to choose one web service from. If the $wsid is missing, the first web service of the user will be shown.</p>
-
-<h2>RESTful Interfaces</h2>
 
 <h2>POST "/data/collect" HTTP1.1</h2>
 
