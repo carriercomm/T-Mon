@@ -391,6 +391,14 @@ var Application = function(e){
                                            },
                                            "");
                                            
+    this.per_url = new ChartController("per_url", 
+                                           "/" + webservice_id + "/data/users/url", 
+                                           { series: { pie: { show: true, label: { show: false } } }, 
+                                             legend: { show: false }, 
+                                             grid: { hoverable: true } 
+                                           },
+                                           "");
+                                           
     this.req_per_sec = new ChartController("requests", 
                                             "/" + webservice_id + "/data/requests/second/60", 
                                             { series: { lines: { show: true, fill: true } },
@@ -402,6 +410,7 @@ var Application = function(e){
                                             
     this.per_os.setHover();
     this.per_device.setHover();
+    this.per_url.setHover();
     this.req_per_sec.setHover();
                                             
 };
@@ -525,6 +534,40 @@ document.addEventListener("DOMContentLoaded", function(e){
 	            }); 
             }
         );
+        
+        $('#url_enlarge').click(
+            function() {
+                $("#dlg_big_url").dialog({
+		            height: 684,
+		            width: 703,
+		            resizable: false,
+		            title: "URLs",
+		            modal: true,
+		            create: function() {
+		                app.per_url.enlarge("url_charting_area", 
+		                    { series: { pie: { 
+		                                       show: true, 
+		                                       label: { 
+		                                                radius: 3/4,
+		                                                show: true,
+	                                                    formatter: function(label, series){
+                                                            return '<div class="large_chart_label"><b>' + label + '</b> (' + Math.round(series.percent) + '%</div>';
+                                                        }, 
+                                                        threshold: 0.02,
+                                               },
+//                                               combine: {
+//                                                    color: '#999',
+//                                                    threshold: 0.02
+//                                                }
+                                        } 
+                             }, 
+                             legend: { show: false }
+                           });
+		            }
+	            }); 
+            }
+        );
+    
         
         $('#map_enlarge').click(
             function() {

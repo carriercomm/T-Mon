@@ -97,6 +97,13 @@ Now for some queries:
     <Row key='iPad', value=1>
     <Row key='iPhone', value=1>
     <Row key='Linux', value=1>
+    
+    >>> query = queries.users_per_url
+    >>> for result in db.execute(query, ws.id):
+    ...     print result
+    <Row key='/get/data/from/something', value=1>
+    <Row key='/login', value=1>
+    <Row key='/register', value=1>
 
     >>> query = queries.users_per_os
     >>> for result in db.execute(query, ws.id):
@@ -111,8 +118,6 @@ Now for some queries:
     <Row key=[...], value=1>
     <Row key=[...], value=1>
     <Row key=[...], value=1>
-
-
 
     >>> query = queries.request_count
     >>> for result in db.execute(query, ws.id):

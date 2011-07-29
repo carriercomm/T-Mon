@@ -106,6 +106,12 @@ def users_per_device(request, wsid):
     query = queries.users_per_device
     return PieChartAdapter(db.execute(query, wsid)).process()
 
+@return_json
+def users_per_url(request, wsid):
+    """ """
+
+    query = queries.users_per_url
+    return PieChartAdapter(db.execute(query, wsid)).process()
 
 @return_json
 def request_count(request, wsid, grouping, limit):

@@ -3,6 +3,10 @@ CHANGES for rjdj.tmon
 
 trunk
 -----
+  - celaus: added query by URL 
+
+  - celaus: added loads of documentation
+
   - celaus: fixed view-regeneration script
 
   - celaus: fixed queries

@@ -51,6 +51,7 @@ urlpatterns = patterns('',
     (r'^(?P<wsid>[\d]+)/data/users/city', views.users_per_city),
     (r'^(?P<wsid>[\d]+)/data/users/device', views.users_per_device),
     (r'^(?P<wsid>[\d]+)/data/users/os', views.users_per_os),
+    (r'^(?P<wsid>[\d]+)/data/users/url', views.users_per_url),
     (r'^(?P<wsid>[\d]+)/data/users/locations/(?P<ne_lat>[\d.-]+)/(?P<ne_lng>[\d.-]+)/(?P<sw_lat>[\d.-]+)/(?P<sw_lng>[\d.-]+)', views.users_locations),
     (r'^(?P<wsid>[\d]+)/data/requests/(?P<grouping>(second|minute|hour|day))/(?P<limit>[\d]+)', views.request_count),
     

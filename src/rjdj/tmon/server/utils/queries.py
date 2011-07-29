@@ -65,7 +65,7 @@ users_per_city = ViewDefinition(
 
 
 users_per_device = ViewDefinition(
-                        design = "geographic",
+                        design = "requests",
                         name = "users_per_device",
                         map_fun = """   function(doc)  {
                                             var regexp = /([\w\s\/]+); (U; )?([\w\d\.\_\s]+)/;
@@ -83,7 +83,7 @@ users_per_device = ViewDefinition(
 
 
 users_per_os = ViewDefinition(
-                        design = "geographic",
+                        design = "requests",
                         name = "users_per_os",
                         map_fun = """   function(doc)  {
                                             var regexp = /([\w\s\/]+); (U; )?([\w\d\.\_\s]+)/;
@@ -97,6 +97,18 @@ users_per_os = ViewDefinition(
                         reduce_fun = """function(keys, values) { return sum(values); }""",
                         group = True,
                         limit = 500)
+
+
+users_per_url = ViewDefinition(
+                        design = "requests",
+                        name = "users_per_url",
+                        map_fun = """   function(doc) {
+                                            if(doc["url"] != null && doc["url"] != "") {  
+                                                emit(doc["url"].toLowerCase().replace(" ", ""), 1);
+                                            }
+                                        }""",
+                        reduce_fun = """function(keys, values) { return sum(values); }""",
+                        group = True)
 
 
 request_count = ViewDefinition(
@@ -139,7 +151,6 @@ users_locations = ViewDefinition(
                         descending = True)
 
 
-# hacky ... from http://www.java2s.com/Tutorial/JavaScript/0240__Date/Getyearmonthanddayfromdatedifference.htm
 age_in_days = ViewDefinition(
                         design = "entries",
                         name = "age_in_days",
@@ -159,6 +170,7 @@ all_queries = (
         users_per_city,
         users_per_os,
         users_per_device,
+        users_per_url,
         request_count,
         users_locations,
         age_in_days,
