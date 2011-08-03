@@ -31,6 +31,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': '/home/claus/sandbox/rjdj.tmon/parts/tmon_testing.db',
+        'TEST_NAME': '/home/claus/sandbox/rjdj.tmon/parts/testdb'
         },
     }
     

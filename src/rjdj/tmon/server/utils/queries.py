@@ -24,9 +24,13 @@ __docformat__ = "reStructuredText"
 
 from couchdb.design import ViewDefinition
 
-users_per_country = ViewDefinition(
+# using the _sum Erlang function as a reduce function.
+# from:
+# http://wiki.apache.org/couchdb/Performance#View_generation
+
+users_per_location = ViewDefinition(
                         design = "geographic",
-                        name = "users_per_country",
+                        name = "users_per_location",
                         map_fun = """   function(doc) {
                                             if(doc["country"] != null && doc["country"] != "") {  
                                                 var regexp = /(\d+)-(\d+)-(\d+)T(\d+):(\d+):(\d+)Z/;
@@ -37,33 +41,14 @@ users_per_country = ViewDefinition(
                                                     matched[i] = Number(matched[i]);
                                                 }
                                                 matched.push(doc["country"]);
+                                                matched.push(doc["city"]);
                                                 emit(matched, 1);
                                             }
                                         }""",
-                        reduce_fun = """function(keys, values) { return sum(values); }""",
+                        reduce_fun = """_sum""",
                         group = True)
                         
                                         
-users_per_city = ViewDefinition(
-                        design = "geographic",
-                        name = "users_per_city",
-                        map_fun = """   function(doc) {
-                                            if(doc["city"] != null && doc["city"] != "") {    
-                                                var regexp = /(\d+)-(\d+)-(\d+)T(\d+):(\d+):(\d+)Z/;
-                                                var matched = doc.timestamp.match(regexp);
-                                                
-                                                matched = matched.slice(1, 6);
-                                                for(var i = 0; i < matched.length; i++) {
-                                                    matched[i] = Number(matched[i]);
-                                                }
-                                                matched.push(doc["city"] + " (" + doc["country"] + ")");
-                                                emit(matched, 1);
-                                            }
-                                        } """,
-                        reduce_fun = """function(keys, values) { return sum(values); }""",
-                        group = True)
-
-
 users_per_device = ViewDefinition(
                         design = "requests",
                         name = "users_per_device",
@@ -77,7 +62,7 @@ users_per_device = ViewDefinition(
                                                 emit("other", 1);
                                             }
                                         } """,
-                        reduce_fun = """function(keys, values) { return sum(values); }""",
+                        reduce_fun = """_sum""",
                         group = True,
                         limit = 500)
 
@@ -94,7 +79,7 @@ users_per_os = ViewDefinition(
                                                 emit("other", 1);
                                             }
                                         } """,
-                        reduce_fun = """function(keys, values) { return sum(values); }""",
+                        reduce_fun = """_sum""",
                         group = True,
                         limit = 500)
 
@@ -107,7 +92,7 @@ users_per_url = ViewDefinition(
                                                 emit(doc["url"].toLowerCase().replace(" ", ""), 1);
                                             }
                                         }""",
-                        reduce_fun = """function(keys, values) { return sum(values); }""",
+                        reduce_fun = """_sum""",
                         group = True)
 
 
@@ -123,7 +108,7 @@ request_count = ViewDefinition(
                                             }
                                             emit(matched, 1);
                                         } """,
-                        reduce_fun = """function(keys, values) { return sum(values); }""",
+                        reduce_fun = """_sum""",
                         group = True,
                         descending = True)
                         
@@ -146,7 +131,7 @@ users_locations = ViewDefinition(
                                                 emit(matched, 1);
                                             }
                                         } """,
-                        reduce_fun = """function(keys, values) { return sum(values); }""",
+                        reduce_fun = """_sum""",
                         group = True,
                         descending = True)
 
@@ -166,8 +151,7 @@ age_in_days = ViewDefinition(
                                         } """,
                                         descending = True)
 all_queries = (
-        users_per_country,
-        users_per_city,
+        users_per_location,
         users_per_os,
         users_per_device,
         users_per_url,
@@ -176,14 +160,3 @@ all_queries = (
         age_in_days,
     )
 
-def get_queries_as_dict():
-    """ """
-    
-    queries_dict = {}
-    for q in all_queries:
-        if isinstance(queries_dict[q.design_doc], list):
-            queries_dict[q.design_doc] = [q.name]  
-        else:
-            queries_dict[q.design_doc].append(q.name)
-            
-    return queries_dict

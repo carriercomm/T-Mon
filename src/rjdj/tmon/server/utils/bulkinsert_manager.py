@@ -39,8 +39,10 @@ class BulkInsertManager(object):
         self.insertion_stacks = {}
 
     
-    def insert(self, document, wsid):
+    def insert(self, document, webservice):
         """ Adds a document to an insertion queue which will be inserted after a certain number of  """
+        
+        wsid = webservice.id
         
         if not self.insertion_stacks.has_key(wsid):
             self.insertion_stacks[wsid] = [document]
@@ -49,7 +51,7 @@ class BulkInsertManager(object):
         
                     
         if settings.DEBUG or len(self.insertion_stacks[wsid]) > settings.MAX_BATCH_ENTRIES:
-            db.bulkinsert(self.insertion_stacks[wsid], wsid)
+            db.bulkinsert(self.insertion_stacks[wsid], webservice)
             self.insertion_stacks[wsid] = []        
 
     def insert_all(self):

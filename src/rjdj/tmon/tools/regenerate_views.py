@@ -35,7 +35,7 @@ def refresh(view_name, server):
     for database in connection.server:
         if not database.startswith("_"):
             db = server[database]
-            db.view(view_name, limit = 1)
+            db.view(view_name, limit = 0).total_rows
         time.sleep(PAUSE)
         
         

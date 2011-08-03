@@ -49,12 +49,18 @@ def get_webservices(user):
     return user.webservice_set.all()
 
 
-def bulkinsert(documents, wsid):
+def bulkinsert(documents, ws):
     """ """
     
-    if documents and wsid:
-        ws_name = get_webservice(wsid).name
-        database = connection.switch_db(ws_name)
+    if documents and ws:
+        webservice = None
+        
+        if isinstance(ws, WebService):
+            webservice = ws
+        else:
+            webservice = get_webservice(wsid)
+            
+        database = connection.get_db(webservice.name)
         database.update(documents)
 
 
@@ -63,7 +69,7 @@ def store(data, wsid):
     
     if data:
         ws_name = get_webservice(wsid).name
-        data.store(connection.switch_db(ws_name))
+        data.store(connection.get_db(ws_name))
 
 
 def execute(query, wsid, **options):
@@ -72,7 +78,7 @@ def execute(query, wsid, **options):
     if isinstance(query, ViewDefinition):
     
         ws_name = get_webservice(wsid).name
-        return query(connection.switch_db(ws_name), **options)
+        return query(connection.get_db(ws_name), **options)
 
 
 def sync(query, wsid):
@@ -80,4 +86,4 @@ def sync(query, wsid):
     
     if isinstance(query, ViewDefinition):
         ws_name = get_webservice(wsid).name
-        query.sync(connection.switch_db(ws_name))
+        query.sync(connection.get_db(ws_name))

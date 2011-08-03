@@ -23,40 +23,44 @@
 __docformat__ = "reStructuredText"
 
 from django.db import models
+from django.core.validators import RegexValidator
 from django.contrib.auth.models import User
 from rjdj.tmon.server.utils.connection import connection
 from django.db import transaction
 
+# http://wiki.apache.org/couchdb/HTTP_database_API#Naming_and_Addressing
+name_validator = RegexValidator(regex = r'^[a-z][a-z0-9\_\$()\+\-]*$', 
+                                message = 'Name must be a valid CouchDB Database name (without a "/")')
 
-from couchdb.mapping import ( Document, 
-                              TextField, 
-                              IntegerField, 
-                              DateTimeField,
-                              FloatField, 
-                              ViewField, )
 
 class WebService(models.Model):
     """ Represents any web service to be tracked """
     
     owner = models.ForeignKey(User)
     secret = models.CharField("Secret for web service authentication", max_length = 128, unique = True)
-    name = models.CharField("Name of the Service", max_length = 40, unique = True)
+    name = models.CharField("Name of the Service", max_length = 40, unique = True, validators = [name_validator])
     
     @transaction.commit_on_success
     def save(self, *args, **kwargs):
         super(WebService, self).save(*args, **kwargs)
         connection.setup_db(self.name)
     
-class TrackingData(Document):
+    @transaction.commit_on_success
+    def delete(*args, **kwargs):
+        name = self.name
+        super(WebService, self).save(*args, **kwargs)
+        connection.remove_db(name)    
+    
+class TrackingDataKeys(object):
     """ A class for saving trackable data """
     
-    user_agent = TextField()
-    url = TextField()
-    timestamp = DateTimeField()
-    country = TextField()
-    latitude = FloatField()
-    longitude = FloatField()
-    username = TextField()
-    city = TextField()
-    
+    USER_AGENT = "useragent"
+    URL = "url"
+    LATITUDE = "lat"
+    LONGITUDE = "lng"
+    TIMESTAMP = "timestamp"
+    COUNTRY = "country"
+    USERNAME = "username"
+    IP = "ip"
+    CITY = "city"
     

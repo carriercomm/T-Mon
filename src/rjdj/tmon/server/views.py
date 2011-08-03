@@ -22,11 +22,14 @@
 
 __docformat__ = "reStructuredText"
 
+import logging
+import json
+
 from rjdj.tmon.server.models import WebService
 
 from rjdj.tmon.server.exceptions import *
 
-from rjdj.tmon.server.utils.parser import TrackingRequestParser, ChartResolutionParser
+from rjdj.tmon.server.utils.parser import ChartResolutionParser
 from rjdj.tmon.server.utils.result_adapter import (DefaultDictAdapter,
                                                    GeoRequestAdapter,
                                                    RequestResultAdapter, 
@@ -35,9 +38,10 @@ from rjdj.tmon.server.utils.result_adapter import (DefaultDictAdapter,
                                                     )
 from rjdj.tmon.server.utils.decorators import return_json, print_request_time
 from rjdj.tmon.server.utils import db
+from rjdj.tmon.server.utils import decrypt_message
 from rjdj.tmon.server.utils import queries
 from rjdj.tmon.server.utils.bulkinsert_manager import bulkInsertManager
-
+from rjdj.tmon.server.utils.processors import process
 
 from django.http import  (
                          HttpResponseNotFound,
@@ -47,9 +51,16 @@ from django.template.response import SimpleTemplateResponse
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout
 from django.shortcuts import redirect
-
+from django.http import QueryDict
+from django.conf import settings
 
 from datetime import datetime, timedelta
+
+from threading import Thread
+from tornado.web import RequestHandler
+
+logger = logging.getLogger("debug")
+
 #
 # Error pages
 #
@@ -69,31 +80,54 @@ def server_error(request):
 # RESTful web services 
 #
 
-@print_request_time
-@return_json
-def data_collect(request):
+WSID_KEY = "wsid"
+DATA_KEY = "data"
+#
+# Tornado views
+#
+def data_collect(webservice, post_data):
     """ """
     
-    if request.method != "POST": raise InvalidRequest("GET is not allowed")
+    decrypted_data = decrypt_message(post_data[DATA_KEY], webservice.secret)
+    data = json.loads(decrypted_data)
     
-    webservice, data = TrackingRequestParser.create_document(request.POST)
-    
-    bulkInsertManager.insert(data, webservice.id)
+    parsed_data = process(data)
+    bulkInsertManager.insert(parsed_data, webservice)
 
+class CollectionHandler(RequestHandler):
+    """ """
+    @print_request_time
+    def post(self, *args, **kwargs):
+        """ """
+        
+        try:
+            post_data = QueryDict(self.request.body)
+            webservice = db.get_webservice(post_data[WSID_KEY])
+
+            t = Thread(target = data_collect, args = (webservice, post_data, ))
+            t.start()
+            if settings.DEBUG: t.join()
+        except Exception as ex:
+            logger.error("%s: %s" % (type(ex), ex))
+        self.finish()   
+        
+#
+# Django views
+# 
 @return_json
 def users_per_country(request, wsid):
     """ """
 
-    query = queries.users_per_country
+    query = queries.users_per_location
     limit = datetime.now() - timedelta(minutes = 10)
-    return GeoRequestAdapter(db.execute(query, wsid)[[limit.year, limit.month, limit.day, limit.hour, limit.minute]:]).process()[:5]
+    return GeoRequestAdapter(db.execute(query, wsid, group_level = 6)[[limit.year, limit.month, limit.day, limit.hour, limit.minute]:]).process()[:5]
 
 
 @return_json
 def users_per_city(request, wsid):
     """ """
  
-    query = queries.users_per_city
+    query = queries.users_per_location
     
     limit = datetime.now() - timedelta(minutes = 10)
     return GeoRequestAdapter(db.execute(query, wsid)[[limit.year, limit.month, limit.day, limit.hour, limit.minute]:]).process()[:5]

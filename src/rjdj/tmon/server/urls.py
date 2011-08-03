@@ -56,7 +56,7 @@ urlpatterns = patterns('',
     (r'^(?P<wsid>[\d]+)/data/requests/(?P<grouping>(second|minute|hour|day))/(?P<limit>[\d]+)', views.request_count),
     
     # POST interfaces
-    (r'^data/collect', views.data_collect),
+    
     
     # HTML Pages
     (r'^view/dashboard/?$', views.dashboard_redirect),
@@ -71,4 +71,8 @@ urlpatterns = patterns('',
      'django.views.static.serve', {'document_root': settings.MEDIA_ROOT}),
     (r'^static/(.*)$',
      'django.views.static.serve', {'document_root': settings.MEDIA_ROOT}),
+)
+
+tornado_urls = (
+    (r'/data/collect', views.CollectionHandler, {}),
 )

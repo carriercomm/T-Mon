@@ -26,7 +26,9 @@ from rjdj.tmon.server.exceptions import *
 from rjdj.tmon.server.utils.queries import all_queries
 
 from couchdb import Server
+from couchdb.http import ResourceNotFound, PreconditionFailed
 from django.conf import settings
+from threading import Lock
 
 class DBConnection(object):
     """ """
@@ -39,22 +41,27 @@ class DBConnection(object):
         self.port = port
         self.user = user
         self.password = password
-        self.server = self.connect()
-        self.database = None
         
-    def switch_db(self, name):
+        self.connections = 0
+        self.lock = Lock()
+        
+    def get_db(self, name):
         """ """
-        
-        if name not in self.server:
+        server = self.connect()
+        try:        
+            return server[name]
+        except ResourceNotFound:
             raise InvalidWebService(name)
-        
-        if not self.database or self.database.name != name:
-            self.database = self.server[name]
-        
-        return self.database
+
+    def disconnect(self):
+    
+        self.lock.acquire()
+        self.connections -= 1
+        self.lock.release()
 
     def connect(self):
         """ """
+        self.lock.acquire()
         if self.user and self.password:
             url =  "%s://%s:%s@%s:%d" % (self.protocol, 
                                          self.user, 
@@ -63,19 +70,29 @@ class DBConnection(object):
                                          self.port)
         else:
             url =  "%s://%s:%d" % (self.protocol, self.host, self.port)
+            
+        self.connections += 1
+        self.lock.release()
         return Server(url)
 
     def setup_db(self, name):
         """ """
-        
-        if name not in self.server:
-            self.database = self.server.create(name)
+        server = self.connect()
+        try:
+            database = server.create(name)
             for q in all_queries:
-                q.sync(self.database)
-        elif name in self.server:
-            self.switch_db(name)
+                q.sync(database)
+        except PreconditionFailed:
+            database = self.get_db(name)
             
-        return self.database
+        return database
+        
+    def remove_db(self, name):
+        """ """
+        server = self.connect()
+        if name in server:
+            del server[name]
+        
 
 # the one and only connection to the CouchDB       
 connection = DBConnection(**settings.TRACKING_DATABASE)

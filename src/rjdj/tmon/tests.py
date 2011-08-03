@@ -67,20 +67,22 @@ class DjangoLayer(object):
 
     @classmethod
     def setUp(self):
+        
         utils.setup_test_environment()
         connection.creation.create_test_db = patch(connection.creation.create_test_db)
         connection.creation.create_test_db(verbosity = 0, autoclobber = True)
         
-        self.saved_state = [d for d in conn.server]
+        self.saved_state = [d for d in conn.connect()]
         
     @classmethod
     def tearDown(self):
         call_command('flush', verbosity = 0, interactive = False)
         
-        if not KEEP_DATA and conn.database:
-            for db in conn.server:
+        if not KEEP_DATA:
+            server = conn.connect()
+            for db in server:
                 if db not in self.saved_state and not db.startswith("_"):
-                    del conn.server[db]
+                    del server[db]
 
     @classmethod
     def testSetUp(self):
@@ -102,6 +104,9 @@ def test_suite():
     parser = DocFileSuite('server/tests/parser.txt',
         optionflags = doctest.NORMALIZE_WHITESPACE | doctest.ELLIPSIS,
         )
+    parser_perf = DocFileSuite('server/tests/parser_performance.txt',
+        optionflags = doctest.NORMALIZE_WHITESPACE | doctest.ELLIPSIS,
+        )
     queries = DocFileSuite('server/tests/queries.txt',
         optionflags = doctest.NORMALIZE_WHITESPACE | doctest.ELLIPSIS,
         )
@@ -111,6 +116,7 @@ def test_suite():
                                 analyze,
                                 parser,
                                 queries,
+                                parser_perf
                                 ))
     suite.layer = DjangoLayer
     return suite
