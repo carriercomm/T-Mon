@@ -24,8 +24,7 @@ __docformat__ = "reStructuredText"
 
 from django.core.management.base import BaseCommand
 from rjdj.tmon.server.models import WebService
-from rjdj.tmon.server.utils import db, queries
-from rjdj.tmon.server.models.couchdbviews import CouchDBViews
+from rjdj.tmon.server.couchdbviews.couchdbviews import CouchDBViews
 from rjdj.tmon.server.utils.connection import connection
 from pprint import pprint
 
@@ -48,7 +47,7 @@ class Command(BaseCommand):
         if really_delete:
             dbs = 0
             print "Flushing CouchDB ..."
-            server = connection.connect()
+            server = connection.create()
             for database in server:
                 if not database.startswith("_"):
                     del server[database]
@@ -61,7 +60,7 @@ class Command(BaseCommand):
         
         print "Listing all databases ..."
         dbs = 0
-        server = connection.connect()
+        server = connection.create()
         for database in server:
             try:
                 if not database.startswith("_"): 
@@ -75,7 +74,7 @@ class Command(BaseCommand):
     def detail(name):
         """ """
         
-        server = connection.connect()
+        server = connection.create()
         if name in server:
             database = server[name]
             print "Listing details about", name, " ..."
@@ -87,7 +86,7 @@ class Command(BaseCommand):
     def delete(name):
         """ """
         
-        server = connection.connect()
+        server = connection.create()
         if not name.startswith("_") and name in server: 
             user_input = raw_input("Delete %s (yes/no)? " % name)
             really_delete = bool(user_input.lower() == "yes")
@@ -101,7 +100,7 @@ class Command(BaseCommand):
     def iterate(name):
         """ """
         
-        server = connection.connect()
+        server = connection.create()
         if name in server:
             database = server[name]
             print "Iterating through", name, "with", DOCUMENTS_PER_ROUND, "Documents per round ..."
@@ -123,7 +122,7 @@ class Command(BaseCommand):
     def cleanup(name, age):
         """ """
         
-        server = connection.connect()
+        server = connection.create()
         if name in server:
             rows = 0
         
@@ -156,7 +155,7 @@ class Command(BaseCommand):
     
     def handle(self, *args, **kwargs):
         """ """
-        server = connection.connect()
+        server = connection.create()
         self.errors = 0
         cmd = "abc"
         if args:
