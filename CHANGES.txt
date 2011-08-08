@@ -1,7 +1,19 @@
 CHANGES for rjdj.tmon
 =====================
 
-trunk
+dev branch
+---------
+
+  - celaus: Introduced parallelization for request handling and message 
+processing
+
+  - celaus: Changed OR Mapping from the couchDB ORM to dictionaries
+
+  - celaus: Made the couchdb views more efficient
+
+  - celaus: fixed the view update cron job
+
+0.2rc1 - 04/08/2011
 -----
   - celaus: added query by URL 
 

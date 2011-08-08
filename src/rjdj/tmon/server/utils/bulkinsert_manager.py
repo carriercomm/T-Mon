@@ -22,13 +22,20 @@
 
 __docformat__ = "reStructuredText"
 
-from rjdj.tmon.server.utils import db
-from rjdj.djangotornado.signals import tornado_exit
-
 from django.conf import settings
 from django.dispatch import receiver
+from rjdj.djangotornado.signals import tornado_exit
+from rjdj.tmon.server.models import resolve
+from rjdj.tmon.server.utils.connection import connection
 
 __all__ = ["bulkInsertManager"]
+
+def bulkinsert(data, webservice):
+    """ """
+    
+    database = connection.database(webservice.name)
+    database.update(data)
+
 
 class BulkInsertManager(object):
     """ """
@@ -51,18 +58,21 @@ class BulkInsertManager(object):
         
                     
         if settings.DEBUG or len(self.insertion_stacks[wsid]) > settings.MAX_BATCH_ENTRIES:
-            db.bulkinsert(self.insertion_stacks[wsid], webservice)
+            bulkinsert(self.insertion_stacks[wsid], webservice)
             self.insertion_stacks[wsid] = []        
+
 
     def insert_all(self):
         """ Inserts all remaining documents in the cache regardless of their number. """ 
         
         for wsid, stack in self.insertion_stacks.items():
-            db.bulkinsert(stack, wsid)
+            bulkinsert(stack, resolve(wsid))
             
         self.insertion_stacks = {}
 
+
 bulkInsertManager = BulkInsertManager()
+
     
 def on_tornado_exit(sender, **kwargs):
     """ When Tornado exits, write everything from the buffer to the database. """

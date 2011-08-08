@@ -25,21 +25,14 @@ __docformat__ = "reStructuredText"
 import logging
 import json
 
-from rjdj.tmon.server.models import WebService
+from rjdj.tmon.server.models import WebService, resolve
 
 from rjdj.tmon.server.exceptions import *
 
-from rjdj.tmon.server.utils.parser import ChartResolutionParser
-from rjdj.tmon.server.utils.result_adapter import (DefaultDictAdapter,
-                                                   GeoRequestAdapter,
-                                                   RequestResultAdapter, 
-                                                   PieChartAdapter,
-                                                   MapAdapter,
-                                                    )
+from rjdj.tmon.server.utils.widgetdataadapter import PieChart, MapPins
 from rjdj.tmon.server.utils.decorators import return_json, print_request_time
-from rjdj.tmon.server.utils import db
 from rjdj.tmon.server.utils import decrypt_message
-from rjdj.tmon.server.utils import queries
+from rjdj.tmon.server.models import TrackingData
 from rjdj.tmon.server.utils.bulkinsert_manager import bulkInsertManager
 from rjdj.tmon.server.utils.processors import process
 
@@ -82,6 +75,7 @@ def server_error(request):
 
 WSID_KEY = "wsid"
 DATA_KEY = "data"
+
 #
 # Tornado views
 #
@@ -94,15 +88,17 @@ def data_collect(webservice, post_data):
     parsed_data = process(data)
     bulkInsertManager.insert(parsed_data, webservice)
 
+
 class CollectionHandler(RequestHandler):
     """ """
+    
     @print_request_time
     def post(self, *args, **kwargs):
         """ """
         
         try:
             post_data = QueryDict(self.request.body)
-            webservice = db.get_webservice(post_data[WSID_KEY])
+            webservice = resolve(post_data[WSID_KEY])
 
             t = Thread(target = data_collect, args = (webservice, post_data, ))
             t.start()
@@ -117,70 +113,62 @@ class CollectionHandler(RequestHandler):
 @return_json
 def users_per_country(request, wsid):
     """ """
+    
+    results = TrackingData.views.requests_by_country(resolve(wsid).name)
 
-    query = queries.users_per_location
-    limit = datetime.now() - timedelta(minutes = 10)
-    return GeoRequestAdapter(db.execute(query, wsid, group_level = 6)[[limit.year, limit.month, limit.day, limit.hour, limit.minute]:]).process()[:5]
+    return results
 
 
 @return_json
 def users_per_city(request, wsid):
     """ """
- 
-    query = queries.users_per_location
     
-    limit = datetime.now() - timedelta(minutes = 10)
-    return GeoRequestAdapter(db.execute(query, wsid)[[limit.year, limit.month, limit.day, limit.hour, limit.minute]:]).process()[:5]
+    results = TrackingData.views.requests_by_city(resolve(wsid).name)
 
+    return results
 
 @return_json
 def users_per_device(request, wsid):
     """ """
-
-    query = queries.users_per_device
-    return PieChartAdapter(db.execute(query, wsid)).process()
+    
+    results = TrackingData.views.requests_by_device(resolve(wsid).name)
+    
+    return PieChart(results).create()
 
 @return_json
 def users_per_url(request, wsid):
     """ """
-
-    query = queries.users_per_url
-    return PieChartAdapter(db.execute(query, wsid)).process()
-
-@return_json
-def request_count(request, wsid, grouping, limit):
-    """ """
     
-    res = ChartResolutionParser.get(grouping)
-    query = queries.request_count
-    resp = RequestResultAdapter(
-                                db.execute(query, 
-                                           wsid, 
-                                           group_level = res.group_level, 
-                                           limit = limit), 
-                                int(limit),
-                                res)
-    return resp.process()
-
-@return_json
-def users_locations(request, wsid, ne_lat, ne_lng, sw_lat, sw_lng):
-    """ """
+    results = TrackingData.views.requests_by_url(resolve(wsid).name)
     
-    query = queries.users_locations
-    
-    limit = datetime.now() - timedelta(minutes = 10)
-    result = db.execute(query, wsid, limit = 500)[:[limit.year, limit.month, limit.day, limit.hour, limit.minute]]
-
-    resp = MapAdapter(result)
-    return resp.process()
-
+    return PieChart(results).create()
 
 @return_json
 def users_per_os(request, wsid):
     """ """
     
-    query = queries.users_per_os
-    return PieChartAdapter(db.execute(query, wsid)).process()
+    results = TrackingData.views.requests_by_os(resolve(wsid).name)
+    
+    return PieChart(results).create()
+
+@return_json
+def request_count(request, wsid, grouping, limit):
+    """ """
+    limit = int(limit)
+    tmp = [0] * limit
+    
+    for p in TrackingData.views.request_count(resolve(wsid).name, grouping, limit):
+        for k, v in p.iteritems():
+            tmp[k] = v
+            
+    return tmp
+
+@return_json
+def users_locations(request, wsid, ne_lat, ne_lng, sw_lat, sw_lng):
+    """ """
+    
+    results = TrackingData.views.requests_by_os(resolve(wsid).name, grouping, limit)
+    return MapPins(results)
 
 
 #
@@ -200,8 +188,8 @@ def dashboard(request, wsid):
     """ Shows the corresponding dashboard of this web service monitoring. """
     
     try:
-        context = { "webservice" : db.get_webservice(wsid), 
-                    "webservices" : db.get_webservices(request.user) }
+        context = { "webservice" : resolve(wsid), 
+                    "webservices" : db.all_webservices(request.user) }
     except InvalidWebService:
         return not_found(request)
 
@@ -213,7 +201,7 @@ def dashboard_redirect(request):
     """ Redirects to the dashboard of the user's last web service. """
     
     try:
-        webservices = db.get_webservices(request.user) 
+        webservices = db.all_webservices(request.user) 
     except InvalidWebService:
         return not_found(request)
 

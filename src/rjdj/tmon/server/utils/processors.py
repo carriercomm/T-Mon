@@ -23,7 +23,8 @@
 __docformat__ = "reStructuredText"
 
 from rjdj.tmon.server.exceptions import *
-from rjdj.tmon.server.models import TrackingDataKeys
+from rjdj.tmon.server.couchdbviews.couchdbkeys import CouchDBKeys as Keys
+from rjdj.tmon.server.models import TrackingData
 from rjdj.tmon.server.utils import location
 from threading import Thread
 from Queue import Queue
@@ -71,10 +72,10 @@ class OptionalFieldProcessor(FieldProcessor):
 class IPProcessor(RequiredFieldProcessor):
     """ """
     
-    COUNTRY_KEY = TrackingDataKeys.COUNTRY
-    CITY_KEY = TrackingDataKeys.CITY
-    LATITUDE_KEY = TrackingDataKeys.LATITUDE
-    LONGITUDE_KEY = TrackingDataKeys.LONGITUDE
+    COUNTRY_KEY = Keys.COUNTRY
+    CITY_KEY = Keys.CITY
+    LATITUDE_KEY = Keys.LATITUDE
+    LONGITUDE_KEY = Keys.LONGITUDE
     
     
     def process(self, fieldname, decrypted_data):
@@ -108,10 +109,10 @@ def process(decrypted_data):
 
     results = Queue()
     processors = {
-        TrackingDataKeys.IP: IPProcessor(results),
-        TrackingDataKeys.USER_AGENT: RequiredFieldProcessor(results),
-        TrackingDataKeys.USERNAME: OptionalFieldProcessor(results),
-        TrackingDataKeys.URL: RequiredFieldProcessor(results)
+        Keys.IP: IPProcessor(results),
+        Keys.USER_AGENT: RequiredFieldProcessor(results),
+        Keys.USERNAME: OptionalFieldProcessor(results),
+        Keys.URL: RequiredFieldProcessor(results)
     }
     
     threads = []
@@ -122,7 +123,7 @@ def process(decrypted_data):
     
     for t in threads: t.join()
     
-    result_dict = {TrackingDataKeys.TIMESTAMP: time.time()}
+    result_dict = { Keys.TIMESTAMP: TrackingData.now() }
     while not results.empty():
         result_dict.update(results.get())
     

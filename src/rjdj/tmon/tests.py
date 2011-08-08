@@ -47,7 +47,11 @@ class SkipFlushCommand(FlushCommand):
         return
 
 def patch(f):
+    
+    
     def wrapper(*args, **kwargs):
+    
+        
         # hold onto the original and replace flush command with a no-op
         from django.core.management import get_commands
         get_commands()
@@ -71,15 +75,17 @@ class DjangoLayer(object):
         utils.setup_test_environment()
         connection.creation.create_test_db = patch(connection.creation.create_test_db)
         connection.creation.create_test_db(verbosity = 0, autoclobber = True)
+
+        server = conn.create()
         
-        self.saved_state = [d for d in conn.connect()]
+        self.saved_state = [d for d in server]
         
     @classmethod
     def tearDown(self):
         call_command('flush', verbosity = 0, interactive = False)
         
         if not KEEP_DATA:
-            server = conn.connect()
+            server = conn.create()
             for db in server:
                 if db not in self.saved_state and not db.startswith("_"):
                     del server[db]
@@ -101,12 +107,6 @@ def test_suite():
     analyze = DocFileSuite('server/tests/views_analyze.txt',
         optionflags = doctest.NORMALIZE_WHITESPACE | doctest.ELLIPSIS,
         )
-    parser = DocFileSuite('server/tests/parser.txt',
-        optionflags = doctest.NORMALIZE_WHITESPACE | doctest.ELLIPSIS,
-        )
-    parser_perf = DocFileSuite('server/tests/parser_performance.txt',
-        optionflags = doctest.NORMALIZE_WHITESPACE | doctest.ELLIPSIS,
-        )
     queries = DocFileSuite('server/tests/queries.txt',
         optionflags = doctest.NORMALIZE_WHITESPACE | doctest.ELLIPSIS,
         )
@@ -114,9 +114,7 @@ def test_suite():
     suite = unittest.TestSuite((
                                 collect,
                                 analyze,
-                                parser,
                                 queries,
-                                parser_perf
                                 ))
     suite.layer = DjangoLayer
     return suite

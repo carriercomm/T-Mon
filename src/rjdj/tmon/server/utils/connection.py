@@ -22,16 +22,16 @@
 
 __docformat__ = "reStructuredText"
 
-from rjdj.tmon.server.exceptions import *
-from rjdj.tmon.server.utils.queries import all_queries
-
 from couchdb import Server
 from couchdb.http import ResourceNotFound, PreconditionFailed
 from django.conf import settings
+from rjdj.tmon.server.couchdbviews.couchdbviews import CouchDBViews
+from rjdj.tmon.server.exceptions import *
 from threading import Lock
 
+
 class DBConnection(object):
-    """ """
+    """ Represents a database connection. """
     
     def __init__(self, protocol, host, port, user = None, password = None):
         """ """
@@ -42,24 +42,20 @@ class DBConnection(object):
         self.user = user
         self.password = password
         
-        self.connections = 0
         self.lock = Lock()
+       
         
-    def get_db(self, name):
-        """ """
-        server = self.connect()
+    def database(self, name):
+        """ Return a specific database from the server. """
+        
+        server = self.create()
         try:        
             return server[name]
         except ResourceNotFound:
             raise InvalidWebService(name)
 
-    def disconnect(self):
-    
-        self.lock.acquire()
-        self.connections -= 1
-        self.lock.release()
 
-    def connect(self):
+    def create(self):
         """ """
         self.lock.acquire()
         if self.user and self.password:
@@ -71,28 +67,28 @@ class DBConnection(object):
         else:
             url =  "%s://%s:%d" % (self.protocol, self.host, self.port)
             
-        self.connections += 1
         self.lock.release()
         return Server(url)
-
-    def setup_db(self, name):
+        
+        
+    def setup(self, name):
         """ """
-        server = self.connect()
+
+        server = self.create()
         try:
             database = server.create(name)
-            for q in all_queries:
-                q.sync(database)
+            CouchDBViews.sync(database)
         except PreconditionFailed:
-            database = self.get_db(name)
-            
+            database = connection.database(name)
         return database
         
-    def remove_db(self, name):
+        
+    def remove(self, name):
         """ """
-        server = self.connect()
+        
+        server = self.create()
         if name in server:
             del server[name]
         
-
-# the one and only connection to the CouchDB       
+        
 connection = DBConnection(**settings.TRACKING_DATABASE)

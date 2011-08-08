@@ -58,6 +58,7 @@ def return_json(view):
         
     return restful_view
 
+
 def print_request_time(func):
     """ Writes the duration of a request to logging.info. """
     

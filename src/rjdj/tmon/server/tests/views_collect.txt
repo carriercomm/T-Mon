@@ -68,7 +68,6 @@ Helper function:
     ...     encryped_payload = cipher.encrypt(payload)
     ...     encoded_payload = base64.b64encode(encryped_payload)
     ...     res = c.post(url, { "data" : encoded_payload, "wsid" : wsid })
-    ...     #return json.loads(res.content)
     
 Collecting data will, for performance reasons, not respond:
 -----------------------------------------------------------

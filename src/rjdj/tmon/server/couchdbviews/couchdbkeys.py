@@ -22,34 +22,16 @@
 
 __docformat__ = "reStructuredText"
 
-from rjdj.tmon.server.utils.queries import all_queries
-from rjdj.tmon.server.utils.connection import connection
+class CouchDBKeys:
+        """ Keys for the CouchDB Documents """
 
-from threading import Thread
-import time
-
-PAUSE = 5 # seconds
-
-def refresh(view_name, server):
-
-    for database in connection.server:
-        if not database.startswith("_"):
-            db = server[database]
-            db.view(view_name, limit = 0).rows
-        time.sleep(PAUSE)
+        USER_AGENT = "useragent"
+        URL = "url"
+        LATITUDE = "lat"
+        LONGITUDE = "lng"
+        TIMESTAMP = "timestamp"
         
-        
-def run(*args):
-
-    server = connection.server  
-    threads = []
-    
-    for query in all_queries:
-        q_path = "/".join((query.design, query.name))
-        t = Thread(target = refresh, args = (q_path, server))
-        t.start()
-        
-    for thread in threads:
-        thread.join()    
-    
-    
+        COUNTRY = "country"
+        USERNAME = "username"
+        IP = "ip"
+        CITY = "city"

@@ -27,7 +27,9 @@ $ Tests for the RESTful API (/data/...)
     >>> import hashlib
     >>> import time
     >>> import random
-    >>> from rjdj.tmon.server.models import WebService
+    >>> from rjdj.tmon.server.models import WebService, TrackingData
+    >>> from rjdj.tmon.server.utils.bulkinsert_manager import bulkinsert
+    >>> from rjdj.tmon.server.couchdbviews.couchdbkeys import CouchDBKeys as Keys
     >>> from django.contrib.auth.models import User 
     >>> from Crypto.Cipher import AES
     >>> from django.test import Client
@@ -68,43 +70,35 @@ Helper function:
     
 Inserting some sample data:
 ---------------------------
-    >>> test_data = [ { "ip": "72.32.231.8",
-    ...             "useragent": "Mozilla/5.0 (iPad; U; CPU OS 3_2_1 like Mac OS X; en-us) AppleWebKit/531.21.10 (KHTML, like Gecko) Mobile/7B405", 
-    ...             "url": "/" }, { 
-    ...             "ip": "72.32.231.8",
-    ...             "useragent": "Mozilla/5.0 (Linux; U; Android 2.2.1; fr-ch; A43 Build/FROYO) AppleWebKit/533.1 (KHTML, like Gecko) Version/4.0 Mobile Safari/533.1", 
-    ...             "url": "/" }, { 
-    ...             "ip": "72.32.231.8",
-    ...             "useragent": "Mozilla/5.0 (iPad; U; CPU OS 3_2_1 like Mac OS X; en-us) AppleWebKit/531.21.10 (KHTML, like Gecko) Mobile/7B405", 
-    ...             "url": "/" }, { 
-    ...             "ip": "72.32.231.8",
-    ...             "useragent": "Mozilla/5.0 (iPod; U; CPU like Mac OS X; en) AppleWebKit/420.1 (KHTML, like Geckto) Version/3.0 Mobile/3A101a Safari/419.3",
-    ...             "url": "/login" }, { 
-    ...             "ip": "72.32.231.8",
-    ...             "useragent": "Mozilla/5.0 (iPad; U; CPU OS 3_2_1 like Mac OS X; en-us) AppleWebKit/531.21.10 (KHTML, like Gecko) Mobile/7B405", 
-    ...             "url": "/register" }, { 
-    ...             "ip": "72.32.231.8",
-    ...             "useragent": "Mozilla/5.0 (Linux; U; Android 2.2.1; fr-ch; A43 Build/FROYO) AppleWebKit/533.1 (KHTML, like Gecko) Version/4.0 Mobile Safari/533.1", 
-    ...             "url": "/login" }, { 
-    ...             "ip": "72.32.231.8",
-    ...             "useragent": "Mozilla/5.0 -- some weird user agent", 
-    ...             "url": "/register" }, { 
-    ...             "ip": "72.32.231.8",
-    ...             "useragent": "Dimensions 1.0 (iPod touch; iPhone OS 4.3.4; de_AT)", 
-    ...             "url": "/register" }]
+    >>> docs = [    
+    ... {Keys.IP: "72.32.231.8",
+    ...  Keys.COUNTRY: "AUT",
+    ...  Keys.CITY: "Vienna",
+    ...  Keys.LONGITUDE: 48.214, 
+    ...  Keys.LATITUDE: 16.378,
+    ...  Keys.USER_AGENT: "Mozilla/5.0 (iPad; U; CPU OS 3_2_1 like Mac OS X; en-us) AppleWebKit/531.21.10 (KHTML, like Gecko) Mobile/7B405",
+    ...  Keys.URL: "/get/data/from/something",
+    ...  Keys.TIMESTAMP: TrackingData.now() },
+    ... {Keys.IP: "194.232.104.140",
+    ...  Keys.COUNTRY: "USA",
+    ...  Keys.CITY: "New York",
+    ...  Keys.LONGITUDE: 40.7257, 
+    ...  Keys.LATITUDE: -73.986,
+    ...  Keys.USER_AGENT: "Mozilla/5.0 (Linux; U; Android 2.2.1; fr-ch; A43 Build/FROYO) AppleWebKit/533.1 (KHTML, like Gecko) Version/4.0 Mobile Safari/533.1",
+    ...  Keys.URL: "/login",
+    ...  Keys.TIMESTAMP: TrackingData.now() },
+    ... {Keys.IP: "213.131.233.151",
+    ...  Keys.COUNTRY: "DEU",
+    ...  Keys.CITY: "Berlin",
+    ...  Keys.LONGITUDE: 52.518, 
+    ...  Keys.LATITUDE: 13.412,
+    ...  Keys.USER_AGENT: "Mozilla/5.0 (iPhone; U; CPU like Mac OS X; en) AppleWebKit/420+ (KHTML, like Gecko) Version/3.0 Mobile/1A543a Safari/419.3",
+    ...  Keys.URL: "/register",
+    ...  Keys.TIMESTAMP: TrackingData.now() }, ]
 
 Finally insert the data:
 
-    >>> for d in test_data:
-    ...     make_request(TEST_URL, ws.id, d)
-    {u'status': 200}
-    {u'status': 200}
-    {u'status': 200}
-    {u'status': 200}
-    {u'status': 200}
-    {u'status': 200}
-    {u'status': 200}
-    {u'status': 200}
+    >>> bulkinsert(docs, ws)
 
 Now for some requests (GET-API for JavaScript calls):
 -----------------------------------------------------
@@ -126,7 +120,7 @@ Real-Time Request-Counting API (possible values are second, minute, hour, day an
 Retrieve the number of users by country:
 
     >>> make_request("/data/users/country", ws.id)
-    {u'status': 200, u'results': [{u'USA':...}]}
+    {u'status': 200, u'results': [{u'...': 1}, {u'...': 1}, {u'...': 1}]}
     
 .. and by operating system:
     
@@ -137,3 +131,9 @@ Retrieve the number of users by country:
 
     >>> make_request("/data/users/device", ws.id)
     {u'status': 200, u'results': [{...}]}
+    
+.. and by URL:
+
+    >>> make_request("/data/users/url", ws.id)
+    {u'status': 200, u'results': [{...}]}
+

@@ -19,21 +19,19 @@
 ##############################################################################
 
 =====================================
-$ Tests for queries
+$ Tests for CouchDBViews
 =====================================
 
     >>> import json
     >>> import base64
     >>> import hashlib
     >>> import time
-    >>> from rjdj.tmon.server.models import WebService
+    >>> from rjdj.tmon.server.models import WebService, TrackingData
+    >>> from rjdj.tmon.server.couchdbviews.couchdbkeys import CouchDBKeys as Keys
     >>> from django.contrib.auth.models import User 
     >>> from Crypto.Cipher import AES
     >>> from django.test import Client
-    >>> from rjdj.tmon.server.utils.parser import TrackingRequestParser
-    >>> from rjdj.tmon.server.utils import db
-    >>> from rjdj.tmon.server.utils import queries
-
+    >>> from rjdj.tmon.server.utils.bulkinsert_manager import bulkinsert
 
 Helper function:
 ---------------
@@ -60,67 +58,57 @@ Preparation:
     >>> ws.name = "_".join(("testdb", hashlib.md5(str(time.time())).hexdigest()))
     >>> ws.save()
     
-    >>> useragents = [ "Mozilla/5.0 (iPad; U; CPU OS 3_2_1 like Mac OS X; en-us) AppleWebKit/531.21.10 (KHTML, like Gecko) Mobile/7B405",
-    ...                "Mozilla/5.0 (Linux; U; Android 2.2.1; fr-ch; A43 Build/FROYO) AppleWebKit/533.1 (KHTML, like Gecko) Version/4.0 Mobile Safari/533.1",
-    ...                "Mozilla/5.0 (iPhone; U; CPU like Mac OS X; en) AppleWebKit/420+ (KHTML, like Gecko) Version/3.0 Mobile/1A543a Safari/419.3" ]
-    >>> ips = [ "72.32.231.8",
-    ...         "194.232.104.140",
-    ...         "213.131.233.151" ]
+    >>> docs = [    
+    ... {Keys.IP: "72.32.231.8",
+    ...  Keys.COUNTRY: "AUT",
+    ...  Keys.CITY: "Vienna",
+    ...  Keys.LONGITUDE: 48.214, 
+    ...  Keys.LATITUDE: 16.378,
+    ...  Keys.USER_AGENT: "Mozilla/5.0 (iPad; U; CPU OS 3_2_1 like Mac OS X; en-us) AppleWebKit/531.21.10 (KHTML, like Gecko) Mobile/7B405",
+    ...  Keys.URL: "/get/data/from/something",
+    ...  Keys.TIMESTAMP: TrackingData.now() },
+    ... {Keys.IP: "194.232.104.140",
+    ...  Keys.COUNTRY: "USA",
+    ...  Keys.CITY: "New York",
+    ...  Keys.LONGITUDE: 40.7257, 
+    ...  Keys.LATITUDE: -73.986,
+    ...  Keys.USER_AGENT: "Mozilla/5.0 (Linux; U; Android 2.2.1; fr-ch; A43 Build/FROYO) AppleWebKit/533.1 (KHTML, like Gecko) Version/4.0 Mobile Safari/533.1",
+    ...  Keys.URL: "/login",
+    ...  Keys.TIMESTAMP: TrackingData.now() },
+    ... {Keys.IP: "213.131.233.151",
+    ...  Keys.COUNTRY: "DEU",
+    ...  Keys.CITY: "Berlin",
+    ...  Keys.LONGITUDE: 52.518, 
+    ...  Keys.LATITUDE: 13.412,
+    ...  Keys.USER_AGENT: "Mozilla/5.0 (iPhone; U; CPU like Mac OS X; en) AppleWebKit/420+ (KHTML, like Gecko) Version/3.0 Mobile/1A543a Safari/419.3",
+    ...  Keys.URL: "/register",
+    ...  Keys.TIMESTAMP: TrackingData.now() }, ]
+
+    >>> bulkinsert(docs, ws)
     
-    >>> webservices = [ "/register", "/login", "/get/data/from/something" ]
-
-    >>> for i in xrange(len(useragents)):
-    ...     ws, doc = TrackingRequestParser.create_document(make_post_data_dict({
-    ...                                                     "url": webservices[i], 
-    ...                                                     "useragent": useragents[i], 
-    ...                                                     "ip": ips[i]}, ws.id))
-    ...     db.store(doc, ws.id)
     
-Now for some queries:
----------------------
-    >>> query = queries.users_per_country
-    >>> for result in db.execute(query, ws.id):
-    ...     print result
-    <Row key=[... 'AUT'], value=1>
-    <Row key=[... 'DEU'], value=1>
-    <Row key=[... 'USA'], value=1>
+Now for some querying:
+-------------------------
 
     
-    >>> query = queries.users_per_city
-    >>> for result in db.execute(query, ws.id):
-    ...     print result
-    <Row key=[... 'New York (USA)'], value=1>
-
-    >>> query = queries.users_per_device
-    >>> for result in db.execute(query, ws.id):
-    ...     print result
-    <Row key='iPad', value=1>
-    <Row key='iPhone', value=1>
-    <Row key='Linux', value=1>
+    >>> print TrackingData.views.requests_by_city(ws.name)
+    [{u'New York (USA)': 1}, {u'Vienna (AUT)': 1}, {u'Berlin (DEU)': 1}]
     
-    >>> query = queries.users_per_url
-    >>> for result in db.execute(query, ws.id):
-    ...     print result
-    <Row key='/get/data/from/something', value=1>
-    <Row key='/login', value=1>
-    <Row key='/register', value=1>
+    >>> print TrackingData.views.requests_by_device(ws.name)
+    [{'iPad': 1}, {'iPhone': 1}, {'Linux': 1}]
 
-    >>> query = queries.users_per_os
-    >>> for result in db.execute(query, ws.id):
-    ...     print result
-    <Row key='Android 2.2.1', value=1>
-    <Row key='CPU like Mac OS X', value=1>
-    <Row key='CPU OS 3_2_1 like Mac OS X', value=1>
+    >>> print TrackingData.views.requests_by_url(ws.name)
+    [{'/login': 1}, {'/register': 1}, {'/get/data/from/something': 1}]
 
-    >>> query = queries.users_locations
-    >>> for result in sorted(db.execute(query, ws.id), key = lambda x: x["key"][0]):
-    ...     print result
-    <Row key=[...], value=1>
-    <Row key=[...], value=1>
-    <Row key=[...], value=1>
+    >>> print TrackingData.views.requests_by_os(ws.name)
+    [{'Android 2.2.1': 1}, {'CPU OS 3_2_1 like Mac OS X': 1}, {'CPU like Mac OS X': 1}]
 
-    >>> query = queries.request_count
-    >>> for result in db.execute(query, ws.id):
-    ...     print result
-    <Row key=[..., ..., ..., ..., ..., ...], value=3>
+    >>> print TrackingData.views.requests_locations(ws.name)
+    [{(13.412, 52.518): 1}, {(-73.986, 40.7257): 1}, {(16.378, 48.214): 1}]
+
+    >>> print TrackingData.views.request_count(ws.name, "minute", 5)
+    [{...: 3}]
+
+
+
 
