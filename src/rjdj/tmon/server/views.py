@@ -189,7 +189,7 @@ def dashboard(request, wsid):
     
     try:
         context = { "webservice" : resolve(wsid), 
-                    "webservices" : db.all_webservices(request.user) }
+                    "webservices" : request.user.webservice_set.all() }
     except InvalidWebService:
         return not_found(request)
 
@@ -201,7 +201,7 @@ def dashboard_redirect(request):
     """ Redirects to the dashboard of the user's last web service. """
     
     try:
-        webservices = db.all_webservices(request.user) 
+        webservices = request.user.webservice_set.all()
     except InvalidWebService:
         return not_found(request)
 
