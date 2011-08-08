@@ -192,7 +192,7 @@ class CouchDBViewManager(object):
             diff = converter(now, then)
             
             if diff < scope: 
-                tmp[-diff] = row.value
+                tmp[diff] = row.value
                 results.append(tmp)
         
         return results

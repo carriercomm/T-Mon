@@ -116,7 +116,7 @@ def users_per_country(request, wsid):
     
     results = TrackingData.views.requests_by_country(resolve(wsid).name)
 
-    return results
+    return results[:5]
 
 
 @return_json
@@ -125,7 +125,7 @@ def users_per_city(request, wsid):
     
     results = TrackingData.views.requests_by_city(resolve(wsid).name)
 
-    return results
+    return results[:5]
 
 @return_json
 def users_per_device(request, wsid):
@@ -161,14 +161,14 @@ def request_count(request, wsid, grouping, limit):
         for k, v in p.iteritems():
             tmp[k] = v
             
-    return tmp
+    return [(-i, tmp[i]) for i in xrange(len(tmp))]
 
 @return_json
 def users_locations(request, wsid, ne_lat, ne_lng, sw_lat, sw_lng):
     """ """
     
-    results = TrackingData.views.requests_by_os(resolve(wsid).name, grouping, limit)
-    return MapPins(results)
+    results = TrackingData.views.requests_locations(resolve(wsid).name)
+    return MapPins(results).create()
 
 
 #

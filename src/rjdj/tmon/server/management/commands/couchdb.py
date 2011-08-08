@@ -36,8 +36,9 @@ class Command(BaseCommand):
     def sync():
         """ """
     
+        server = connection.create()
         for ws in WebService.objects.all():
-            CouchDBViews.sync(ws.name)
+            CouchDBViews.sync(server[ws.name])
                     
     def flush():
         """ """
