@@ -184,7 +184,7 @@ class CouchDBViewManager(object):
         raw_results = CouchDBViews.request_count(database, group_level = group_lvl)
         
         results = []
-        now = datetime.now()
+        now = datetime.utcnow()
         
         for row in raw_results:
             tmp = {}
