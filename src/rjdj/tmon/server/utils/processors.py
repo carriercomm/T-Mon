@@ -97,7 +97,8 @@ class IPProcessor(RequiredFieldProcessor):
         if user_location:
             # some (127.0.0.0, 10.0.0.0, 192.168.0.0 or other) IP addresses could result in None
             result[self.COUNTRY_KEY] = user_location["country"]
-            result[self.CITY_KEY] = user_location["city"]
+            if user_location["city"]:
+                result[self.CITY_KEY] = user_location["city"]
             result[self.LATITUDE_KEY] = user_location["latitude"]
             result[self.LONGITUDE_KEY] = user_location["longitude"]
         
