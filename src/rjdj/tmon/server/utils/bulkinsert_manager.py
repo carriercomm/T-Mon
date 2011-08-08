@@ -27,6 +27,7 @@ from django.dispatch import receiver
 from rjdj.djangotornado.signals import tornado_exit
 from rjdj.tmon.server.models import resolve
 from rjdj.tmon.server.utils.connection import connection
+from threading import Lock
 
 __all__ = ["bulkInsertManager"]
 
@@ -44,11 +45,13 @@ class BulkInsertManager(object):
         """ """
         
         self.insertion_stacks = {}
+        self.lock = Lock()
 
     
     def insert(self, document, webservice):
         """ Adds a document to an insertion queue which will be inserted after a certain number of  """
-        
+
+        self.lock.acquire()
         wsid = webservice.id
         
         if not self.insertion_stacks.has_key(wsid):
@@ -60,7 +63,8 @@ class BulkInsertManager(object):
         if settings.DEBUG or len(self.insertion_stacks[wsid]) > settings.MAX_BATCH_ENTRIES:
             bulkinsert(self.insertion_stacks[wsid], webservice)
             self.insertion_stacks[wsid] = []        
-
+            
+        self.lock.release()
 
     def insert_all(self):
         """ Inserts all remaining documents in the cache regardless of their number. """ 
