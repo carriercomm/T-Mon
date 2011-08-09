@@ -62,8 +62,8 @@ class CouchDBViewManager(object):
         
         database = connection.database(db_name)
         limit = datetime.now() - timedelta(minutes = MAX_AGE_MINUTES)
-        
-        raw_results = CouchDBViews.requests_by_location(database, group_level = 2)[[limit.year, limit.month, limit.day, limit.hour, limit.minute]:]
+
+        raw_results = CouchDBViews.requests_by_location(database, group_level = 2)
         results = {}
         
         for row in raw_results:
@@ -84,7 +84,7 @@ class CouchDBViewManager(object):
         database = connection.database(db_name)        
         limit = datetime.now() - timedelta(minutes = MAX_AGE_MINUTES)
         
-        raw_results = CouchDBViews.requests_by_location(database)[[limit.year, limit.month, limit.day, limit.hour, limit.minute]:]
+        raw_results = CouchDBViews.requests_by_location(database)#[[limit.year, limit.month, limit.day, limit.hour, limit.minute]:]
         
         results = {}
         
@@ -185,7 +185,7 @@ class CouchDBViewManager(object):
         
         results = []
         
-        now = datetime.utcnow()
+        now = datetime.now()
         
         for row in raw_results:
             tmp = {}

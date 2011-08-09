@@ -77,7 +77,7 @@ class TrackingData(object):
     def now():
         """ """
         
-        return int(time.mktime(datetime.utcnow().timetuple())) * TrackingData.TIMESTAMP_MULTIPLIER
+        return int(time.mktime(datetime.now().timetuple())) * TrackingData.TIMESTAMP_MULTIPLIER
         
         
 def resolve(wsid):
