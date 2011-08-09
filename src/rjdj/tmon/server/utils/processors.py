@@ -4,32 +4,32 @@
 # This file is part of T-Mon.
 #
 # T-Mon is free software: you can redistribute it and/or modify
-# it under the terms of the GNU Lesser General Public License as published by
+# it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
 # T-Mon is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU Lesser General Public License for more details.
+# GNU General Public License for more details.
 #
-# You should have received a copy of the GNU Lesser General Public License
+# You should have received a copy of the GNU General Public License
 # along with T-Mon. If not, see <http://www.gnu.org/licenses/>.
 #
-##############################################################################
+#############################################################################
 
 # -*- coding: utf-8 -*-
 
 __docformat__ = "reStructuredText"
 
+import logging
+from Queue import Queue
 from rjdj.tmon.server.exceptions import *
 from rjdj.tmon.server.couchdbviews.couchdbkeys import CouchDBKeys as Keys
 from rjdj.tmon.server.models import TrackingData
 from rjdj.tmon.server.utils import location
 from threading import Thread
-from Queue import Queue
 import time
-import logging
 
 logger = logging.getLogger("debug")
 
@@ -109,23 +109,27 @@ def process(decrypted_data):
     """ """
 
     results = Queue()
+    result_dict = { Keys.TIMESTAMP: TrackingData.now() }
+    threads = []
+    
     processors = {
         Keys.IP: IPProcessor(results),
         Keys.USER_AGENT: RequiredFieldProcessor(results),
         Keys.USERNAME: OptionalFieldProcessor(results),
         Keys.URL: RequiredFieldProcessor(results)
     }
-    
-    threads = []
+
     for k, p in processors.iteritems():
-        t = Thread(target = p.to_queue, args = (k, decrypted_data))
-        t.start()
-        threads.append(t)
+        result_dict.update(p.process(k, decrypted_data))
+#    for k, p in processors.iteritems():
+#        t = Thread(target = p.to_queue, args = (k, decrypted_data))
+#        t.start()
+#        threads.append(t)
+#    
+#    for t in threads: t.join()
     
-    for t in threads: t.join()
-    
-    result_dict = { Keys.TIMESTAMP: TrackingData.now() }
-    while not results.empty():
-        result_dict.update(results.get())
+
+#    while not results.empty():
+#        result_dict.update(results.get())
     
     return result_dict

@@ -1,0 +1,115 @@
+##############################################################################
+#
+# Copyright (c) 2011 Reality Jockey Ltd. and Contributors.
+# This file is part of T-Mon.
+#
+# T-Mon is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# T-Mon is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with T-Mon. If not, see <http://www.gnu.org/licenses/>.
+#
+##############################################################################
+
+=====================================
+$ Tests for Processors
+=====================================
+
+    >>> from datetime import datetime
+    >>> from rjdj.tmon.server.utils import processors as p
+    >>> from pprint import pprint
+    
+Processors are used to prepare the parsed and encrypted data for database insertion. They return a dict containing valid keys for insertion. They are basically classes that overwrite the process() method of the FieldProcessor superclass these classes are instantiated and called by the process function with their corresponding key.
+
+There are two basic types of processors: RequiredFieldProcessor and OptionalFieldProcessor, which either return an empty dict or throw an exception if the desired key is not available. If mores special needs arise, one of these classes should be subclassed with the process method overwritten (the IPProcessor is an example for this). These objects also provide the possibility to push their results to a queue, so they can be used in parallel! The queue is (optionally) passed into the constructor - the method to_queue takes care about the results.
+
+    >>> fp = p.RequiredFieldProcessor("abc", "another")
+    Traceback (most recent call last):
+    ...
+    TypeError: __init__() takes at most 2 arguments (3 given)
+
+    >>> fp = p.RequiredFieldProcessor()
+    >>> pprint(fp.process("testfield", { "testfield": 1 }))
+    {'testfield': 1}
+
+    >>> pprint(fp.process("testfield", { "not_there": 1 }))
+    Traceback (most recent call last):
+    ...
+    FieldMissing: testfield
+
+    >>> fp = p.OptionalFieldProcessor()
+    >>> pprint(fp.process("testfield", { "not_there": 1 }))
+    {}
+
+The process function calls a predefined set of processors with corresponding keys:
+First some valid data should be processed:
+
+    >>> valid_post_data = { 
+    ...     "ip": "72.32.231.8",
+    ...     "useragent": "Mozilla/5.0 (iPad; U; CPU OS 3_2_1 like Mac OS X; en-us)", 
+    ...     "url": "/"
+    ...  }
+
+As can be seen, processing involves resolving the IP address to latitude, longitude, city, country, etc when possible.
+
+    >>> pprint(p.process(valid_post_data))
+    {'city': u'New York',
+     'country': 'USA',
+     'ip': '72.32.231.8',
+     'lat': 40.7449,
+     'lng': -73.9782,
+     'timestamp': ...,
+     'url': '/',
+     'useragent': 'Mozilla/5.0 (iPad; U; CPU OS 3_2_1 like Mac OS X; en-us)'}
+
+    >>> invalid_post_data = { 
+    ...     "ip": '72.32.231.8',
+    ...     "useragent": "Mozilla/5.0 (iPad; U; CPU OS 3_2_1 like Mac OS X; en-us)", 
+    ...  }    
+    
+    >>> pprint(p.process(invalid_post_data))
+    Traceback (most recent call last):
+    ...
+    FieldMissing: url
+
+
+However if the data invalid, it cannot be determined by a procesor, only further processing will be omitted:
+
+    >>> invalid_post_data = { 
+    ...     "ip": 'I am an IP Address!',
+    ...     "useragent": "Mozilla/5.0 (iPad; U; CPU OS 3_2_1 like Mac OS X; en-us)", 
+    ...     "url": "/"
+    ...  }    
+    
+    >>> pprint(p.process(invalid_post_data))
+    {'ip': 'I am an IP Address!',
+     'timestamp': ...,
+     'url': '/',
+     'useragent': 'Mozilla/5.0 (iPad; U; CPU OS 3_2_1 like Mac OS X; en-us)'}
+     
+An empty input will also lead to a missing key error:
+    >>> invalid_post_data = { }    
+    
+    >>> pprint(p.process(invalid_post_data))
+    Traceback (most recent call last):
+    ...
+    FieldMissing: ip
+    
+Now for some final speed testing: 
+
+    >>> RUNS = 1000
+    >>> start =datetime.now()
+    >>> for i in xrange(RUNS):
+    ...     x = p.process(valid_post_data)
+    >>> end = datetime.now()
+    >>> duration = (start - end).microseconds / (1000.0 * RUNS)
+    >>> print duration
+    0.4...
+

@@ -4,19 +4,19 @@
 # This file is part of T-Mon.
 #
 # T-Mon is free software: you can redistribute it and/or modify
-# it under the terms of the GNU Lesser General Public License as published by
+# it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
 # T-Mon is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU Lesser General Public License for more details.
+# GNU General Public License for more details.
 #
-# You should have received a copy of the GNU Lesser General Public License
+# You should have received a copy of the GNU General Public License
 # along with T-Mon. If not, see <http://www.gnu.org/licenses/>.
 #
-##############################################################################
+#############################################################################
 
 # -*- coding: utf-8 -*-
 
@@ -101,20 +101,28 @@ class DjangoLayer(object):
 
 def test_suite():
     # Server Tests    
-    collect = DocFileSuite('server/tests/views_collect.txt',
-        optionflags = doctest.NORMALIZE_WHITESPACE | doctest.ELLIPSIS,
-        )
     analyze = DocFileSuite('server/tests/views_analyze.txt',
         optionflags = doctest.NORMALIZE_WHITESPACE | doctest.ELLIPSIS,
         )
     queries = DocFileSuite('server/tests/queries.txt',
         optionflags = doctest.NORMALIZE_WHITESPACE | doctest.ELLIPSIS,
         )
+    processors = DocFileSuite('server/tests/processors.txt',
+        optionflags = doctest.NORMALIZE_WHITESPACE | doctest.ELLIPSIS,
+        )
+    scheduler = DocFileSuite('server/tests/scheduler.txt',
+        optionflags = doctest.NORMALIZE_WHITESPACE | doctest.ELLIPSIS,
+        )
+    bulkinsertion = DocFileSuite('server/tests/bulkinsertion.txt',
+        optionflags = doctest.NORMALIZE_WHITESPACE | doctest.ELLIPSIS,
+        )
 
     suite = unittest.TestSuite((
-                                collect,
                                 analyze,
                                 queries,
+                                processors,
+                                scheduler,
+                                bulkinsertion,
                                 ))
     suite.layer = DjangoLayer
     return suite

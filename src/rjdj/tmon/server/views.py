@@ -4,19 +4,19 @@
 # This file is part of T-Mon.
 #
 # T-Mon is free software: you can redistribute it and/or modify
-# it under the terms of the GNU Lesser General Public License as published by
+# it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
 # T-Mon is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU Lesser General Public License for more details.
+# GNU General Public License for more details.
 #
-# You should have received a copy of the GNU Lesser General Public License
+# You should have received a copy of the GNU General Public License
 # along with T-Mon. If not, see <http://www.gnu.org/licenses/>.
 #
-##############################################################################
+#############################################################################
 
 # -*- coding: utf-8 -*-
 
@@ -32,6 +32,7 @@ from rjdj.tmon.server.exceptions import *
 from rjdj.tmon.server.utils.widgetdataadapter import PieChart, MapPins
 from rjdj.tmon.server.utils.decorators import return_json, print_request_time
 from rjdj.tmon.server.utils import decrypt_message
+from rjdj.tmon.server.utils.scheduler import scheduler
 from rjdj.tmon.server.models import TrackingData
 from rjdj.tmon.server.utils.bulkinsert_manager import bulkInsertManager
 from rjdj.tmon.server.utils.processors import process
@@ -81,13 +82,15 @@ DATA_KEY = "data"
 #
 def data_collect(webservice, post_data):
     """ """
-    
-    decrypted_data = decrypt_message(post_data[DATA_KEY], webservice.secret)
-    data = json.loads(decrypted_data)
-    
-    parsed_data = process(data)
+    try:
+        decrypted_data = decrypt_message(post_data[DATA_KEY], webservice.secret)
+        data = json.loads(decrypted_data)
+        
+        parsed_data = process(data)
+    except Exception as ex:
+        logger.error(u"%s: %s" % (ex, ex))
+        return
     bulkInsertManager.insert(parsed_data, webservice)
-
 
 class CollectionHandler(RequestHandler):
     """ """
@@ -96,15 +99,11 @@ class CollectionHandler(RequestHandler):
     def post(self, *args, **kwargs):
         """ """
         
-        try:
-            post_data = QueryDict(self.request.body)
-            webservice = resolve(post_data[WSID_KEY])
-
-            t = Thread(target = data_collect, args = (webservice, post_data, ))
-            t.start()
-            if settings.DEBUG: t.join()
-        except Exception as ex:
-            logger.error("%s: %s" % (type(ex), ex))
+        post_data = QueryDict(self.request.body)
+        webservice = resolve(post_data[WSID_KEY])
+            
+        scheduler.process(data_collect, webservice, post_data)
+        
         self.finish()   
         
 #
@@ -180,7 +179,7 @@ def logout_user(request):
     """ Logs the user out and redirects to the login page. """
     
     logout(request)
-    
+   # 
     return redirect('/login')
 
 @login_required()

@@ -1,0 +1,60 @@
+##############################################################################
+#
+# Copyright (c) 2011 Reality Jockey Ltd. and Contributors.
+# This file is part of T-Mon.
+#
+# T-Mon is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# T-Mon is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with T-Mon. If not, see <http://www.gnu.org/licenses/>.
+#
+##############################################################################
+
+=====================================
+$ Tests for Scheduler
+=====================================
+
+    >>> from django.conf import settings
+    >>> from pprint import pprint
+    >>> from rjdj.tmon.server.utils.scheduler import Scheduler
+    >>> import time    
+
+Helper function:
+----------------
+    >>> def print_data(data):
+    ...     print(data)
+    ...     time.sleep(1)
+    
+
+A Scheduler is responsible for managing the asynchronous request processing. It will, up to a certain thread cap, assing threads to given functions.
+
+The object has to be constructed without any arguments:
+
+    >>> scheduler = Scheduler()
+
+In order to process data, the process method has to be called, passing a function and the desired arguments:
+    >>> scheduler.process(print_data, ("hello", "world"))
+    ('hello', 'world')
+    
+The number of concurrent threads is controlled by the MAX_THREADS settings property.
+    >>> settings.MAX_THREADS = 4
+
+After the maximum number of threads has been reached, the rest of the tasks are being dropped to avoid thread overflows.
+
+    >>> for i in xrange(10):
+    ...     scheduler.process(print_data, ("hello", "world", i))
+    ('hello', 'world', 0)
+    ('hello', 'world', 1)
+    ('hello', 'world', 2)
+    ('hello', 'world', 3)
+    
+    >>> time.sleep(1)
+
