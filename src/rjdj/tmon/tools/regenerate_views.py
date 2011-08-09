@@ -22,7 +22,7 @@
 
 __docformat__ = "reStructuredText"
 
-from rjdj.tmon.server.utils.queries import all_queries
+from rjdj.tmon.server.couchdbviews.couchdbviews import CouchDBViews
 from rjdj.tmon.server.utils.connection import connection
 
 from threading import Thread
@@ -30,9 +30,10 @@ import time
 
 PAUSE = 5 # seconds
 
-def refresh(view_name, server):
-
-    for database in connection.server:
+def refresh(view_name):
+    """ """
+    server = connection.create()
+    for database in server:
         if not database.startswith("_"):
             db = server[database]
             db.view(view_name, limit = 0).rows
@@ -40,13 +41,13 @@ def refresh(view_name, server):
         
         
 def run(*args):
-
-    server = connection.server  
+    """ """
+    
     threads = []
     
-    for query in all_queries:
+    for query in CouchDBViews.all():
         q_path = "/".join((query.design, query.name))
-        t = Thread(target = refresh, args = (q_path, server))
+        t = Thread(target = refresh, args = (q_path, ))
         t.start()
         
     for thread in threads:
