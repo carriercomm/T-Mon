@@ -43,6 +43,7 @@ setup(name = "rjdj.tmon",
                           'psycopg2',
                           'couchdb',
                           'pygeoip',
+                          'ujson',
                           ],
       entry_points = {
           'console_scripts':['instance=nsdjango.management:execute_manager', 

@@ -95,7 +95,7 @@ def data_collect(webservice, post_data):
 class CollectionHandler(RequestHandler):
     """ """
     
-    @print_request_time
+#    @print_request_time
     def post(self, *args, **kwargs):
         """ """
         

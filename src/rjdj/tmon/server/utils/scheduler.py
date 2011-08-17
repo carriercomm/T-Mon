@@ -63,6 +63,7 @@ class Scheduler(object):
             t = Thread(target = self.callback(worker), 
                        args = args, 
                        kwargs = kwargs)
+            t.daemon = True
             t.start()
             self.running_threads += 1
     

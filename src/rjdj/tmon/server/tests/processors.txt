@@ -111,5 +111,5 @@ Now for some final speed testing:
     >>> end = datetime.now()
     >>> duration = (start - end).microseconds / (1000.0 * RUNS)
     >>> print duration
-    0.4...
+    0...
 

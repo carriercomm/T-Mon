@@ -101,21 +101,14 @@ class DjangoLayer(object):
 
 def test_suite():
     # Server Tests    
-    analyze = DocFileSuite('server/tests/views_analyze.txt',
-        optionflags = doctest.NORMALIZE_WHITESPACE | doctest.ELLIPSIS,
-        )
-    queries = DocFileSuite('server/tests/queries.txt',
-        optionflags = doctest.NORMALIZE_WHITESPACE | doctest.ELLIPSIS,
-        )
-    processors = DocFileSuite('server/tests/processors.txt',
-        optionflags = doctest.NORMALIZE_WHITESPACE | doctest.ELLIPSIS,
-        )
-    scheduler = DocFileSuite('server/tests/scheduler.txt',
-        optionflags = doctest.NORMALIZE_WHITESPACE | doctest.ELLIPSIS,
-        )
-    bulkinsertion = DocFileSuite('server/tests/bulkinsertion.txt',
-        optionflags = doctest.NORMALIZE_WHITESPACE | doctest.ELLIPSIS,
-        )
+    options = { "optionflags": doctest.NORMALIZE_WHITESPACE | doctest.ELLIPSIS }
+    
+    analyze = DocFileSuite('server/tests/views_analyze.txt', **options)
+    queries = DocFileSuite('server/tests/queries.txt', **options)
+    processors = DocFileSuite('server/tests/processors.txt', **options)
+    scheduler = DocFileSuite('server/tests/scheduler.txt', **options)
+    bulkinsertion = DocFileSuite('server/tests/bulkinsertion.txt', **options)
+    benchmark = DocFileSuite('server/tests/benchmark.txt', **options)
 
     suite = unittest.TestSuite((
                                 analyze,
@@ -123,6 +116,7 @@ def test_suite():
                                 processors,
                                 scheduler,
                                 bulkinsertion,
+                                benchmark
                                 ))
     suite.layer = DjangoLayer
     return suite
