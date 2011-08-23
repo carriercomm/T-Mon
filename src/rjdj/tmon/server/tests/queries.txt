@@ -95,13 +95,13 @@ Now for some querying:
     [{u'New York (USA)': 1}, {u'Vienna (AUT)': 1}, {u'Berlin (DEU)': 1}]
     
     >>> print TrackingData.views.requests_by_device(ws.name)
-    [{'iPad': 1}, {'iPhone': 1}, {'Linux': 1}]
+    [{u'iPad': 1}, {u'iPhone': 1}, {u'Linux': 1}]
 
     >>> print TrackingData.views.requests_by_url(ws.name)
-    [{'/login': 1}, {'/register': 1}, {'/get/data/from/something': 1}]
+    [{u'/login': 1}, {u'/register': 1}, {u'/get/data/from/something': 1}]
 
     >>> print TrackingData.views.requests_by_os(ws.name)
-    [{'Android 2.2.1': 1}, {'CPU OS 3_2_1 like Mac OS X': 1}, {'CPU like Mac OS X': 1}]
+    [{u'Android 2.2.1': 1}, {u'CPU OS 3_2_1 like Mac OS X': 1}, {u'CPU like Mac OS X': 1}]
 
     >>> print TrackingData.views.requests_locations(ws.name)
     [{(13.412, 52.518): 1}, {(-73.986, 40.7257): 1}, {(16.378, 48.214): 1}]

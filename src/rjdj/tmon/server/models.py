@@ -32,14 +32,23 @@ from rjdj.tmon.server.couchdbviews.couchdbviewmanager import CouchDBViewManager
 from rjdj.tmon.server.couchdbviews.couchdbkeys import CouchDBKeys
 from rjdj.tmon.server.exceptions import *
 from rjdj.tmon.server.utils.connection import connection     
+from threading import Lock
+from rjdj.tmon.server.utils.decorators import synced
+import ujson
+from couchdb import json 
 
 # memcached's retention time
 CACHE_TIME = 2629744 # seconds of 1 month
 
+# set python-couchdb's json encoder/decoder
+json.use(encode = ujson.encode, decode = ujson.decode)
 
 # http://wiki.apache.org/couchdb/HTTP_database_API#Naming_and_Addressing
 name_validator = RegexValidator(regex = r'^[a-z][a-z0-9\_\$()\+\-]*$', 
                                 message = 'Name must be a valid CouchDB Database name (without a "/")')
+
+# Resolver lock
+lock = Lock()
 
 class WebService(models.Model):
     """ Represents any web service to be tracked """
@@ -79,7 +88,7 @@ class TrackingData(object):
         
         return int(time.mktime(datetime.now().timetuple())) * TrackingData.TIMESTAMP_MULTIPLIER
         
-        
+@synced(lock)        
 def resolve(wsid):
     """ Retrieves a WebService instance from Django's DB. """ 
 

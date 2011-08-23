@@ -35,21 +35,22 @@ class CouchDBViews:
     @staticmethod
     def sync(database):
         """ """
-        
-        for v in CouchDBViews.all():
-            v.sync(database)
-            
+
+        return map(v.sync, CouchDBViews.all())
     
     @staticmethod
     def all():
         """ Returns all Views for the TrackingData class """
         
-        all_views = []
-        for name, value in CouchDBViews.__dict__.iteritems():
-            if isinstance(value, ViewDefinition):
-                all_views.append(value)
-                
-        return all_views
+        return [view for view in iter(CouchDBViews)]
+        
+    def __iter__(self):
+        """ Go through all ViewDefinition objects """
+
+        items = CouchDBViews.__dict__.iteritems
+        for name, value in items():
+            if if isinstance(value, ViewDefinition):
+                yield value
         
         
     requests_by_location = ViewDefinition(

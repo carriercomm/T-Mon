@@ -104,32 +104,19 @@ class IPProcessor(RequiredFieldProcessor):
         
         return result
       
-        
+processors = {
+        Keys.IP: IPProcessor().process,
+        Keys.USER_AGENT: RequiredFieldProcessor().process,
+        Keys.USERNAME: OptionalFieldProcessor().process,
+        Keys.URL: RequiredFieldProcessor().process
+    }      
+    
 def process(decrypted_data):
     """ """
 
-    results = Queue()
     result_dict = { Keys.TIMESTAMP: TrackingData.now() }
-    threads = []
-    
-    processors = {
-        Keys.IP: IPProcessor(results),
-        Keys.USER_AGENT: RequiredFieldProcessor(results),
-        Keys.USERNAME: OptionalFieldProcessor(results),
-        Keys.URL: RequiredFieldProcessor(results)
-    }
 
     for k, p in processors.iteritems():
-        result_dict.update(p.process(k, decrypted_data))
-#    for k, p in processors.iteritems():
-#        t = Thread(target = p.to_queue, args = (k, decrypted_data))
-#        t.start()
-#        threads.append(t)
-#    
-#    for t in threads: t.join()
-    
-
-#    while not results.empty():
-#        result_dict.update(results.get())
+        result_dict.update(p(k, decrypted_data))
     
     return result_dict

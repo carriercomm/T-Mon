@@ -77,7 +77,7 @@ For the DEBUG flag was left unchanged, the data has been inserted immediately:
     >>> for record in database:
     ...     if not record.startswith("_"):
     ...         print database[record]
-    <Document '...'@'...' {'test': 'debug is true'}>
+    <Document u'...'@u'...' {u'test': u'debug is true'}>
 
     
 To see if the batch insertion works, DEBUG is set to false and the MAX_BATCH_ENTRIES is lowered:
@@ -92,26 +92,53 @@ This entry is not being inserted yet ..
     >>> for record in database:
     ...     if not record.startswith("_"):
     ...         print database[record]
-    <Document '...'@'...' {'test': 'debug is true'}>
+    <Document u'...'@u'...' {u'test': u'debug is true'}>
     
     >>> man.insert({"test": "debug is false"}, ws)
     >>> man.insert({"test": "debug is false"}, ws)
     >>> man.insert({"test": "debug is false"}, ws)
     >>> man.insert({"test": "debug is false"}, ws)
     >>> man.insert({"test": "debug is false"}, ws)
+
+In order to have correct results, we should wait for the asynchronous job to finish:
+    
+    >>> time.sleep(2)
     
 Now after adding some more records, the batch was inserted:
 
     >>> for record in database:
     ...     if not record.startswith("_"):
     ...         print database[record]
-    <Document '...'@'...' {'test': 'debug is true'}>
-    <Document '...'@'...' {'test': 'debug is false'}>
-    <Document '...'@'...' {'test': 'debug is false'}>
-    <Document '...'@'...' {'test': 'debug is false'}>
-    <Document '...'@'...' {'test': 'debug is false'}>
-    <Document '...'@'...' {'test': 'debug is false'}>
-    <Document '...'@'...' {'test': 'debug is false'}>
-
+    <Document u'...'@u'...' {u'test': u'debug is true'}>
+    <Document u'...'@u'...' {u'test': u'debug is false'}>
+    <Document u'...'@u'...' {u'test': u'debug is false'}>
+    <Document u'...'@u'...' {u'test': u'debug is false'}>
+    <Document u'...'@u'...' {u'test': u'debug is false'}>
+    <Document u'...'@u'...' {u'test': u'debug is false'}>
+    <Document u'...'@u'...' {u'test': u'debug is false'}>
     
+It is also possible to flush the manager and insert anything that is cached 
+at the moment:
+
+    >>> man.insert({"test": "flushing rocks!"}, ws)
+    >>> man.insert({"test": "flushing rocks!"}, ws)
+    >>> man.insert({"test": "flushing rocks!"}, ws)
+    
+    >>> man.flush()
+    
+Consequently the results will be shown:
+
+    >>> for record in database:
+    ...     if not record.startswith("_"):
+    ...         print database[record]
+    <Document u'...'@u'...' {u'test': u'debug is true'}>
+    <Document u'...'@u'...' {u'test': u'debug is false'}>
+    <Document u'...'@u'...' {u'test': u'debug is false'}>
+    <Document u'...'@u'...' {u'test': u'debug is false'}>
+    <Document u'...'@u'...' {u'test': u'debug is false'}>
+    <Document u'...'@u'...' {u'test': u'debug is false'}>
+    <Document u'...'@u'...' {u'test': u'debug is false'}>
+    <Document u'...'@u'...' {u'test': u'flushing rocks!'}>
+    <Document u'...'@u'...' {u'test': u'flushing rocks!'}>
+    <Document u'...'@u'...' {u'test': u'flushing rocks!'}>
 

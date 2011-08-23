@@ -21,57 +21,66 @@
 
 __docformat__ = "reStructuredText"
 
+from collections import defaultdict
 from django.conf import settings
 from django.dispatch import receiver
 from rjdj.djangotornado.signals import tornado_exit
 from rjdj.tmon.server.models import resolve
+from rjdj.tmon.server.couchdbviews.couchdbkeys import CouchDBKeys
 from rjdj.tmon.server.utils.connection import connection
-from threading import Lock
+from threading import Thread, Lock
+import time
+
+
 
 __all__ = ["bulkInsertManager"]
+
+CACHE_TIME = 300 # 5 minutes
 
 def bulkinsert(data, webservice):
     """ """
     
     database = connection.database(webservice.name)
     database.update(data)
-
-
+    
 class BulkInsertManager(object):
     """ """
     
     def __init__(self):
         """ """
         
-        self.insertion_stacks = {}
+        self.insertion_stacks = defaultdict(list)
         self.lock = Lock()
-
-    
+        
     def insert(self, document, webservice):
         """ Adds a document to an insertion queue which will be inserted after a certain number of  """
 
-        self.lock.acquire()
+        ins = self.insertion_stacks
         wsid = webservice.id
-        
-        if not self.insertion_stacks.has_key(wsid):
-            self.insertion_stacks[wsid] = [document]
-        else:
-            self.insertion_stacks[wsid].append(document)
-        
-                    
-        if settings.DEBUG or len(self.insertion_stacks[wsid]) > settings.MAX_BATCH_ENTRIES:
-            bulkinsert(self.insertion_stacks[wsid], webservice)
-            self.insertion_stacks[wsid] = []        
+        with self.lock:
+            ins[wsid].append(document)
+            if settings.DEBUG or len(ins[wsid]) > settings.MAX_BATCH_ENTRIES:
+                insertion = Thread(target = bulkinsert, args = (ins[wsid], webservice))
+                insertion.start()
+                ins[wsid] = []
+                if settings.DEBUG: insertion.join()
+                
             
-        self.lock.release()
+            
+    def cache(self, data, ws):
+        """ Temporarily save the request count to memcache """
+        
+        t = data[CouchDBKeys.TIMESTAMP]
+        tstamp = int(time.mktime(t.timetuple()))
+        key = "%d_%d" % (ws.id, tstamp)
+        cache.set(key, cache.get(key, 0) + 1, CACHE_TIME)
 
-    def insert_all(self):
+    def flush(self):
         """ Inserts all remaining documents in the cache regardless of their number. """ 
         
-        for wsid, stack in self.insertion_stacks.items():
-            bulkinsert(stack, resolve(wsid))
-            
-        self.insertion_stacks = {}
+        worker = lambda i: bulkinsert(i[1], resolve(i[0]))
+        map(worker, self.insertion_stacks.iteritems())
+        self.insertion_stacks = defaultdict(list)
 
 
 bulkInsertManager = BulkInsertManager()
@@ -79,7 +88,7 @@ bulkInsertManager = BulkInsertManager()
     
 def on_tornado_exit(sender, **kwargs):
     """ When Tornado exits, write everything from the buffer to the database. """
-    bulkInsertManager.insert_all()
+    bulkInsertManager.flush()
 
 tornado_exit.connect(on_tornado_exit)
 

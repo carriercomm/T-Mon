@@ -24,54 +24,37 @@ __docformat__ = "reStructuredText"
 
 from django.conf import settings
 from collections import deque
-from threading import Thread, Lock
+from multiprocessing.pool import ThreadPool
+from rjdj.djangotornado.signals import tornado_exit
+
 
 class Scheduler(object):
     """ """
     
     def __init__(self):
         """ """
-    
-        self.lock = Lock()
-        self.running_threads = 0
-        self.queue = deque()
+        
+        self.pool = ThreadPool()
+        self.threads = deque()
     
     def process(self, worker, *args, **kwargs):
         """ """
-    
-        self.lock.acquire()
-        self.__process(worker, *args, **kwargs)
-        self.lock.release()
-    
-    
-    def callback(self, fn):
-        """ """
         
-        def wrapped(*args, **kwargs):
-            """ """
-            try:
-                return fn(*args, **kwargs)
-            except: raise
-            finally: self.__on_finished()
-            
-        return wrapped
+        t = self.pool.apply_async(worker, args, kwargs)
+        self.threads.append(t)
         
-    def __process(self, worker, *args, **kwargs):
-        """ """
-    
-        if self.running_threads <= settings.MAX_THREADS:
-            t = Thread(target = self.callback(worker), 
-                       args = args, 
-                       kwargs = kwargs)
-            t.daemon = True
-            t.start()
-            self.running_threads += 1
-    
-    def __on_finished(self):
-        """ """
-        
-        self.lock.acquire()
-        self.running_threads -= 1
-        self.lock.release()
+    def join(self):
+        """ Joins the underlying ThreadPool """
+        p = self.pool
+        p.close()
+        p.join()
         
 scheduler = Scheduler()
+
+def on_tornado_exit(sender, **kwargs):
+    """ When Tornado exits, finish all threads. """
+    
+    scheduler.join()
+
+tornado_exit.connect(on_tornado_exit)
+

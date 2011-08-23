@@ -26,10 +26,18 @@ __all__ = ["decrypt_message"]
 
 from Crypto.Cipher import AES
 from datetime import datetime
-import base64
+import hashlib
+import hmac
 
 
 def decrypt_message(msg, secret):
     """ Decrypts a Base64 encoded message with the given secret (AES) """
     cipher = AES.new(secret, AES.MODE_CFB)
-    return cipher.decrypt(base64.b64decode(msg))
+    return cipher.decrypt(msg)
+    
+def validate(msg, secret, signature):
+    """ Validates a message by comparing hmac-based hash values. """
+
+    actual_sig = hmac.new(str(secret), msg, hashlib.sha1).hexdigest()
+    return signature == actual_sig
+    

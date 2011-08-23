@@ -1,8 +1,31 @@
+<!-- Copyright (c) 2011 Reality Jockey Ltd. and Contributors.-->
+<!-- This file is part of T-Mon.-->
+
+<!-- T-Mon is free software: you can redistribute it and/or modify-->
+<!-- it under the terms of the GNU  General Public License as published by-->
+<!-- the Free Software Foundation, either version 3 of the License, or-->
+<!-- (at your option) any later version.-->
+
+<!-- T-Mon is distributed in the hope that it will be useful,-->
+<!-- but WITHOUT ANY WARRANTY; without even the implied warranty of-->
+<!-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the-->
+<!-- GNU  General Public License for more details.-->
+
+<!-- You should have received a copy of the GNU  General Public License-->
+<!-- along with T-Mon. If not, see <http://www.gnu.org/licenses/>.-->
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
     <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Droid+Serif&subset=latin" />
+    <link rel="stylesheet" type="text/css" href="/static/ui-lightness/jquery-ui-1.8.14.custom.css" />
     <link rel="stylesheet" type="text/css" href="/static/login.css" />
+    
+    
+    <script type="application/javascript" src="/static/js/jquery-1.6.2.min.js"></script>
+    <script type="application/javascript" src="/static/js/jquery-ui-1.8.14.custom.min.js"></script>
+    <script type="application/javascript" src="/static/js/login.js"></script>
 
     {% load url from future %}
     <title>Please Log in to proceed</title>
@@ -10,7 +33,7 @@
 </head>
 <body>
     <div id="container">
-        <div id="main">
+        <div id="dlg_login">
 	        {% if form.errors %}
             <div id="error">Your username and password didn't match. Please try again.</div>
             {% endif %}
@@ -18,7 +41,7 @@
 		        {% if next %}
 		        <input type="hidden" name="next" value="{{ next }}" />
 		        {% endif %}
-		        <div> 
+		        <div style="padding-left:3px"> 
 		            username
 		            <input type="text" name="username" value="{{ username }}" />
 		        </div>

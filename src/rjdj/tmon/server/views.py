@@ -22,33 +22,36 @@
 
 __docformat__ = "reStructuredText"
 
-import logging
-import json
+import base64
 
-from rjdj.tmon.server.models import WebService, resolve
+from datetime import datetime, timedelta
 
-from rjdj.tmon.server.exceptions import *
-
-from rjdj.tmon.server.utils.widgetdataadapter import PieChart, MapPins
-from rjdj.tmon.server.utils.decorators import return_json, print_request_time
-from rjdj.tmon.server.utils import decrypt_message
-from rjdj.tmon.server.utils.scheduler import scheduler
-from rjdj.tmon.server.models import TrackingData
-from rjdj.tmon.server.utils.bulkinsert_manager import bulkInsertManager
-from rjdj.tmon.server.utils.processors import process
-
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth import logout
+from django.conf import settings
 from django.http import  (
                          HttpResponseNotFound,
                          HttpResponseServerError,
+                         QueryDict,
                          )
-from django.template.response import SimpleTemplateResponse
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth import logout
 from django.shortcuts import redirect
-from django.http import QueryDict
-from django.conf import settings
+from django.template.response import SimpleTemplateResponse
 
-from datetime import datetime, timedelta
+import logging
+
+from rjdj.tmon.server.exceptions import *
+
+from rjdj.tmon.server.models import WebService, resolve
+
+from rjdj.tmon.server.models import TrackingData
+from rjdj.tmon.server.utils import validate
+from rjdj.tmon.server.utils.bulkinsert_manager import bulkInsertManager
+from rjdj.tmon.server.utils.decorators import return_json, print_request_time
+from rjdj.tmon.server.utils.processors import process
+from rjdj.tmon.server.utils.scheduler import scheduler
+from rjdj.tmon.server.utils.widgetdataadapter import PieChart, MapPins
+
+import ujson
 
 from threading import Thread
 from tornado.web import RequestHandler
@@ -76,33 +79,36 @@ def server_error(request):
 
 WSID_KEY = "wsid"
 DATA_KEY = "data"
+SIGNATURE_KEY = "signature"
 
 #
 # Tornado views
 #
-def data_collect(webservice, post_data):
+def data_collect(post_data):
     """ """
-    try:
-        decrypted_data = decrypt_message(post_data[DATA_KEY], webservice.secret)
-        data = json.loads(decrypted_data)
-        
+    webservice = resolve(post_data[WSID_KEY])
+    decrypted_data = base64.b64decode(post_data[DATA_KEY])
+    if not validate(decrypted_data, webservice.secret, post_data[SIGNATURE_KEY]):
+        return
+    try:        
+        data = ujson.decode(decrypted_data)
         parsed_data = process(data)
     except Exception as ex:
         logger.error(u"%s: %s" % (ex, ex))
         return
+
     bulkInsertManager.insert(parsed_data, webservice)
+
 
 class CollectionHandler(RequestHandler):
     """ """
     
-#    @print_request_time
+    @print_request_time
     def post(self, *args, **kwargs):
         """ """
-        
         post_data = QueryDict(self.request.body)
-        webservice = resolve(post_data[WSID_KEY])
-            
-        scheduler.process(data_collect, webservice, post_data)
+        scheduler.process(data_collect, post_data)
+#        data_collect(post_data)
         
         self.finish()   
         
@@ -179,7 +185,7 @@ def logout_user(request):
     """ Logs the user out and redirects to the login page. """
     
     logout(request)
-   # 
+    
     return redirect('/login')
 
 @login_required()

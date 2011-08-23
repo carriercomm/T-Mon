@@ -22,51 +22,61 @@
 
 __docformat__ = "reStructuredText"
 
+import operator
+
 class WidgetDataAdapter(object):
-    """ """
+    """ Base class for any DataAdapter for JavaScript widgets """
     
     def __init__(self, data_dicts):
+    
+        if not isinstance(data_dicts, list):
+            raise ValueError("Data needs to be in a list")
+            
         self.data = data_dicts
     
+    def create(self, *args, **kwargs):
+        """ Effectively executes data adaption. """
+        
+        raise NotImplementedError("Please use subclass")
     
 class PieChart(WidgetDataAdapter):    
-    """ """
+    """ A pie chart (list of dicts), with keys as "label" and values as "data" entry. """
     
     def create(self):
-        """ """
-        
+    
         results = []
+        append = results.append
+                
         for d in self.data:
             for k, v in d.iteritems():
-                results.append({ "label": k, "data": v })
+                append({ "label": k, "data": v })
                 
         return results
 
 
 class MapPins(WidgetDataAdapter):
-    """ """
+    """ Provides a list of dicts containing the keys "lat" "lng" and "count". """
     
     def create(self):
-        """ """
         
         results = []
+        append = results.append
+        
         for d in self.data:
             for k, v in d.iteritems():
-                results.append({"lat": k[0], "lng": k[1], "count": v })
+                append({"lat": k[0], "lng": k[1], "count": v })
                 
         return results
 
 
 class SortedList(WidgetDataAdapter):
-    """ """
+    """ Provides a list of dicts sorted by their values. """
     
     def create(self, reverse = True):
-        """ """
         
         combined = {}
-        
         for d in self.data:
             for k, v in d.iteritems():
                 combined[k] = v
-                
+         
         return [{k: v} for k, v in sorted(combined.iteritems(), key = operator.itemgetter(1), reverse = reverse)]

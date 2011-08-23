@@ -109,6 +109,7 @@ def test_suite():
     scheduler = DocFileSuite('server/tests/scheduler.txt', **options)
     bulkinsertion = DocFileSuite('server/tests/bulkinsertion.txt', **options)
     benchmark = DocFileSuite('server/tests/benchmark.txt', **options)
+    adapters = DocFileSuite('server/tests/adapters.txt', **options)
 
     suite = unittest.TestSuite((
                                 analyze,
@@ -116,7 +117,8 @@ def test_suite():
                                 processors,
                                 scheduler,
                                 bulkinsertion,
-                                benchmark
+                                benchmark, 
+                                adapters
                                 ))
     suite.layer = DjangoLayer
     return suite

@@ -23,8 +23,7 @@
 __docformat__ = "reStructuredText"
 
 from django.http import HttpResponse
-from rjdj.tmon.server.utils.jsonutils import ExtendedJSONEncoder
-import json
+import ujson as json
 
 class GenericJSONResponse(object):
     """ A very basic JSON response containing nothing but a status code. """
@@ -43,10 +42,7 @@ class GenericJSONResponse(object):
 
     def create(self):
         self.update_contents()
-        res = json.dumps(self.contents, 
-                         cls = ExtendedJSONEncoder,  
-                         indent = 4)        
-        
+        res = json.encode(self.contents)        
         return HttpResponse(res,
                             status = self.status_code,
                             mimetype = self.MIME,

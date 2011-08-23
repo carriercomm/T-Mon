@@ -27,6 +27,7 @@ from rjdj.tmon.server.exceptions import *
 from django.conf import settings
 from datetime import datetime
 import logging
+from threading import Lock
 
 logger = logging.getLogger("debug")
 
@@ -69,7 +70,18 @@ def print_request_time(func):
         start = datetime.now()
         try:
             return func(*args, **kwargs)
+        except: raise
         finally:
             logger.info("request took %s" % (datetime.now() - start))
 
     return funct
+    
+def synced( lock = Lock()):
+    
+    def wrap(func):
+        def wrapped(*args, **kwargs):
+            with lock:            
+                return func(*args, **kwargs)
+        
+        return wrapped
+    return wrap

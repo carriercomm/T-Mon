@@ -1,0 +1,147 @@
+##############################################################################
+#
+# Copyright (c) 2011 Reality Jockey Ltd. and Contributors.
+# This file is part of T-Mon.
+#
+# T-Mon is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# T-Mon is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with T-Mon. If not, see <http://www.gnu.org/licenses/>.
+#
+##############################################################################
+
+=====================================
+$ Tests for Data Adapters
+=====================================
+
+
+    >>> from rjdj.tmon.server.utils.widgetdataadapter import *
+    >>> from pprint import pprint
+    
+Data Adapters are used to refine the queried data into a usable form. This form 
+depends heavily on intentions, and currently the main purpose is to adapt them to 
+the JavaScript Widgets on the dashboard.
+
+
+Any Adapter of this kind is derived from WidgetDataAdapter, which requires an argument 
+to create. 
+
+    >>> ad = WidgetDataAdapter()
+    Traceback (most recent call last):
+    ...
+    TypeError: __init__() takes exactly 2 arguments (1 given)
+
+    >>> ad = WidgetDataAdapter({})
+    Traceback (most recent call last):
+    ...
+    ValueError: Data needs to be in a list
+
+    >>> ad = WidgetDataAdapter([])
+    
+    >>> ad.create()
+    Traceback (most recent call last):
+    ...
+    NotImplementedError: Please use subclass
+
+    
+However, being a base-class, the object has no methods.
+
+Pie Charts
+==========
+    >>> pie = PieChart([])
+    >>> pie.create()
+    []
+    
+    >>> pie = PieChart([ { "hello": "world" } ])
+    >>> pie.create()
+    [{'data': 'world', 'label': 'hello'}]
+    
+    >>> pie = PieChart([ { "hello": "world" }, { "foo": "bar" }, { "abc": "def" } ])
+    >>> pprint(pie.create())
+    [{'data': 'world', 'label': 'hello'},
+     {'data': 'bar', 'label': 'foo'},
+     {'data': 'def', 'label': 'abc'}]
+     
+Now for some more realistic data:
+
+    >>> data = [
+    ...     { "iPhone": 1 },
+    ...     { "iPod" : 2 }, 
+    ...     { "iPad": 5 },
+    ... ]
+    
+    >>> pie = PieChart(data)
+    >>> pprint(pie.create())
+    [{'data': 1, 'label': 'iPhone'},
+     {'data': 2, 'label': 'iPod'},
+     {'data': 5, 'label': 'iPad'}]
+
+    
+Map Pins
+========
+    >>> map = MapPins([])
+    >>> map.create()
+    []
+    
+    >>> map = MapPins([ { "hello": "world" } ])
+    >>> pprint(map.create())
+    [{'count': 'world', 'lat': 'h', 'lng': 'e'}]
+
+    >>> map = MapPins([ { (1, 0) : "world" } ])
+    >>> pprint(map.create())
+    [{'count': 'world', 'lat': 1, 'lng': 0}]
+
+Now for some more realistic data:
+
+    >>> data = [
+    ...     { (0, 1) : 40 },
+    ...     { (1, 2) : 30 }, 
+    ...     { (4, 5) : 10 },
+    ... ]
+    
+    >>> map = MapPins(data)
+    >>> pprint(map.create())
+    [{'count': 40, 'lat': 0, 'lng': 1},
+     {'count': 30, 'lat': 1, 'lng': 2},
+     {'count': 10, 'lat': 4, 'lng': 5}]
+
+    
+Sorted List
+===========
+
+    >>> lst = SortedList([])
+    >>> lst.create()
+    []
+    
+    >>> lst = SortedList([ { "hello": "world" }, { "foo": "bar" }, { "abc": "def" } ])
+    >>> pprint(lst.create())
+    [{'hello': 'world'}, {'abc': 'def'}, {'foo': 'bar'}]
+
+    >>> pprint(lst.create(reverse = False))
+    [{'foo': 'bar'}, {'abc': 'def'}, {'hello': 'world'}]
+
+Now for some more realistic data:
+
+    >>> data = [
+    ...     { "iPhone": 1 },
+    ...     { "iPod" : 2 }, 
+    ...     { "iPad": 5 },
+    ... ]
+    
+    >>> lst = SortedList(data)
+    >>> pprint(lst.create())
+    [{'iPad': 5}, {'iPod': 2}, {'iPhone': 1}]
+
+    >>> pprint(lst.create(False))
+    [{'iPhone': 1}, {'iPod': 2}, {'iPad': 5}]
+    
+    >>> from timeit import timeit
+    >>> import pdb; pdb.set_trace()
