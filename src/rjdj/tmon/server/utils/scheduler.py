@@ -24,9 +24,11 @@ __docformat__ = "reStructuredText"
 
 from django.conf import settings
 from collections import deque
+import logging
 from multiprocessing.pool import ThreadPool
 from rjdj.djangotornado.signals import tornado_exit
 
+logger = logging.getLogger("debug")
 
 class Scheduler(object):
     """ """
@@ -38,11 +40,13 @@ class Scheduler(object):
         self.threads = deque()
     
     def process(self, worker, *args, **kwargs):
-        """ """
-        
-        t = self.pool.apply_async(worker, args, kwargs)
-        self.threads.append(t)
-        return t
+        """ Start working! """
+        try:
+            t = self.pool.apply_async(worker, args, kwargs)
+            self.threads.append(t)
+            return t
+        except Exception as ex:
+            logger.error(u"%s: %s" % (ex, ex))
         
     def join(self):
         """ Joins the underlying ThreadPool """
