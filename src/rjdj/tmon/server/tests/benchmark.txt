@@ -84,7 +84,6 @@ Benchmarking!
     >>> for r in xrange(RUNS):
     ...     x = c.post(TEST_URL, pkg)
 
-
 Verification:
 -------------
 

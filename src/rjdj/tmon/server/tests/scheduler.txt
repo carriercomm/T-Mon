@@ -26,12 +26,14 @@ $ Tests for Scheduler
     >>> from pprint import pprint
     >>> from rjdj.tmon.server.utils.scheduler import Scheduler
     >>> import time    
-
+    >>> import Queue
+    
 Helper function:
 ----------------
+    >>> queue = Queue.Queue()
+
     >>> def print_data(data):
-    ...     print(data)
-    ...     time.sleep(1)
+    ...     queue.put(data)
     
 
 A Scheduler is responsible for managing the asynchronous request processing. It will, up to a certain thread cap, assing threads to given functions.
@@ -41,20 +43,37 @@ The object has to be constructed without any arguments:
     >>> scheduler = Scheduler()
 
 In order to process data, the process method has to be called, passing a function and the desired arguments:
-    >>> scheduler.process(print_data, ("hello", "world"))
+    >>> th = scheduler.process(print_data, ("hello", "world"))
+    
+    >>> scheduler.join()
+    
+    >>> while not queue.empty():
+    ...     print queue.get()
     ('hello', 'world')
+    
+Join() closes the ThreadPool and prevents further Threads from being created, hence a new scheduler has to be created:
+     
+     >>> scheduler = Scheduler()
     
 The number of concurrent threads is controlled by the MAX_THREADS settings property.
     >>> settings.MAX_THREADS = 4
 
-After the maximum number of threads has been reached, the rest of the tasks are being dropped to avoid thread overflows.
+After the maximum number of threads has been reached, the rest of the tasks are not being dropped:
 
     >>> for i in xrange(10):
-    ...     scheduler.process(print_data, ("hello", "world", i))
+    ...     th = scheduler.process(print_data, ("hello", "world", i))
+    >>> scheduler.join()
+
+    >>> while not queue.empty():
+    ...     print queue.get()
     ('hello', 'world', 0)
     ('hello', 'world', 1)
     ('hello', 'world', 2)
     ('hello', 'world', 3)
-    
-    >>> time.sleep(1)
+    ('hello', 'world', 4)
+    ('hello', 'world', 5)
+    ('hello', 'world', 6)
+    ('hello', 'world', 7)
+    ('hello', 'world', 8)
+    ('hello', 'world', 9)
 

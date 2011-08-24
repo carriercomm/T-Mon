@@ -63,7 +63,7 @@ class WebService(models.Model):
     
         super(WebService, self).save(*args, **kwargs)
         connection.setup(self.name)
-    
+        
     
     @transaction.commit_on_success
     def delete(*args, **kwargs):

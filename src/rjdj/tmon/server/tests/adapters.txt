@@ -142,6 +142,3 @@ Now for some more realistic data:
 
     >>> pprint(lst.create(False))
     [{'iPhone': 1}, {'iPod': 2}, {'iPad': 5}]
-    
-    >>> from timeit import timeit
-    >>> import pdb; pdb.set_trace()

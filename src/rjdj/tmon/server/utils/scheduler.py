@@ -42,9 +42,11 @@ class Scheduler(object):
         
         t = self.pool.apply_async(worker, args, kwargs)
         self.threads.append(t)
+        return t
         
     def join(self):
         """ Joins the underlying ThreadPool """
+        
         p = self.pool
         p.close()
         p.join()
@@ -56,5 +58,5 @@ def on_tornado_exit(sender, **kwargs):
     
     scheduler.join()
 
-tornado_exit.connect(on_tornado_exit)
+#tornado_exit.connect(on_tornado_exit)
 

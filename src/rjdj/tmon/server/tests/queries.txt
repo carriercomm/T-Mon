@@ -90,10 +90,9 @@ Preparation:
 Now for some querying:
 -------------------------
 
-    
     >>> print TrackingData.views.requests_by_city(ws.name)
     [{u'New York (USA)': 1}, {u'Vienna (AUT)': 1}, {u'Berlin (DEU)': 1}]
-    
+
     >>> print TrackingData.views.requests_by_device(ws.name)
     [{u'iPad': 1}, {u'iPhone': 1}, {u'Linux': 1}]
 

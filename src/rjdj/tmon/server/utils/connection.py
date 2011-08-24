@@ -56,25 +56,25 @@ class DBConnection(object):
 
 
     def create(self):
-        """ """
-        self.lock.acquire()
-        if self.user and self.password:
-            url =  "%s://%s:%s@%s:%d" % (self.protocol, 
-                                         self.user, 
-                                         self.password, 
-                                         self.host, 
-                                         self.port)
-        else:
-            url =  "%s://%s:%d" % (self.protocol, self.host, self.port)
+        """ Creates a new Server object, representing a connection. """
+        with self.lock:
+            if self.user and self.password:
+                url =  "%s://%s:%s@%s:%d" % (self.protocol, 
+                                             self.user, 
+                                             self.password, 
+                                             self.host, 
+                                             self.port)
+            else:
+                url =  "%s://%s:%d" % (self.protocol, self.host, self.port)
             
-        self.lock.release()
-        return Server(url)
+            return Server(url)
         
         
     def setup(self, name):
-        """ """
+        """ Initial setup of the given database """
 
         server = self.create()
+        
         try:
             database = server.create(name)
             CouchDBViews.sync(database)
@@ -84,7 +84,7 @@ class DBConnection(object):
         
         
     def remove(self, name):
-        """ """
+        """ Deletes the given Database """
         
         server = self.create()
         if name in server:
