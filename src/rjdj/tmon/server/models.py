@@ -23,7 +23,6 @@ __docformat__ = "reStructuredText"
 
 import time
 from couchdb.http import PreconditionFailed
-from datetime import datetime
 from django.contrib.auth.models import User
 from django.core.cache import cache
 from django.core.validators import RegexValidator
@@ -31,6 +30,7 @@ from django.db import transaction, models
 from rjdj.tmon.server.couchdbviews.couchdbviewmanager import CouchDBViewManager
 from rjdj.tmon.server.couchdbviews.couchdbkeys import CouchDBKeys
 from rjdj.tmon.server.exceptions import *
+from rjdj.tmon.server.utils import utc_timestamp_milliseconds
 from rjdj.tmon.server.utils.connection import connection     
 from threading import Lock
 from rjdj.tmon.server.utils.decorators import synced
@@ -76,17 +76,15 @@ class WebService(models.Model):
 class TrackingData(object):
     """ A class for saving trackable data """
     
-    TIMESTAMP_MULTIPLIER = 1000
-    
     views = CouchDBViewManager
     
     keys = CouchDBKeys
     
     @staticmethod
     def now():
-        """ """
+        """ Returns a unified UTC timestamp """
         
-        return int(time.mktime(datetime.now().timetuple())) * TrackingData.TIMESTAMP_MULTIPLIER
+        return utc_timestamp_milliseconds()
         
 @synced(lock)        
 def resolve(wsid):

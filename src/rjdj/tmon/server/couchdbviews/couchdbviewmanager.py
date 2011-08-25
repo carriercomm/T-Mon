@@ -22,11 +22,12 @@
 
 __docformat__ = "reStructuredText"
 
+from datetime import datetime
 import logging
 import operator
-from datetime import datetime, timedelta
 from rjdj.tmon.server.couchdbviews.couchdbviews import CouchDBViews
 from rjdj.tmon.server.utils.connection import connection
+from rjdj.tmon.server.utils import utc_timestamp_milliseconds
 
 logger = logging.getLogger('debug')
 
@@ -61,9 +62,8 @@ class CouchDBViewManager(object):
         """ """
         
         database = connection.database(db_name)
-        limit = datetime.now() - timedelta(minutes = MAX_AGE_MINUTES)
-
-        raw_results = CouchDBViews.requests_by_location(database, group_level = 2)
+        limit = utc_timestamp_milliseconds(-(MAX_AGE_MINUTES * 60))
+        raw_results = CouchDBViews.requests_by_location(database, group_level = 2)[:[limit]]
         results = {}
         
         for row in raw_results:
@@ -82,9 +82,8 @@ class CouchDBViewManager(object):
         """ """
         
         database = connection.database(db_name)        
-        limit = datetime.now() - timedelta(minutes = MAX_AGE_MINUTES)
-        
-        raw_results = CouchDBViews.requests_by_location(database)#[[limit.year, limit.month, limit.day, limit.hour, limit.minute]:]
+        limit = utc_timestamp_milliseconds(-(MAX_AGE_MINUTES * 60))
+        raw_results = CouchDBViews.requests_by_location(database)[:[limit]]
         
         results = {}
         
@@ -104,7 +103,8 @@ class CouchDBViewManager(object):
         """ """ 
 
         database = connection.database(db_name)
-        raw_results = CouchDBViews.requests_locations(database, limit = 500)[:[MAX_AGE_MINUTES]]
+        limit = utc_timestamp_milliseconds(-(MAX_AGE_MINUTES * 60))
+        raw_results = CouchDBViews.requests_locations(database, limit = 500)[:[limit]]
         sources = {}
         
         for row in raw_results:
@@ -185,7 +185,7 @@ class CouchDBViewManager(object):
         
         results = []
         
-        now = datetime.now()
+        now = datetime.utcnow()
         
         for row in raw_results:
             tmp = {}

@@ -101,9 +101,8 @@ def data_collect(post_data):
 
 
 class CollectionHandler(RequestHandler):
-    """ """
+    """ Handles the Data Collection interface """
     
-    @print_request_time
     def post(self, *args, **kwargs):
         """ """
         post_data = QueryDict(self.request.body)

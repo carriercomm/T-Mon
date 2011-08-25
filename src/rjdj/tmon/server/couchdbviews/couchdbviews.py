@@ -111,9 +111,15 @@ class CouchDBViews:
                             design = "requests",
                             name = "count",
                             map_fun = """   function(doc) {{
-                                                timestamp = new Date(doc.{timestamp});
-                                                emit([ timestamp.getFullYear(), timestamp.getMonth() + 1, 
-                                                       timestamp.getDate(), timestamp.getHours(), timestamp.getMinutes(), timestamp.getSeconds() ], 1);
+                                                timestamp = new Date();
+                                                timestamp.setTime(doc.{timestamp} +
+                                                                  (timestamp.getTimezoneOffset() * 60000));
+                                                emit([ timestamp.getUTCFullYear(), 
+                                                       timestamp.getUTCMonth() + 1, 
+                                                       timestamp.getUTCDate(), 
+                                                       timestamp.getUTCHours(), 
+                                                       timestamp.getUTCMinutes(), 
+                                                       timestamp.getUTCSeconds() ], 1);
                                             }} """.format(timestamp = Keys.TIMESTAMP),
                             reduce_fun = """_sum""",
                             group = True,
@@ -128,9 +134,7 @@ class CouchDBViews:
                                                    doc.{lat} == null || doc.{lng} == null) 
                                                     return;
                                                     
-                                                timestamp = new Date(doc.{timestamp});
-                                                time_in_minutes = Math.round(timestamp.getTime() / 60000)
-                                                emit([ time_in_minutes, doc.{lat}, doc.{lng} ], 1);
+                                                emit([ timestamp, doc.{lat}, doc.{lng} ], 1);
                                             }}""".format(lat = Keys.LATITUDE, 
                                                          lng = Keys.LONGITUDE, 
                                                          timestamp = Keys.TIMESTAMP),

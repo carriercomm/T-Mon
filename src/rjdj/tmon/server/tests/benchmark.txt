@@ -80,7 +80,7 @@ Benchmarking!
     ...         "url": "/" }
     >>> from django.conf import settings
     >>> settings.DEBUG = False
-    >>> pkg = make_package(request, ws.id)    
+    >>> pkg = make_package(request, ws.id)   
     >>> for r in xrange(RUNS):
     ...     x = c.post(TEST_URL, pkg)
 

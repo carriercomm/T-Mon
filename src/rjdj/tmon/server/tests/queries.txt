@@ -102,12 +102,11 @@ Now for some querying:
     >>> print TrackingData.views.requests_by_os(ws.name)
     [{u'Android 2.2.1': 1}, {u'CPU OS 3_2_1 like Mac OS X': 1}, {u'CPU like Mac OS X': 1}]
 
-    >>> print TrackingData.views.requests_locations(ws.name)
-    [{(13.412, 52.518): 1}, {(-73.986, 40.7257): 1}, {(16.378, 48.214): 1}]
-
     >>> print TrackingData.views.request_count(ws.name, "minute", 5)
     [{...: 3}]
 
+    >>> print TrackingData.views.requests_locations(ws.name)
+    [{(13.412, 52.518): 1}, {(-73.986, 40.7257): 1}, {(16.378, 48.214): 1}]
 
 
 
