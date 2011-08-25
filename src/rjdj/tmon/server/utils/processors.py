@@ -108,13 +108,14 @@ processors = {
         Keys.IP: IPProcessor().process,
         Keys.USER_AGENT: RequiredFieldProcessor().process,
         Keys.USERNAME: OptionalFieldProcessor().process,
-        Keys.URL: RequiredFieldProcessor().process
+        Keys.URL: RequiredFieldProcessor().process,
+        Keys.TIMESTAMP: RequiredFieldProcessor().process,
     }      
     
 def process(decrypted_data):
     """ """
 
-    result_dict = { Keys.TIMESTAMP: TrackingData.now() }
+    result_dict = { }
 
     for k, p in processors.iteritems():
         result_dict.update(p(k, decrypted_data))

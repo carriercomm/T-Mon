@@ -41,9 +41,8 @@ import logging
 
 from rjdj.tmon.server.exceptions import *
 
-from rjdj.tmon.server.models import WebService, resolve
-
-from rjdj.tmon.server.models import TrackingData
+from rjdj.tmon.server.models import WebService, TrackingData, resolve
+from rjdj.tmon.server.couchdbviews.couchdbkeys import CouchDBKeys as Keys
 from rjdj.tmon.server.utils import validate
 from rjdj.tmon.server.utils.bulkinsert_manager import bulkInsertManager
 from rjdj.tmon.server.utils.decorators import return_json, print_request_time
@@ -84,7 +83,7 @@ SIGNATURE_KEY = "signature"
 #
 # Tornado views
 #
-def data_collect(post_data):
+def data_collect(post_data, timestamp):
     """ """
     webservice = resolve(post_data[WSID_KEY])
     decrypted_data = base64.b64decode(post_data[DATA_KEY])
@@ -92,6 +91,7 @@ def data_collect(post_data):
         return
     try:        
         data = ujson.decode(decrypted_data)
+        data.update({ Keys.TIMESTAMP : timestamp })
         parsed_data = process(data)
     except Exception as ex:
         logger.error(u"%s: %s" % (ex, ex))
@@ -106,7 +106,7 @@ class CollectionHandler(RequestHandler):
     def post(self, *args, **kwargs):
         """ """
         post_data = QueryDict(self.request.body)
-        scheduler.process(data_collect, post_data)
+        scheduler.process(data_collect, post_data, TrackingData.now())
 #        data_collect(post_data)
         
         self.finish()   

@@ -22,25 +22,14 @@
 $ Tests for CouchDBViews
 =====================================
 
-    >>> import json
-    >>> import base64
-    >>> import hashlib
     >>> import time
+    >>> import hashlib
     >>> from rjdj.tmon.server.models import WebService, TrackingData
     >>> from rjdj.tmon.server.couchdbviews.couchdbkeys import CouchDBKeys as Keys
     >>> from django.contrib.auth.models import User 
-    >>> from Crypto.Cipher import AES
     >>> from django.test import Client
     >>> from rjdj.tmon.server.utils.bulkinsert_manager import bulkinsert
 
-Helper function:
----------------
-    >>> def make_post_data_dict(data, wsid):
-    ...     payload = json.dumps(data)
-    ...     cipher = AES.new(TEST_SECRET, AES.MODE_CFB)
-    ...     encryped_payload = cipher.encrypt(payload)
-    ...     encoded_payload = base64.b64encode(encryped_payload)
-    ...     return { "data" : encoded_payload, "wsid" : wsid }
 
 Preparation:
 ------------
@@ -85,7 +74,6 @@ Preparation:
     ...  Keys.TIMESTAMP: TrackingData.now() }, ]
 
     >>> bulkinsert(docs, ws)
-    
     
 Now for some querying:
 -------------------------

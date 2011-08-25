@@ -25,6 +25,7 @@ $ Tests for Processors
     >>> from datetime import datetime
     >>> from rjdj.tmon.server.utils import processors as p
     >>> from pprint import pprint
+    >>> import time
     
 Processors are used to prepare the parsed and encrypted data for database insertion. They return a dict containing valid keys for insertion. They are basically classes that overwrite the process() method of the FieldProcessor superclass these classes are instantiated and called by the process function with their corresponding key.
 
@@ -54,7 +55,8 @@ First some valid data should be processed:
     >>> valid_post_data = { 
     ...     "ip": "72.32.231.8",
     ...     "useragent": "Mozilla/5.0 (iPad; U; CPU OS 3_2_1 like Mac OS X; en-us)", 
-    ...     "url": "/"
+    ...     "url": "/",
+    ...     "timestamp": time.time()
     ...  }
 
 As can be seen, processing involves resolving the IP address to latitude, longitude, city, country, etc when possible.
@@ -85,7 +87,8 @@ However if the data invalid, it cannot be determined by a procesor, only further
     >>> invalid_post_data = { 
     ...     "ip": 'I am an IP Address!',
     ...     "useragent": "Mozilla/5.0 (iPad; U; CPU OS 3_2_1 like Mac OS X; en-us)", 
-    ...     "url": "/"
+    ...     "url": "/",
+    ...     "timestamp": time.time()
     ...  }    
     
     >>> pprint(p.process(invalid_post_data))
@@ -105,7 +108,7 @@ An empty input will also lead to a missing key error:
 Now for some final speed testing: 
 
     >>> RUNS = 1000
-    >>> start =datetime.now()
+    >>> start = datetime.now()
     >>> for i in xrange(RUNS):
     ...     x = p.process(valid_post_data)
     >>> end = datetime.now()

@@ -84,18 +84,26 @@ Benchmarking!
     >>> for r in xrange(RUNS):
     ...     x = c.post(TEST_URL, pkg)
 
+Join for instant verification
+-----------------------------
+
+    >>> from rjdj.tmon.server.utils.scheduler import scheduler
+    >>> scheduler.join()
+
 Verification:
 -------------
 
     >>> from rjdj.tmon.server.utils.connection import connection
     >>> db = connection.database(ws.name)
+    >>> entries = 0
     >>> for id in db:
     ...     if not id.startswith("_"):
+    ...         entries += 1
     ...         e = db[id]
     ...         assert e["ip"] == request["ip"]
     ...         assert e["useragent"] == request["useragent"]
     ...         assert e["url"] == request["url"]
-    >>> assert len(db) == RUNS + 4
+    >>> assert entries == RUNS
     
     
     

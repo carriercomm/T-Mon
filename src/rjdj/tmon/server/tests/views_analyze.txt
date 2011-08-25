@@ -135,4 +135,10 @@ Retrieve the number of users by country:
 
     >>> make_request("/data/users/url", ws.id)
     {u'status': 200, u'results': [{...}]}
+    
+    
+Clean up the threads:
+
+    >>> from rjdj.tmon.server.utils.scheduler import scheduler
+    >>> scheduler.join()
 

@@ -55,15 +55,14 @@ class BulkInsertManager(object):
     def insert(self, document, webservice):
         """ Adds a document to an insertion queue which will be inserted after a certain number of  """
 
-        ins = self.insertion_stacks
         wsid = webservice.id
         with self.lock:
-            ins[wsid].append(document)
-            if settings.DEBUG or len(ins[wsid]) > settings.MAX_BATCH_ENTRIES:
-                insertion = Thread(target = bulkinsert, args = (ins[wsid], webservice))
+            self.insertion_stacks[wsid].append(document)
+            if settings.DEBUG or len(self.insertion_stacks[wsid]) > settings.MAX_BATCH_ENTRIES:
+                insertion = Thread(target = bulkinsert, args = (self.insertion_stacks[wsid], webservice))
                 insertion.start()
-                ins[wsid] = []
                 if settings.DEBUG: insertion.join()
+                self.insertion_stacks[wsid] = []
                 
             
             
