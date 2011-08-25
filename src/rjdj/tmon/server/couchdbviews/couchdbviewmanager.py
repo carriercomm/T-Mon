@@ -190,9 +190,9 @@ class CouchDBViewManager(object):
         for row in raw_results:
             tmp = {}
             then = datetime(*row.key)
-            diff = converter(now, then)
+            diff = abs(converter(now, then))
             
-            if diff < scope and diff >= 0: 
+            if diff < scope: 
                 tmp[diff] = row.value
                 results.append(tmp)
         
