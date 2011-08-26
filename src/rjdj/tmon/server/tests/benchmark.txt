@@ -28,7 +28,6 @@ $ Benchmarking
     >>> import hmac
     >>> from rjdj.tmon.server.models import WebService
     >>> from django.contrib.auth.models import User 
-    >>> from Crypto.Cipher import AES
     >>> from pprint import pprint
     >>> from rjdj.djangotornado.testing import TestClient as Client
     >>> from rjdj.tmon.server.urls import tornado_urls
@@ -65,12 +64,6 @@ Helper functions:
     ...     payload = json.dumps(data)
     ...     encoded_payload = base64.b64encode(payload)
     ...     return  { "data" : encoded_payload, "wsid" : wsid, "signature": sign(payload) }
-    
-    >>> def make_package_enc(data, wsid):
-    ...     payload = AES.new(TEST_SECRET, AES.MODE_CFB).encrypt(json.dumps(data))
-    ...     encoded_payload = base64.b64encode(payload)
-    ...     return  { "data" : encoded_payload, "wsid" : wsid }
-    
     
 Benchmarking!
 -------------

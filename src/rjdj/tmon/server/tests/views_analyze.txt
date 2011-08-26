@@ -30,7 +30,6 @@ $ Tests for the RESTful API (/data/...)
     >>> from rjdj.tmon.server.utils.bulkinsert_manager import bulkinsert
     >>> from rjdj.tmon.server.couchdbviews.couchdbkeys import CouchDBKeys as Keys
     >>> from django.contrib.auth.models import User 
-    >>> from Crypto.Cipher import AES
     >>> from django.test import Client
 
 
@@ -51,21 +50,6 @@ Preparations:
     >>> ws.secret = TEST_SECRET
     >>> ws.name = "_".join(("testdb", hashlib.md5(str(random.random() + time.time())).hexdigest()))
     >>> ws.save()
-    
-    
-Helper function:
----------------
-    >>> def make_request(url, wsid, req_dict = None):
-    ...     if req_dict:
-    ...         payload = json.dumps(req_dict)
-    ...         cipher = AES.new(TEST_SECRET, AES.MODE_CFB)
-    ...         encryped_payload = cipher.encrypt(payload)
-    ...         encoded_payload = base64.b64encode(encryped_payload)
-    ...         res = c.post(url, { "data" : encoded_payload, "wsid" : wsid })
-    ...     else:
-    ...         res = c.get("/" + str(wsid) + url)
-    ...     return json.loads(res.content)
-    
     
 Inserting some sample data:
 ---------------------------
