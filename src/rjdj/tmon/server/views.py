@@ -83,9 +83,11 @@ SIGNATURE_KEY = "signature"
 #
 # Tornado views
 #
-def data_collect(post_data, timestamp):
+def data_collect(post_data, timestamp, webservice):
     """ """
-    webservice = resolve(post_data[WSID_KEY])
+    
+    if not webservice: return
+    
     decrypted_data = base64.b64decode(post_data[DATA_KEY])
     if not validate(decrypted_data, webservice.secret, post_data[SIGNATURE_KEY]):
         return
@@ -106,7 +108,10 @@ class CollectionHandler(RequestHandler):
     def post(self, *args, **kwargs):
         """ """
         post_data = QueryDict(self.request.body)
-        scheduler.process(data_collect, post_data, TrackingData.now())
+        scheduler.process(data_collect, 
+                          post_data, 
+                          TrackingData.now(), 
+                          resolve(post_data.get(WSID_KEY)))
 #        data_collect(post_data)
         
         self.finish()   
