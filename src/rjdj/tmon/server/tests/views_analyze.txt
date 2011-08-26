@@ -32,6 +32,12 @@ $ Tests for the RESTful API (/data/...)
     >>> from django.contrib.auth.models import User 
     >>> from django.test import Client
 
+Helper function:
+---------------
+    >>> def make_request(url, wsid, req_dict = None):
+    ...     res = c.get("/" + str(wsid) + url)
+    ...     return json.loads(res.content)
+
 
 Preparations:
 -------------

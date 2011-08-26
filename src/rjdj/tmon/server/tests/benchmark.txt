@@ -41,7 +41,7 @@ Preparations:
     >>> TEST_SECRET = "A" * 32
 
     >>> user = User()
-    >>> user.username = "another_testuser"
+    >>> user.username = "benchmark_testuser"
     >>> user.set_password("!test")
     >>> user.email = "test@test.com"
     >>> user.save()
@@ -49,7 +49,7 @@ Preparations:
     >>> ws = WebService()    
     >>> ws.owner = user
     >>> ws.secret = TEST_SECRET
-    >>> ws.name = "_".join(("testdb", hashlib.md5(str(time.time())).hexdigest()))
+    >>> ws.name = "__".join(("testdb", hashlib.md5(str(time.time())).hexdigest()))
     >>> ws.save()
 
 
