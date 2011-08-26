@@ -123,7 +123,7 @@ class CouchDBViews:
                                             }} """.format(timestamp = Keys.TIMESTAMP),
                             reduce_fun = """_sum""",
                             group = True,
-                            descending = False)
+                            descending = True)
                             
                             
     requests_locations = ViewDefinition(

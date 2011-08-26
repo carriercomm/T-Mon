@@ -181,7 +181,7 @@ class CouchDBViewManager(object):
         
         database = connection.database(db_name)
         group_lvl, converter = get(resolution)
-        raw_results = CouchDBViews.request_count(database, group_level = group_lvl, limit = scope + 1)
+        raw_results = CouchDBViews.request_count(database, group_level = group_lvl)
         
         results = []
         
