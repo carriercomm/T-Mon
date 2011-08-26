@@ -37,7 +37,7 @@ MAX_AGE_MINUTES = 10
 def total_seconds(td):
     """ Returns the total seconds of a timedelta object. """
     
-    return (td.microseconds + (td.seconds + td.days * 86400) * 1000000) / 1000000;
+    return (td.microseconds + (td.seconds + td.days * 86400) * 1000000) / 1000000.0 ;
 
 
 def get(resolution):
@@ -181,7 +181,7 @@ class CouchDBViewManager(object):
         
         database = connection.database(db_name)
         group_lvl, converter = get(resolution)
-        raw_results = CouchDBViews.request_count(database, group_level = group_lvl, limit = scope)
+        raw_results = CouchDBViews.request_count(database, group_level = group_lvl, limit = scope + 1)
         
         results = []
         
