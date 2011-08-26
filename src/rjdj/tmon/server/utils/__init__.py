@@ -23,7 +23,6 @@
 __docformat__ = "reStructuredText"
 
 import calendar
-from Crypto.Cipher import AES
 from datetime import datetime
 import hashlib
 import hmac
@@ -34,12 +33,6 @@ def utc_timestamp_milliseconds(offset_seconds = 0):
     """ Creates a UTC UNIX timestamp in milliseconds. Offset can be positive or negative. """
 
     return (calendar.timegm(datetime.now().utctimetuple()) + offset_seconds) * JS_TIMESTAMP_MULTIPLIER
-
-def decrypt_message(msg, secret):
-    """ Decrypts a Base64 encoded message with the given secret (AES) """
-    
-    cipher = AES.new(secret, AES.MODE_CFB)
-    return cipher.decrypt(msg)
     
 def validate(msg, secret, signature):
     """ Validates a message by comparing hmac-based hash values. """
