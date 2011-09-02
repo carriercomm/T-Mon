@@ -112,14 +112,13 @@ class CouchDBViews:
                             name = "count",
                             map_fun = """   function(doc) {{
                                                 timestamp = new Date();
-                                                timestamp.setTime(doc.{timestamp} +
-                                                                  (timestamp.getTimezoneOffset() * 60000));
-                                                emit([ timestamp.getUTCFullYear(), 
-                                                       timestamp.getUTCMonth() + 1, 
-                                                       timestamp.getUTCDate(), 
-                                                       timestamp.getUTCHours(), 
-                                                       timestamp.getUTCMinutes(), 
-                                                       timestamp.getUTCSeconds() ], 1);
+                                                timestamp.setTime(doc.{timestamp});
+                                                emit([ timestamp.getFullYear(), 
+                                                       timestamp.getMonth() + 1, 
+                                                       timestamp.getDate(), 
+                                                       timestamp.getHours(), 
+                                                       timestamp.getMinutes(), 
+                                                       timestamp.getSeconds() ], 1);
                                             }} """.format(timestamp = Keys.TIMESTAMP),
                             reduce_fun = """_sum""",
                             group = True,
